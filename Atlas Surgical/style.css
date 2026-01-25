@@ -1,0 +1,148 @@
+.title {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5;
+    font-size: 2rem;
+    color:slategray;
+    background-color:rgb(222,222,222) ;
+}
+
+
+.navbar ul{
+    display: flex;
+    justify-content: right;
+    list-style-type: none;
+    font-size: 0.5em;
+    background-color: rgb(222,222,222);
+    padding: 0px;
+    margin: 0px;
+    overflow: auto;
+        
+}
+
+.navbar a{
+    color: rgb(0, 0, 0);
+    text-decoration: none;
+    padding: 15px;
+    display: flex;
+    justify-content: right;
+    text-align: right;
+}
+
+.navbar a:hover{
+    background-color: rgba(189, 189, 189, 0.4);
+}
+
+.general {
+    display: flex;
+    justify-content: center;
+    text-align: left;
+    margin: 2em;
+}
+
+body{
+    text-align: left;
+    font-family: Verdana, arial;
+    background-color:rgb(189, 189, 189, 0.5);
+
+}
+
+#signin {
+    background-color: rgb(rgb(101, 101, 101), green, blue);
+
+}
+
+h1{
+    text-align: center;
+    font-size: 20px;
+}
+
+p{
+    text-align: center;
+}
+
+.table-pricing{
+    border: 2px solid;
+    border-radius: 10px;
+    padding: 1em;
+    width: 60%;
+    text-align: left;
+    background-color: rgba(187, 187, 187, 0);
+}
+
+
+input,
+button,
+select,
+textarea {
+    font: inherit;
+
+
+}
+
+form {
+    width: 50%;
+    max-width: 550px;
+    height: auto;
+    background-color:rgba(189, 189, 189, 0.313);
+    display: grid;
+    place-items: center;
+    margin: 0 auto;
+    border-radius: 14px;
+    border: rgba(112, 128, 144, 0.263) solid;
+ 
+}
+
+#formbox {
+    width: 50%;
+    display: grid;
+    place-items: left;
+      
+}
+
+
+#bookingform label {
+    display: block;
+    margin-top: 10px;
+  
+}
+
+.form-group textarea, input, select {
+    background-color: whitesmoke;
+    border-radius: 8px;
+    border: rgba(112, 128, 144, 0.263) solid;;
+    margin-top: 4px;
+    width: 100%;
+    padding: 0.25em;
+    font: inherit;
+}
+
+.container {
+    margin: 5rem;
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 16px; /* optional */
+    border:;
+    place-items: center;
+    overflow: hidden;
+    
+
+}
+  
+.staffbox {
+  place-items: center;
+  width: 25rem;
+  height: 25rem;
+  overflow: hidden;           /* clips the image */
+ 
+}
+
+.staffPhoto {
+    display: flex;
+    height: 20em;
+    width: 20em;
+    border-top-left-radius: 50px;
+    border-bottom-right-radius: 50px;
+    overflow: cover;
+    border:  rgba(112, 128, 144, 0.263) 5px solid;
+}
+

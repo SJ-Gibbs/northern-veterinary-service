@@ -1,0 +1,33 @@
+body {
+    margin: 0;
+    padding: 0;
+    text-align: center;
+
+}
+
+.container{
+    display:grid;
+    grid-template-columns: repeat(6,1fr);
+    grid-auto-rows: 100px 300px;
+    grid-gap: 10px;
+}
+
+.gallery-item{
+    width:100%;
+    height: 100%;
+    position: relative;
+
+}
+
+.gallery-item .image{
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+.gallery-item .image img{
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    
+}

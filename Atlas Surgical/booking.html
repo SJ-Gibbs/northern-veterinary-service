@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Northern Veterinary Service</title>
+    <meta name="description" content="Northern veterinary peripatetic surgery services">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="veterinary, peripatetic, surgery">
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <header class="title">
+        <h1> Northern Veterinary Service</h1>
+    
+    <nav class="navbar">
+            <ul>
+                <li><a href="index.html">Home</a></li>
+                <li><a href="theteam.html">The Team</a></li>
+                <li><a href="casestories.html">Case Stories</a></li>
+                <li><a href="pricing.html">Pricing</a></li>
+                <li><a href="booking.html">Advice & Booking</a></li>
+                <li><a href="policies.html">Policies</a></li>
+                <li id="signin"><a href="signin.html"> Sign in</a></li>
+            </ul>
+    </nav>
+    
+    </header>
+
+    <main>
+        <h1>Advice Request and Booking</h1>
+
+            <form id="bookingform" action="index.php" method="POST" enctype="multipart/form-data">
+                
+                <div id="formbox">
+                <div class="form-group">
+                    <label for="practiceName">Practice Name:</label>
+                    <input type="text" id="practiceName" placeholder="Northern Veterinary" required> 
+                </div>
+                
+                <div class="form-group">
+                    <label for="email">Email:</label>
+                    <input type="email" id="email" placeholder="practice@vets.com" required> 
+                </div>
+
+                <div class="form-group">
+                    <label for="practiceNumber">Practice Number:</label>
+                    <input type="tel" id="phone" placeholder="01234 567890"> 
+                </div>
+
+                <div class="form-group">
+                    <label for="servicerequired">Service Required:</label>
+                        <select id="servicerequired">
+                            <option value="orthopaedics">Orthopaedic Surgery</option>
+                            <option value="softtissue">Soft Tissue Surgery</option>
+                            <option value="ultrasonography/Echocardiography">Ultrasonography/Echocardiography</option>
+                            <option value="endoscopy">Endoscopy</option>
+                        </select>
+                </div>
+            
+                <div class="form-group">
+                    <label for="History">Brief History:</label>
+                    <textarea id="History" rows=5 cols=30 required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="file">X-rays/Images:</label>
+                    <input type="file" id="file" accept="image/png, image/jpeg, .dcm,application/dicom"><br>
+                    <input type="submit" id="mySubmit">
+                </div>
+                </div>
+
+            </form>
+    
+
+    </main>
+
+
+</body>
+</html>
