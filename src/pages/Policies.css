@@ -1,0 +1,30 @@
+.policies-page {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.policies-page h2 {
+    color: var(--primary-color);
+    margin-top: 1rem;
+}
+
+.policies-page h3 {
+    color: var(--secondary-color);
+    font-size: 1.1rem;
+    margin-top: 1rem;
+}
+
+.policies-page ul {
+    padding-left: 2rem;
+    line-height: 1.8;
+}
+
+.policies-page ul li {
+    margin-bottom: 0.5rem;
+}
+
+.cta-box {
+    background-color: #e8f4f8;
+    border: 2px solid var(--primary-color);
+    text-align: center;
+}
+

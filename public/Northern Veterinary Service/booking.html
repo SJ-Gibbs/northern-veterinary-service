@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Booking & Advice - Northern Veterinary Service</title>
+    <meta name="description" content="Book a veterinary surgery or request expert advice from Northern Veterinary Service">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="keywords" content="veterinary booking, surgery appointment, radiographic advice">
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <h1 class="site-title">Northern Veterinary Service</h1>
+                <p class="tagline">Expert Peripatetic Surgery Services</p>
+            </div>
+        
+            <nav class="navbar" role="navigation" aria-label="Main navigation">
+                <button class="mobile-menu-toggle" aria-label="Toggle navigation menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-list">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="casestories.html">Case Stories</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                    <li><a href="booking.html" class="active" aria-current="page">Advice & Booking</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="content-wrapper">
+            <section class="content-section">
+                <h1>Request Advice or Book a Surgery</h1>
+                <p class="text-center">Complete the form below to request expert advice or book a surgical appointment. We'll respond within 48 hours, or sooner for urgent cases.</p>
+
+                <form id="bookingform" method="POST" enctype="multipart/form-data">
+                    
+                    <div class="form-group">
+                        <label for="practiceName">Practice Name <span style="color: red;">*</span></label>
+                        <input type="text" id="practiceName" name="practiceName" placeholder="Enter your practice name" required> 
+                        <div class="error-message"></div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="email">Email Address <span style="color: red;">*</span></label>
+                        <input type="email" id="email" name="email" placeholder="practice@example.com" required> 
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Practice Phone Number</label>
+                        <input type="tel" id="phone" name="phone" placeholder="01234 567890"> 
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="servicerequired">Service Required <span style="color: red;">*</span></label>
+                        <select id="servicerequired" name="servicerequired" required>
+                            <option value="">-- Please Select --</option>
+                            <option value="orthopaedics">Orthopaedic Surgery</option>
+                            <option value="softtissue">Soft Tissue Surgery</option>
+                            <option value="ultrasonography">Ultrasonography/Echocardiography</option>
+                            <option value="endoscopy">Endoscopy</option>
+                            <option value="radiographic">Radiographic Interpretation (Free for members)</option>
+                            <option value="advice">General Advice Request</option>
+                        </select>
+                        <div class="error-message"></div>
+                    </div>
+                
+                    <div class="form-group">
+                        <label for="History">Patient History & Request Details <span style="color: red;">*</span></label>
+                        <textarea id="History" name="History" rows="6" placeholder="Please provide details about the patient, symptoms, diagnosis, and what service you're requesting..." required></textarea>
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="preferredDate">Preferred Date (if booking surgery)</label>
+                        <input type="date" id="preferredDate" name="preferredDate">
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="file">X-rays / Images (Optional)</label>
+                        <input type="file" id="file" name="file" accept="image/png, image/jpeg, .dcm, application/dicom">
+                        <small style="color: #666; display: block; margin-top: 0.5rem;">
+                            Accepted formats: PNG, JPEG, DICOM (.dcm)
+                        </small>
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <button type="submit" id="mySubmit">Submit Request</button>
+                    </div>
+                </form>
+
+                <div class="content-section" style="margin-top: 2rem; background-color: #e8f4f8;">
+                    <h3>What Happens Next?</h3>
+                    <ul style="padding-left: 2rem;">
+                        <li><strong>Advice Requests:</strong> Free for member practices. We'll review your case and respond within 48 hours.</li>
+                        <li><strong>Surgery Bookings:</strong> We'll contact you to confirm availability and arrange the visit details.</li>
+                        <li><strong>Urgent Cases:</strong> For immediate assistance, please call us directly.</li>
+                    </ul>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Northern Veterinary Service</h3>
+                <p>Expert peripatetic veterinary surgery services across Northern England</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: <a href="mailto:sg12709@my.bristol.ac.uk">sg12709@my.bristol.ac.uk</a></p>
+                <p>Available for urgent consultations</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Verlexis Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="index.js"></script>
+</body>
+</html>

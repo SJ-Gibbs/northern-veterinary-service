@@ -1,0 +1,8 @@
+.home-page {
+    animation: fadeIn 0.6s ease-out;
+}
+
+.services-overview {
+    background-color: var(--bg-light);
+}
+
