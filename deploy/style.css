@@ -408,6 +408,10 @@ button[type="submit"]:hover {
     box-shadow: var(--shadow-sm);
     text-align: center;
     transition: var(--transition);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
 }
 
 .staffbox:hover {
@@ -416,11 +420,17 @@ button[type="submit"]:hover {
 }
 
 .staffPhoto {
+    display: block;
     width: 200px;
     height: 200px;
+    min-width: 200px;
+    min-height: 200px;
+    max-width: 200px;
+    max-height: 200px;
     border-radius: 50%;
     object-fit: cover;
-    margin-bottom: 1rem;
+    object-position: center;
+    margin: 0 auto 1rem auto;
     border: 4px solid var(--primary-color);
 }
 
