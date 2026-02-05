@@ -33,6 +33,25 @@
                     <li><a href="policies.html">Policies</a></li>
                 </ul>
             </nav>
+
+            <!-- Auth Section -->
+            <div class="auth-section">
+                <div class="auth-buttons" id="authButtons">
+                    <a href="login.html" class="btn-auth btn-login">Login</a>
+                    <a href="signup.html" class="btn-auth btn-signup">Sign Up</a>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-dropdown-btn" id="userDropdownBtn">
+                        <span class="user-icon">👤</span>
+                        <span class="user-name" id="userName"></span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="#" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -167,6 +186,7 @@
         </div>
     </footer>
 
+    <script src="auth.js"></script>
     <script src="index.js"></script>
 </body>
 </html>

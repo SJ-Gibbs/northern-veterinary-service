@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sign Up - Northern Veterinary Service</title>
+    <meta name="description" content="Register your practice for member pricing and services">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <h1 class="site-title">Northern Veterinary Service</h1>
+                <p class="tagline">Veterinary Peripatetic Services</p>
+            </div>
+        
+            <nav class="navbar" role="navigation" aria-label="Main navigation">
+                <button class="mobile-menu-toggle" aria-label="Toggle navigation menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-list">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="casestories.html">Case Stories</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                    <li><a href="booking.html">Advice & Booking</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </nav>
+
+            <!-- Auth Section -->
+            <div class="auth-section">
+                <div class="auth-buttons" id="authButtons">
+                    <a href="login.html" class="btn-auth btn-login">Login</a>
+                    <a href="signup.html" class="btn-auth btn-signup">Sign Up</a>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-dropdown-btn" id="userDropdownBtn">
+                        <span class="user-icon">👤</span>
+                        <span class="user-name" id="userName"></span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="#" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="content-wrapper">
+            <section class="auth-page">
+                <div class="auth-container">
+                    <h1>Register Your Practice</h1>
+                    <p class="auth-subtitle">Create an account to access member pricing and exclusive services</p>
+
+                    <div id="signupMessage" class="message" style="display: none;"></div>
+
+                    <form id="signupForm" class="auth-form">
+                        <div class="form-group">
+                            <label for="practiceName">Practice Name <span style="color: red;">*</span></label>
+                            <input type="text" id="practiceName" name="practiceName" placeholder="Your Veterinary Practice" required autocomplete="organization">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Practice Email Address <span style="color: red;">*</span></label>
+                            <input type="email" id="email" name="email" placeholder="practice@example.com" required autocomplete="email">
+                            <small class="form-help">Use your official practice email address</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="phone">Practice Phone Number</label>
+                            <input type="tel" id="phone" name="phone" placeholder="01234 567890" autocomplete="tel">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="password">Password <span style="color: red;">*</span></label>
+                            <input type="password" id="password" name="password" placeholder="Minimum 6 characters" required autocomplete="new-password">
+                            <small class="form-help">Must be at least 6 characters long</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="confirmPassword">Confirm Password <span style="color: red;">*</span></label>
+                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required autocomplete="new-password">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                                I agree to the <a href="policies.html" target="_blank">terms and conditions</a>
+                            </label>
+                        </div>
+
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                        </div>
+                    </form>
+
+                    <div class="auth-footer">
+                        <p>Already have an account? <a href="login.html">Login here</a></p>
+                        <p class="security-note">🔒 Your information is secure and encrypted</p>
+                    </div>
+
+                    <div class="info-box" style="margin-top: 2rem;">
+                        <h3>Member Benefits:</h3>
+                        <ul>
+                            <li>✓ Access to exclusive member pricing</li>
+                            <li>✓ Free radiographic interpretation</li>
+                            <li>✓ Priority booking for surgeries</li>
+                            <li>✓ 48-hour advice turnaround</li>
+                            <li>✓ Dedicated account manager</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Northern Veterinary Service</h3>
+                <p>Expert peripatetic veterinary surgery services across Northern England</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: <a href="mailto:sg12709@my.bristol.ac.uk">sg12709@my.bristol.ac.uk</a></p>
+                <p>Available for urgent consultations</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Verlexis Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="index.js"></script>
+    <script>
+        // Handle signup form submission
+        document.getElementById('signupForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const practiceName = document.getElementById('practiceName').value;
+            const email = document.getElementById('email').value;
+            const phone = document.getElementById('phone').value;
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const agreeTerms = document.getElementById('agreeTerms').checked;
+            const messageDiv = document.getElementById('signupMessage');
+            
+            // Validate passwords match
+            if (password !== confirmPassword) {
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'message error-message';
+                messageDiv.textContent = 'Passwords do not match.';
+                return;
+            }
+            
+            // Validate terms agreement
+            if (!agreeTerms) {
+                messageDiv.style.display = 'block';
+                messageDiv.className = 'message error-message';
+                messageDiv.textContent = 'You must agree to the terms and conditions.';
+                return;
+            }
+            
+            const result = auth.signup(practiceName, email, password, phone);
+            
+            messageDiv.style.display = 'block';
+            messageDiv.textContent = result.message;
+            
+            if (result.success) {
+                messageDiv.className = 'message success-message';
+                
+                // Auto-login and redirect after successful signup
+                setTimeout(() => {
+                    auth.login(email, password);
+                    window.location.href = 'pricing.html';
+                }, 1500);
+            } else {
+                messageDiv.className = 'message error-message';
+            }
+        });
+
+        // Redirect if already logged in
+        if (auth.isLoggedIn()) {
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>
+

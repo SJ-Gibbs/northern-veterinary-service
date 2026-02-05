@@ -33,6 +33,25 @@
                     <li><a href="policies.html">Policies</a></li>
                 </ul>
             </nav>
+
+            <!-- Auth Section -->
+            <div class="auth-section">
+                <div class="auth-buttons" id="authButtons">
+                    <a href="login.html" class="btn-auth btn-login">Login</a>
+                    <a href="signup.html" class="btn-auth btn-signup">Sign Up</a>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-dropdown-btn" id="userDropdownBtn">
+                        <span class="user-icon">👤</span>
+                        <span class="user-name" id="userName"></span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="#" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
@@ -42,6 +61,31 @@
                 <h1>Surgical Pricing</h1>
                 <p class="pricing-intro">We believe in transparent, competitive pricing. All prices shown are in GBP (£) and represent the surgeon's fee for the procedure. Additional costs such as materials, implants, and post-operative care should be discussed with your practice.</p>
 
+                <!-- Login Required Message (shown to non-members) -->
+                <div id="loginRequired" class="login-required-box" style="display: none;">
+                    <div class="lock-icon">🔒</div>
+                    <h2>Member Pricing Access Required</h2>
+                    <p>Our detailed pricing information is available exclusively to registered member practices.</p>
+                    <div class="benefits-list">
+                        <h3>Membership Benefits:</h3>
+                        <ul>
+                            <li>✓ Access to transparent, competitive pricing</li>
+                            <li>✓ Free radiographic interpretation</li>
+                            <li>✓ Free case consultation and advice</li>
+                            <li>✓ Priority booking for surgical procedures</li>
+                            <li>✓ Direct phone line for urgent cases</li>
+                            <li>✓ 48-hour turnaround on advice requests</li>
+                        </ul>
+                    </div>
+                    <div class="cta-buttons">
+                        <a href="signup.html" class="btn btn-primary btn-large">Sign Up for Free</a>
+                        <a href="login.html" class="btn btn-secondary btn-large">Login to Your Account</a>
+                    </div>
+                    <p class="contact-note">For pricing inquiries, contact us at <a href="mailto:sg12709@my.bristol.ac.uk">sg12709@my.bristol.ac.uk</a></p>
+                </div>
+
+                <!-- Protected Pricing Content (shown to members only) -->
+                <div id="pricingContent" style="display: none;">
                 <div class="pricing-tables">
                     <div class="pricing-category">
                         <h3>Orthopaedic Procedures</h3>
@@ -223,6 +267,8 @@
                         <a href="booking.html" class="btn btn-primary">Become a Member Practice</a>
                     </p>
                 </div>
+                </div>
+                <!-- End of Protected Pricing Content -->
 
                 <p class="pricing-note" style="margin-top: 2rem;">
                     <strong>Important:</strong> Prices may vary based on individual case complexity, patient size, and specific requirements. Contact us for a detailed, personalized quote for your case. Some cases may require advanced imaging prior to planned procedure.
@@ -262,6 +308,24 @@
         </div>
     </footer>
 
+    <script src="auth.js"></script>
     <script src="index.js"></script>
+    <script>
+        // Show/hide pricing content based on authentication
+        document.addEventListener('DOMContentLoaded', function() {
+            const loginRequired = document.getElementById('loginRequired');
+            const pricingContent = document.getElementById('pricingContent');
+            
+            if (auth.isLoggedIn()) {
+                // User is logged in - show pricing
+                loginRequired.style.display = 'none';
+                pricingContent.style.display = 'block';
+            } else {
+                // User is not logged in - show login prompt
+                loginRequired.style.display = 'block';
+                pricingContent.style.display = 'none';
+            }
+        });
+    </script>
 </body>
 </html>
