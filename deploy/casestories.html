@@ -64,88 +64,53 @@
         </div>
 
         <div class="gallery-container">
-            <div class="gallery-item">
+            <div class="gallery-item" data-case="norman">
                 <div class="caseimage">
                     <img src="images/Norman/norman.jpeg" alt="Successful TPLO surgery case">
                 </div>
                 <div class="text">TPLO Surgery - Norman</div> 
             </div>
 
-            <div class="gallery-item">
+            <div class="gallery-item" data-case="ruby">
                 <div class="caseimage">
                     <img src="images/Ruby/ruby.jpeg" alt="Soft tissue reconstruction case">
                 </div>
                 <div class="text">Soft Tissue Reconstruction - Ruby</div> 
             </div>
 
-            <div class="gallery-item">
+            <div class="gallery-item" data-case="kuba">
                 <div class="caseimage">
                     <img src="images/Kuba/kubaop1.jpg" alt="Fracture repair case">
                 </div>
-                <div class="text">Fracture Repair - Kuba (Pre-op)</div> 
+                <div class="text">Fracture Repair - Kuba</div> 
             </div>
             
-            <div class="gallery-item">
-                <div class="caseimage">
-                    <img src="images/Kuba/kubaop2.jpg" alt="Fracture repair post-op">
-                </div>
-                <div class="text">Fracture Repair - Kuba (Post-op)</div> 
-            </div>
-            
-            <div class="gallery-item">
-                <div class="caseimage">
-                    <img src="images/Norman/normancrcd.jpeg" alt="Cranial cruciate ligament disease radiograph">
-                </div>
-                <div class="text">CRCL Disease - Radiograph</div> 
-            </div>
-            
-            <div class="gallery-item">
-                <div class="caseimage">
-                    <img src="images/Norman/normanlateral.jpeg" alt="Lateral radiograph view">
-                </div>
-                <div class="text">Post-Op Lateral View</div> 
-            </div>
-            
-            <div class="gallery-item">
-                <div class="caseimage">
-                    <img src="images/Norman/normanpostop.jpeg" alt="Post-operative recovery">
-                </div>
-                <div class="text">Norman - Post-Op Recovery</div> 
-            </div>
-            
-            <div class="gallery-item">
-                <div class="caseimage">
-                    <img src="images/Norman/normanpostop2.jpeg" alt="Follow-up recovery">
-                </div>
-                <div class="text">Norman - Follow-up Visit</div> 
-            </div>
-            
-            <div class="gallery-item">
+            <div class="gallery-item" data-case="mct">
                 <div class="caseimage">
                     <img src="images/MCT-APF/MCT-APF1.jpeg" alt="MCT mass case">
                 </div>
                 <div class="text">MCT Mass Removal</div> 
             </div>
             
-            <div class="gallery-item">
-                <div class="caseimage">
-                    <img src="images/MCT-APF/MCTpostop1.jpeg" alt="MCT post-operative">
-                </div>
-                <div class="text">MCT - Post-Operative</div> 
-            </div>
-            
-            <div class="gallery-item">
-                <div class="caseimage">
-                    <img src="images/MCT-APF/MCTrecheck.jpeg" alt="MCT recheck">
-                </div>
-                <div class="text">MCT - Recheck Visit</div> 
-            </div>
-            
-            <div class="gallery-item">
+            <div class="gallery-item" data-case="skewerdog">
                 <div class="caseimage">
                     <img src="images/SkewerDog/skewerdog.jpeg" alt="Foreign body removal case">
                 </div>
                 <div class="text">Foreign Body Removal</div> 
+            </div>
+        </div>
+
+        <!-- Modal Lightbox -->
+        <div id="caseModal" class="case-modal">
+            <button class="modal-close" aria-label="Close modal">&times;</button>
+            <div class="modal-content">
+                <button class="modal-nav modal-prev" aria-label="Previous image">&#10094;</button>
+                <div class="modal-image-container">
+                    <img id="modalImage" src="" alt="">
+                    <div class="modal-caption" id="modalCaption"></div>
+                    <div class="modal-counter" id="modalCounter"></div>
+                </div>
+                <button class="modal-nav modal-next" aria-label="Next image">&#10095;</button>
             </div>
         </div>
 
@@ -188,5 +153,6 @@
 
     <script src="auth.js"></script>
     <script src="index.js"></script>
+    <script src="casestories.js"></script>
 </body>
 </html>
