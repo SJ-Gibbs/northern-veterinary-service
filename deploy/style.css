@@ -1176,21 +1176,4 @@ button[type="submit"]:hover {
 /* Gallery item cursor indication */
 .gallery-item {
     cursor: pointer;
-    position: relative;
-}
-
-.gallery-item::after {
-    content: '🔍';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 3rem;
-    opacity: 0;
-    transition: var(--transition);
-    pointer-events: none;
-}
-
-.gallery-item:hover::after {
-    opacity: 0.8;
 }
