@@ -81,6 +81,33 @@
                         </div>
 
                         <div class="form-group">
+                            <label for="addressLine1">Practice Address Line 1 <span style="color: red;">*</span></label>
+                            <input type="text" id="addressLine1" name="addressLine1" placeholder="Street address" required autocomplete="address-line1">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="addressLine2">Address Line 2</label>
+                            <input type="text" id="addressLine2" name="addressLine2" placeholder="Building, suite, etc. (optional)" autocomplete="address-line2">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="city">City/Town <span style="color: red;">*</span></label>
+                                <input type="text" id="city" name="city" placeholder="City" required autocomplete="address-level2">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="postcode">Postcode <span style="color: red;">*</span></label>
+                                <input type="text" id="postcode" name="postcode" placeholder="Postcode" required autocomplete="postal-code">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="county">County</label>
+                            <input type="text" id="county" name="county" placeholder="County (optional)" autocomplete="address-level1">
+                        </div>
+
+                        <div class="form-group">
                             <label for="password">Password <span style="color: red;">*</span></label>
                             <input type="password" id="password" name="password" placeholder="Minimum 6 characters" required autocomplete="new-password">
                             <small class="form-help">Must be at least 6 characters long</small>
@@ -159,6 +186,11 @@
             const practiceName = document.getElementById('practiceName').value;
             const email = document.getElementById('email').value;
             const phone = document.getElementById('phone').value;
+            const addressLine1 = document.getElementById('addressLine1').value;
+            const addressLine2 = document.getElementById('addressLine2').value;
+            const city = document.getElementById('city').value;
+            const postcode = document.getElementById('postcode').value;
+            const county = document.getElementById('county').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
             const agreeTerms = document.getElementById('agreeTerms').checked;
@@ -180,7 +212,16 @@
                 return;
             }
             
-            const result = auth.signup(practiceName, email, password, phone);
+            // Create address object
+            const address = {
+                line1: addressLine1,
+                line2: addressLine2,
+                city: city,
+                postcode: postcode,
+                county: county
+            };
+            
+            const result = auth.signup(practiceName, email, password, phone, address);
             
             messageDiv.style.display = 'block';
             messageDiv.textContent = result.message;

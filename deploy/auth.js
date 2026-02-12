@@ -51,7 +51,7 @@ class AuthSystem {
     }
 
     // Register a new user
-    signup(practiceName, email, password, phone = '') {
+    signup(practiceName, email, password, phone = '', address = null) {
         const users = this.getUsers();
         
         // Check if email already exists
@@ -76,6 +76,13 @@ class AuthSystem {
             email,
             password: btoa(password), // Basic encoding (NOT secure for production!)
             phone,
+            address: address || {
+                line1: '',
+                line2: '',
+                city: '',
+                postcode: '',
+                county: ''
+            },
             createdAt: new Date().toISOString(),
             isActive: true
         };

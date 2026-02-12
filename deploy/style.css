@@ -334,6 +334,20 @@ form {
     color: var(--text-dark);
 }
 
+/* Form row for side-by-side fields */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+}
+
 .form-group input,
 .form-group select,
 .form-group textarea {
