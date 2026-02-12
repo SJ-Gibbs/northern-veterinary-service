@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lightbox Feature Demo - Northern Veterinary Service</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c5f7f 0%, #4a90b8 100%);
+            color: #fff;
+            padding: 2rem;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 3rem;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            font-size: 3rem;
+            text-align: center;
+            margin-bottom: 1rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        .subtitle {
+            text-align: center;
+            font-size: 1.5rem;
+            margin-bottom: 3rem;
+            opacity: 0.9;
+        }
+        
+        .demo-section {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        
+        .demo-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 0.5rem;
+        }
+        
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+        
+        .feature-card {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+        
+        .feature-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            margin-bottom: 0.5rem;
+        }
+        
+        .visual-demo {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 15px;
+            padding: 2rem;
+            margin: 2rem 0;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .code-block {
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 1.5rem;
+            border-radius: 10px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            margin: 1rem 0;
+        }
+        
+        .highlight {
+            color: #4ec9b0;
+        }
+        
+        .btn-demo {
+            display: inline-block;
+            background: #5cb85c;
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 1.2rem;
+            margin: 1rem 0.5rem;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-demo:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .controls-demo {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+        
+        .control-item {
+            text-align: center;
+        }
+        
+        .control-key {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            display: inline-block;
+            min-width: 80px;
+        }
+        
+        .case-preview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+        
+        .case-item {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .case-item:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .case-count {
+            background: #5cb85c;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            display: inline-block;
+            margin-top: 0.5rem;
+        }
+        
+        ul {
+            margin-left: 2rem;
+            margin-top: 1rem;
+        }
+        
+        li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .emoji {
+            font-size: 1.5rem;
+            margin-right: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🖼️ Lightbox Gallery Feature</h1>
+        <p class="subtitle">Professional Image Viewer for Case Stories</p>
+        
+        <div class="demo-section">
+            <h2>✨ Key Features</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">🔍</div>
+                    <h3>Full-Screen View</h3>
+                    <p>Images open in a beautiful full-screen overlay</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">⬅️➡️</div>
+                    <h3>Easy Navigation</h3>
+                    <p>Arrow buttons and keyboard support</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">📱</div>
+                    <h3>Responsive</h3>
+                    <p>Works perfectly on all devices</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon">🎨</div>
+                    <h3>Smooth Animations</h3>
+                    <p>Professional transitions and effects</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🎮 How to Use</h2>
+            <div class="visual-demo">
+                <h3 style="text-align: center; margin-bottom: 2rem;">Click → View → Navigate</h3>
+                <div class="controls-demo">
+                    <div class="control-item">
+                        <div class="control-key">👆 CLICK</div>
+                        <p>Click any case thumbnail</p>
+                    </div>
+                    <div style="font-size: 2rem;">→</div>
+                    <div class="control-item">
+                        <div class="control-key">◀ ▶</div>
+                        <p>Navigate between images</p>
+                    </div>
+                    <div style="font-size: 2rem;">→</div>
+                    <div class="control-item">
+                        <div class="control-key">ESC</div>
+                        <p>Close the gallery</p>
+                    </div>
+                </div>
+            </div>
+            
+            <h3 style="margin-top: 2rem;">Keyboard Controls:</h3>
+            <ul>
+                <li><span class="emoji">⬅️</span> <strong>Left Arrow</strong> - Previous image</li>
+                <li><span class="emoji">➡️</span> <strong>Right Arrow</strong> - Next image</li>
+                <li><span class="emoji">🔴</span> <strong>ESC Key</strong> - Close lightbox</li>
+            </ul>
+            
+            <h3 style="margin-top: 2rem;">Mouse/Touch Controls:</h3>
+            <ul>
+                <li><span class="emoji">🖱️</span> <strong>Click Arrows</strong> - Navigate images</li>
+                <li><span class="emoji">❌</span> <strong>Click X</strong> - Close lightbox</li>
+                <li><span class="emoji">👆</span> <strong>Click Outside</strong> - Close lightbox</li>
+            </ul>
+        </div>
+        
+        <div class="demo-section">
+            <h2>📸 Case Galleries Available</h2>
+            <div class="case-preview">
+                <div class="case-item">
+                    <h3>Norman</h3>
+                    <p>TPLO Surgery</p>
+                    <div class="case-count">5 Images</div>
+                </div>
+                <div class="case-item">
+                    <h3>Kuba</h3>
+                    <p>Fracture Repair</p>
+                    <div class="case-count">2 Images</div>
+                </div>
+                <div class="case-item">
+                    <h3>MCT Mass</h3>
+                    <p>Mass Removal</p>
+                    <div class="case-count">3 Images</div>
+                </div>
+                <div class="case-item">
+                    <h3>Ruby</h3>
+                    <p>Soft Tissue</p>
+                    <div class="case-count">1 Image</div>
+                </div>
+                <div class="case-item">
+                    <h3>Skewer Dog</h3>
+                    <p>Foreign Body</p>
+                    <div class="case-count">1 Image</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🔧 Technical Implementation</h2>
+            <p>The lightbox is built with pure JavaScript - no external libraries needed!</p>
+            
+            <h3 style="margin-top: 2rem;">Key Components:</h3>
+            <div class="code-block">
+<span class="highlight">// Case gallery data structure</span>
+const caseGalleries = {
+    norman: [
+        { src: 'images/Norman/norman.jpeg', caption: 'Pre-operative Assessment' },
+        { src: 'images/Norman/normanlateral.jpeg', caption: 'Lateral Radiograph' },
+        // ... more images
+    ]
+}
+
+<span class="highlight">// Click handler for gallery items</span>
+galleryItems.forEach(item => {
+    item.addEventListener('click', function() {
+        const caseName = this.getAttribute('data-case');
+        openModal(caseName, 0);
+    });
+});
+            </div>
+            
+            <h3 style="margin-top: 2rem;">Files Modified:</h3>
+            <ul>
+                <li><strong>deploy/casestories.js</strong> - Gallery logic (150 lines)</li>
+                <li><strong>deploy/casestories.html</strong> - Modal HTML structure</li>
+                <li><strong>deploy/style.css</strong> - Lightbox styling (220+ lines)</li>
+            </ul>
+        </div>
+        
+        <div class="demo-section">
+            <h2>🚀 Ready to Test!</h2>
+            <p style="text-align: center; font-size: 1.2rem; margin-bottom: 2rem;">
+                The feature is live and ready to use. Test it on the Case Stories page!
+            </p>
+            <div style="text-align: center;">
+                <a href="casestories.html" class="btn-demo">📸 View Case Stories</a>
+                <a href="index.html" class="btn-demo">🏠 Back to Home</a>
+            </div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 3rem; opacity: 0.8;">
+            <p>✅ Feature Completed & Committed to Git</p>
+            <p>✅ Ready for GitHub Push</p>
+            <p>✅ Ready for Hostinger Deployment</p>
+        </div>
+    </div>
+</body>
+</html>
+
