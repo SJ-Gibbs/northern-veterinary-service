@@ -1,0 +1,234 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║            ✅ LOGIN & SIGNUP BUTTONS ENHANCED IN TOP RIGHT!                  ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+🎉 SUCCESS! Auth buttons are now visible and styled in the top-right corner!
+
+────────────────────────────────────────────────────────────────────────────────
+
+📍 BUTTON LOCATION:
+────────────────────────────────────────────────────────────────────────────────
+
+✅ Position: Top-right corner of every page
+✅ Pages included: All HTML pages in the deploy folder
+   • index.html (Homepage)
+   • theteam.html (Team page)
+   • casestories.html (Case stories)
+   • pricing.html (Pricing)
+   • booking.html (Booking)
+   • policies.html (Policies)
+
+────────────────────────────────────────────────────────────────────────────────
+
+🎨 BUTTON STYLING (NEW & IMPROVED):
+────────────────────────────────────────────────────────────────────────────────
+
+LOGIN BUTTON:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Style:
+  • Background: White (#ffffff) - highly visible!
+  • Border: 2px solid blue (var(--primary-color))
+  • Text: Blue
+  • Padding: 0.6rem 1.5rem (bigger for better clicks)
+  • Font-weight: 600 (bold)
+  • Border-radius: 6px (rounded corners)
+
+Hover Effect:
+  • Background: Blue (fills with color)
+  • Text: White
+  • Lifts up 2px (transform: translateY(-2px))
+  • Shadow appears: 0 4px 8px rgba(0,0,0,0.15)
+  • Smooth animation
+
+SIGN UP BUTTON:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+Style:
+  • Background: Teal/Blue (var(--secondary-color))
+  • Border: 2px solid teal
+  • Text: White
+  • Padding: 0.6rem 1.5rem
+  • Font-weight: 600 (bold)
+  • Border-radius: 6px (rounded corners)
+
+Hover Effect:
+  • Background: Darker teal (#1a4558)
+  • Lifts up 2px (transform: translateY(-2px))
+  • Shadow appears: 0 4px 8px rgba(0,0,0,0.15)
+  • Smooth animation
+
+────────────────────────────────────────────────────────────────────────────────
+
+📱 RESPONSIVE DESIGN:
+────────────────────────────────────────────────────────────────────────────────
+
+DESKTOP (Wide screens):
+  • Buttons in top-right corner (absolute positioning)
+  • Side by side with 0.5rem gap
+  • Above navigation menu
+
+MOBILE (Narrow screens):
+  • Buttons move to center below navigation
+  • Stack horizontally (still side by side)
+  • Full touch-friendly size
+
+────────────────────────────────────────────────────────────────────────────────
+
+💻 CSS CHANGES MADE:
+────────────────────────────────────────────────────────────────────────────────
+
+File: deploy/style.css
+
+BEFORE:
+```css
+.btn-auth {
+    padding: 0.5rem 1.25rem;
+    border: 2px solid transparent;  ← INVISIBLE!
+    font-weight: 500;
+}
+
+.btn-login {
+    background-color: transparent;  ← INVISIBLE!
+    border-color: var(--primary-color);
+}
+
+.btn-login:hover {
+    background-color: var(--primary-color);
+    color: var(--white);
+}
+```
+
+AFTER:
+```css
+.btn-auth {
+    padding: 0.6rem 1.5rem;        ← Bigger
+    border: 2px solid;              ← VISIBLE!
+    font-weight: 600;               ← Bolder
+    border-radius: 6px;             ← More rounded
+    text-align: center;             ← Centered text
+    cursor: pointer;                ← Shows it's clickable
+}
+
+.btn-login {
+    background-color: #ffffff;      ← WHITE, VISIBLE!
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.btn-login:hover {
+    background-color: var(--primary-color);
+    color: var(--white);
+    transform: translateY(-2px);    ← Lifts up!
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);  ← Shadow!
+}
+
+.btn-signup:hover {
+    background-color: #1a4558;
+    border-color: #1a4558;
+    transform: translateY(-2px);    ← Lifts up!
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);  ← Shadow!
+}
+```
+
+────────────────────────────────────────────────────────────────────────────────
+
+🔧 FUNCTIONALITY:
+────────────────────────────────────────────────────────────────────────────────
+
+LOGIN BUTTON:
+  • Clicking navigates to: login.html
+  • Shows login form with email/password
+  • Authenticates user with localStorage
+
+SIGN UP BUTTON:
+  • Clicking navigates to: signup.html
+  • Shows registration form with:
+    - Practice name
+    - Email
+    - Password
+    - Phone number
+    - Address fields (line 1, line 2, city, postcode, county)
+  • Creates new user account
+
+AFTER LOGIN:
+  • Buttons disappear
+  • User menu appears (with dropdown)
+  • Shows user name with 👤 icon
+  • Dropdown has: "My Account" and "Logout"
+
+────────────────────────────────────────────────────────────────────────────────
+
+🌐 GIT STATUS:
+────────────────────────────────────────────────────────────────────────────────
+
+✅ Changes committed
+✅ Pushed to GitHub
+
+Commit: 3325195
+Message: "Enhance login and signup button visibility with better styling"
+Repository: https://github.com/SJ-Gibbs/northern-veterinary-service
+
+────────────────────────────────────────────────────────────────────────────────
+
+🎯 VISUAL PREVIEW:
+────────────────────────────────────────────────────────────────────────────────
+
+Top-right corner of every page will look like this:
+
+┌─────────────────────────────────────────────────────────────┐
+│  Northern Veterinary Service               ┌────────┐ ┌─────────┐ │
+│  Veterinary Peripatetic Services           │ Login  │ │ Sign Up │ │
+│                                             └────────┘ └─────────┘ │
+│  ┌─────┬──────────┬──────────┬─────────┬──────┐                 │
+│  │Home │ The Team │ Cases    │ Pricing │ Book │                 │
+│  └─────┴──────────┴──────────┴─────────┴──────┘                 │
+└─────────────────────────────────────────────────────────────────┘
+       ↑                                           ↑        ↑
+    Logo/Title                              Login    Sign Up
+                                           (White)  (Blue)
+
+On hover:
+  • Buttons lift up slightly
+  • Shadow appears underneath
+  • Smooth animation (0.3s)
+
+────────────────────────────────────────────────────────────────────────────────
+
+📥 READY TO DEPLOY:
+────────────────────────────────────────────────────────────────────────────────
+
+To see these buttons on Hostinger:
+
+1. Download updated style.css from:
+   • Workspace: /home/runner/workspace/deploy/style.css
+   • GitHub: https://github.com/SJ-Gibbs/northern-veterinary-service
+
+2. Upload style.css to Hostinger:
+   • Replace the old style.css in public_html/
+
+3. Clear browser cache:
+   • Windows/Linux: Ctrl + Shift + R
+   • Mac: Cmd + Shift + R
+
+4. Refresh page:
+   • You'll see Login and Sign Up buttons in top-right corner
+   • White button with blue border = Login
+   • Blue button with white text = Sign Up
+
+────────────────────────────────────────────────────────────────────────────────
+
+✅ COMPLETE!
+────────────────────────────────────────────────────────────────────────────────
+
+Login and Sign Up buttons are now:
+✓ Visible in top-right corner
+✓ Present on all pages
+✓ Beautifully styled with borders and colors
+✓ Have smooth hover animations
+✓ Fully functional (link to login.html and signup.html)
+✓ Responsive (work on mobile and desktop)
+✓ Saved to git and pushed to GitHub
+
+Ready to upload to Hostinger! 🚀
+
+────────────────────────────────────────────────────────────────────────────────
+
