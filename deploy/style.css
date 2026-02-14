@@ -667,24 +667,28 @@ button[type="submit"]:hover {
 
 .btn-auth {
     display: inline-block;
-    padding: 0.5rem 1.25rem;
-    border-radius: 5px;
+    padding: 0.6rem 1.5rem;
+    border-radius: 6px;
     text-decoration: none;
-    font-weight: 500;
+    font-weight: 600;
     transition: var(--transition);
-    font-size: 0.9rem;
-    border: 2px solid transparent;
+    font-size: 0.95rem;
+    border: 2px solid;
+    text-align: center;
+    cursor: pointer;
 }
 
 .btn-login {
     color: var(--primary-color);
     border-color: var(--primary-color);
-    background-color: transparent;
+    background-color: #ffffff;
 }
 
 .btn-login:hover {
     background-color: var(--primary-color);
     color: var(--white);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 .btn-signup {
@@ -696,6 +700,8 @@ button[type="submit"]:hover {
 .btn-signup:hover {
     background-color: #1a4558;
     border-color: #1a4558;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
 }
 
 /* User Menu Dropdown */
