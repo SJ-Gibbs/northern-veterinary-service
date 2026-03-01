@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Account - Northern Veterinary Service</title>
+    <meta name="description" content="Manage your practice profile and account settings">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Account page layout ─────────────────────────────── */
+        .account-page {
+            max-width: 860px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem 3rem;
+        }
+
+        .account-page h1 {
+            font-size: 2rem;
+            margin-bottom: 0.35rem;
+            color: var(--primary-color, #1a3a5c);
+        }
+
+        .account-subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        /* ── Tabs ─────────────────────────────────────────────── */
+        .account-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .tab-btn:hover { color: var(--primary-color, #1a3a5c); }
+
+        .tab-btn.active {
+            color: var(--primary-color, #1a3a5c);
+            border-bottom-color: var(--primary-color, #1a3a5c);
+        }
+
+        /* ── Tab panels ───────────────────────────────────────── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Info cards ───────────────────────────────────────── */
+        .profile-card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .profile-card h2 {
+            font-size: 1.1rem;
+            color: var(--primary-color, #1a3a5c);
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Read-only display rows */
+        .info-row {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .info-row:last-child { border-bottom: none; }
+
+        .info-label {
+            flex: 0 0 160px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .info-value {
+            flex: 1;
+            color: #222;
+            font-size: 0.97rem;
+        }
+
+        /* ── Edit form ────────────────────────────────────────── */
+        .edit-form .form-group { margin-bottom: 1.1rem; }
+
+        .edit-form label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #444;
+            margin-bottom: 0.3rem;
+        }
+
+        .edit-form input {
+            width: 100%;
+            padding: 0.6rem 0.85rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .edit-form input:focus {
+            outline: none;
+            border-color: var(--primary-color, #1a3a5c);
+            box-shadow: 0 0 0 3px rgba(26,58,92,0.1);
+        }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 520px) {
+            .form-row-2 { grid-template-columns: 1fr; }
+            .info-label { flex: 0 0 120px; }
+        }
+
+        /* ── Buttons ──────────────────────────────────────────── */
+        .btn-save {
+            background: var(--primary-color, #1a3a5c);
+            color: #fff;
+            border: none;
+            padding: 0.65rem 1.8rem;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save:hover { background: #25527e; }
+
+        .btn-cancel {
+            background: none;
+            border: 1px solid #aaa;
+            color: #555;
+            padding: 0.65rem 1.4rem;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-left: 0.75rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .btn-cancel:hover { border-color: #555; color: #222; }
+
+        .btn-edit-link {
+            background: none;
+            border: none;
+            color: var(--primary-color, #1a3a5c);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+        }
+
+        .btn-edit-link:hover { color: #25527e; }
+
+        /* ── Status messages ──────────────────────────────────── */
+        .status-msg {
+            display: none;
+            padding: 0.7rem 1rem;
+            border-radius: 5px;
+            font-size: 0.93rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-msg.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-msg.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* ── Member badge ─────────────────────────────────────── */
+        .member-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #e8f4fd;
+            color: #1a5276;
+            border: 1px solid #aed6f1;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ── Security section ─────────────────────────────────── */
+        .section-divider {
+            height: 1px;
+            background: #eee;
+            margin: 1.5rem 0;
+        }
+    </style>
+</head>
+
+<body>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <h1 class="site-title">Northern Veterinary Service</h1>
+                <p class="tagline">Veterinary Peripatetic Services</p>
+            </div>
+
+            <nav class="navbar" role="navigation" aria-label="Main navigation">
+                <button class="mobile-menu-toggle" aria-label="Toggle navigation menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-list">
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="casestories.html">Case Stories</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                    <li><a href="booking.html">Advice &amp; Booking</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </nav>
+
+            <!-- Auth Section -->
+            <div class="auth-section">
+                <div class="auth-buttons" id="authButtons">
+                    <a href="login.html" class="btn-auth btn-login">Login</a>
+                    <a href="signup.html" class="btn-auth btn-signup">Sign Up</a>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-dropdown-btn" id="userDropdownBtn">
+                        <span class="user-icon">👤</span>
+                        <span class="user-name" id="userName"></span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="account.html" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="content-wrapper">
+            <div class="account-page">
+                <h1>My Account</h1>
+                <p class="account-subtitle">Manage your practice profile and account settings</p>
+
+                <div class="member-badge">✅ Active Member Practice</div>
+
+                <!-- Tabs -->
+                <div class="account-tabs">
+                    <button class="tab-btn active" data-tab="profile">Practice Profile</button>
+                    <button class="tab-btn" data-tab="security">Security</button>
+                </div>
+
+                <!-- ── PROFILE TAB ─────────────────────────────── -->
+                <div class="tab-panel active" id="tab-profile">
+
+                    <!-- Practice Details (view mode) -->
+                    <div class="profile-card" id="viewCard">
+                        <h2>
+                            Practice Details
+                            <button class="btn-edit-link" id="editBtn" style="float:right;margin-top:2px;">✏️ Edit</button>
+                        </h2>
+
+                        <div id="profileMsg" class="status-msg"></div>
+
+                        <div class="info-row">
+                            <span class="info-label">Practice Name</span>
+                            <span class="info-value" id="viewPracticeName">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Email</span>
+                            <span class="info-value" id="viewEmail">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value" id="viewPhone">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Address</span>
+                            <span class="info-value" id="viewAddress">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Member Since</span>
+                            <span class="info-value" id="viewCreatedAt">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Practice Details (edit mode) - hidden by default -->
+                    <div class="profile-card" id="editCard" style="display:none;">
+                        <h2>Edit Practice Details</h2>
+
+                        <div id="editMsg" class="status-msg"></div>
+
+                        <form class="edit-form" id="editProfileForm" novalidate>
+                            <div class="form-group">
+                                <label for="editPracticeName">Practice Name <span style="color:red">*</span></label>
+                                <input type="text" id="editPracticeName" placeholder="Your Veterinary Practice" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editEmail">Practice Email <span style="color:red">*</span></label>
+                                <input type="email" id="editEmail" placeholder="practice@example.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editPhone">Practice Phone</label>
+                                <input type="tel" id="editPhone" placeholder="01234 567890">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editAddressLine1">Address Line 1 <span style="color:red">*</span></label>
+                                <input type="text" id="editAddressLine1" placeholder="Street address" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editAddressLine2">Address Line 2</label>
+                                <input type="text" id="editAddressLine2" placeholder="Building, suite, etc. (optional)">
+                            </div>
+
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="editCity">City / Town <span style="color:red">*</span></label>
+                                    <input type="text" id="editCity" placeholder="City" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editPostcode">Postcode <span style="color:red">*</span></label>
+                                    <input type="text" id="editPostcode" placeholder="Postcode" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editCounty">County</label>
+                                <input type="text" id="editCounty" placeholder="County (optional)">
+                            </div>
+
+                            <div style="margin-top:1.4rem;">
+                                <button type="submit" class="btn-save">Save Changes</button>
+                                <button type="button" class="btn-cancel" id="cancelEditBtn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ── SECURITY TAB ────────────────────────────── -->
+                <div class="tab-panel" id="tab-security">
+                    <div class="profile-card">
+                        <h2>Change Password</h2>
+
+                        <div id="pwMsg" class="status-msg"></div>
+
+                        <form class="edit-form" id="changePasswordForm" novalidate>
+                            <div class="form-group">
+                                <label for="currentPassword">Current Password <span style="color:red">*</span></label>
+                                <input type="password" id="currentPassword" placeholder="Enter current password" required autocomplete="current-password">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="newPassword">New Password <span style="color:red">*</span></label>
+                                <input type="password" id="newPassword" placeholder="Minimum 6 characters" required autocomplete="new-password">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirmNewPassword">Confirm New Password <span style="color:red">*</span></label>
+                                <input type="password" id="confirmNewPassword" placeholder="Re-enter new password" required autocomplete="new-password">
+                            </div>
+
+                            <div style="margin-top:1.2rem;">
+                                <button type="submit" class="btn-save">Update Password</button>
+                            </div>
+                        </form>
+
+                        <div class="section-divider"></div>
+
+                        <h2 style="margin-bottom:0.75rem;">Account Actions</h2>
+                        <p style="color:#555;font-size:0.93rem;margin-bottom:1rem;">
+                            Need to leave? You can log out of your account here.
+                        </p>
+                        <button class="btn-save" id="logoutBtnAccount" style="background:#c0392b;">
+                            Log Out
+                        </button>
+                    </div>
+                </div>
+
+            </div><!-- /account-page -->
+        </div><!-- /content-wrapper -->
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Northern Veterinary Service</h3>
+                <p>Peripatetic veterinary surgery services across Northern England</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="index.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="booking.html">Book Appointment</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: <a href="mailto:info@northernveterinaryservice.co.uk">info@northernveterinaryservice.co.uk</a></p>
+                <p>WhatsApp: <a href="https://wa.me/447763836276">+44 7763 836276</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Verlexis Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="index.js"></script>
+    <script>
+        // ── Guard: must be logged in ───────────────────────────
+        auth.requireAuth('login.html');
+
+        // ── Tab switching ──────────────────────────────────────
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ── Helpers ────────────────────────────────────────────
+        function showMsg(id, text, type) {
+            const el = document.getElementById(id);
+            el.textContent = text;
+            el.className = 'status-msg ' + type;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+
+        function formatAddress(addr) {
+            if (!addr) return '—';
+            const parts = [addr.line1, addr.line2, addr.city, addr.county, addr.postcode].filter(Boolean);
+            return parts.length ? parts.join(', ') : '—';
+        }
+
+        function formatDate(iso) {
+            if (!iso) return '—';
+            return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        // ── Populate view mode ─────────────────────────────────
+        function populateView() {
+            const profile = auth.getUserProfile();
+            if (!profile) return;
+
+            document.getElementById('viewPracticeName').textContent = profile.practiceName || '—';
+            document.getElementById('viewEmail').textContent        = profile.email || '—';
+            document.getElementById('viewPhone').textContent        = profile.phone || 'Not provided';
+            document.getElementById('viewAddress').textContent      = formatAddress(profile.address);
+            document.getElementById('viewCreatedAt').textContent    = formatDate(profile.createdAt);
+        }
+
+        // ── Populate edit form ─────────────────────────────────
+        function populateEditForm() {
+            const profile = auth.getUserProfile();
+            if (!profile) return;
+            const addr = profile.address || {};
+
+            document.getElementById('editPracticeName').value  = profile.practiceName || '';
+            document.getElementById('editEmail').value         = profile.email || '';
+            document.getElementById('editPhone').value         = profile.phone || '';
+            document.getElementById('editAddressLine1').value  = addr.line1 || '';
+            document.getElementById('editAddressLine2').value  = addr.line2 || '';
+            document.getElementById('editCity').value          = addr.city || '';
+            document.getElementById('editPostcode').value      = addr.postcode || '';
+            document.getElementById('editCounty').value        = addr.county || '';
+        }
+
+        // ── Edit / Cancel toggles ──────────────────────────────
+        document.getElementById('editBtn').addEventListener('click', () => {
+            populateEditForm();
+            document.getElementById('viewCard').style.display = 'none';
+            document.getElementById('editCard').style.display = 'block';
+        });
+
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            document.getElementById('editCard').style.display = 'none';
+            document.getElementById('viewCard').style.display = 'block';
+        });
+
+        // ── Save profile ───────────────────────────────────────
+        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const updatedFields = {
+                practiceName: document.getElementById('editPracticeName').value.trim(),
+                email:        document.getElementById('editEmail').value.trim(),
+                phone:        document.getElementById('editPhone').value.trim(),
+                address: {
+                    line1:    document.getElementById('editAddressLine1').value.trim(),
+                    line2:    document.getElementById('editAddressLine2').value.trim(),
+                    city:     document.getElementById('editCity').value.trim(),
+                    postcode: document.getElementById('editPostcode').value.trim(),
+                    county:   document.getElementById('editCounty').value.trim()
+                }
+            };
+
+            if (!updatedFields.practiceName) {
+                showMsg('editMsg', 'Practice name is required.', 'error'); return;
+            }
+            if (!updatedFields.email) {
+                showMsg('editMsg', 'Email address is required.', 'error'); return;
+            }
+            if (!updatedFields.address.line1 || !updatedFields.address.city || !updatedFields.address.postcode) {
+                showMsg('editMsg', 'Address line 1, city, and postcode are required.', 'error'); return;
+            }
+
+            const result = auth.updateUser(updatedFields);
+            showMsg('editMsg', result.message, result.success ? 'success' : 'error');
+
+            if (result.success) {
+                setTimeout(() => {
+                    document.getElementById('editCard').style.display = 'none';
+                    document.getElementById('viewCard').style.display = 'block';
+                    populateView();
+                }, 1200);
+            }
+        });
+
+        // ── Change password ────────────────────────────────────
+        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const current  = document.getElementById('currentPassword').value;
+            const newPw    = document.getElementById('newPassword').value;
+            const confirm  = document.getElementById('confirmNewPassword').value;
+
+            if (newPw !== confirm) {
+                showMsg('pwMsg', 'New passwords do not match.', 'error'); return;
+            }
+
+            const result = auth.updatePassword(current, newPw);
+            showMsg('pwMsg', result.message, result.success ? 'success' : 'error');
+
+            if (result.success) {
+                document.getElementById('changePasswordForm').reset();
+            }
+        });
+
+        // ── Logout from account page ───────────────────────────
+        document.getElementById('logoutBtnAccount').addEventListener('click', () => {
+            auth.logout();
+        });
+
+        // ── Initial render ─────────────────────────────────────
+        populateView();
+    </script>
+</body>
+</html>
+
