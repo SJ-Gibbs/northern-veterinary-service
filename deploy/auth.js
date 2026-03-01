@@ -14,12 +14,34 @@ class AuthSystem {
         if (!localStorage.getItem(this.storageKey)) {
             localStorage.setItem(this.storageKey, JSON.stringify([]));
         }
+
+        // Seed default admin account if none exists
+        this.seedAdmin();
         
         // Update UI based on auth state
         this.updateAuthUI();
         
         // Add event listeners
         this.attachEventListeners();
+    }
+
+    // Seed a default admin account (idempotent – safe to call on every init)
+    seedAdmin() {
+        const users = this.getUsers();
+        if (users.find(u => u.isAdmin === true)) return; // already seeded
+        const adminUser = {
+            id: 'nvs-admin-001',
+            practiceName: 'NVS Admin',
+            email: 'admin@northernveterinaryservice.co.uk',
+            password: btoa('NVSadmin2026!'),
+            phone: '',
+            address: { line1: '', line2: '', city: '', postcode: '', county: '' },
+            createdAt: new Date().toISOString(),
+            isActive: true,
+            isAdmin: true
+        };
+        users.push(adminUser);
+        localStorage.setItem(this.storageKey, JSON.stringify(users));
     }
 
     attachEventListeners() {
@@ -108,7 +130,7 @@ class AuthSystem {
             return { success: false, message: 'Invalid email or password.' };
         }
         
-        if (!user.isActive) {
+        if (!user.isActive && !user.isAdmin) {
             return { success: false, message: 'This account has been deactivated. Please contact support.' };
         }
         
@@ -117,6 +139,7 @@ class AuthSystem {
             id: user.id,
             email: user.email,
             practiceName: user.practiceName,
+            isAdmin: user.isAdmin || false,
             loginTime: new Date().toISOString()
         };
         
@@ -155,27 +178,211 @@ class AuthSystem {
         return emailRegex.test(email);
     }
 
+    // Check if the currently logged-in user is an admin
+    // (reads from full user record so old sessions without isAdmin still work)
+    isCurrentUserAdmin() {
+        const session = this.getCurrentUser();
+        if (!session) return false;
+        const user = this.getUsers().find(u => u.id === session.id);
+        return user ? (user.isAdmin === true) : false;
+    }
+
     // Update UI based on authentication state
     updateAuthUI() {
         const authButtons = document.getElementById('authButtons');
         const userMenu = document.getElementById('userMenu');
         const userName = document.getElementById('userName');
+        const dropdownMenu = document.getElementById('dropdownMenu');
         
         if (this.isLoggedIn()) {
+            const isAdmin = this.isCurrentUserAdmin();
             const user = this.getCurrentUser();
             if (authButtons) authButtons.style.display = 'none';
             if (userMenu) userMenu.style.display = 'block';
-            if (userName) userName.textContent = user.practiceName;
+            if (userName) userName.textContent = isAdmin ? '⚙️ Admin' : user.practiceName;
+
+            // Dynamically inject Admin Panel link for admin users
+            if (dropdownMenu && isAdmin && !document.getElementById('adminPanelLink')) {
+                const link = document.createElement('a');
+                link.href = 'admin.html';
+                link.className = 'dropdown-item';
+                link.id = 'adminPanelLink';
+                link.textContent = '⚙️ Admin Panel';
+                link.style.cssText = 'color:#c0392b;font-weight:700;';
+                const accountLink = document.getElementById('accountLink');
+                if (accountLink) {
+                    dropdownMenu.insertBefore(link, accountLink);
+                } else {
+                    dropdownMenu.prepend(link);
+                }
+            }
         } else {
             if (authButtons) authButtons.style.display = 'flex';
             if (userMenu) userMenu.style.display = 'none';
         }
     }
 
+    // Get full user profile (including fields not stored in session)
+    getUserProfile() {
+        const session = this.getCurrentUser();
+        if (!session) return null;
+        const users = this.getUsers();
+        return users.find(u => u.id === session.id) || null;
+    }
+
+    // Update user profile details
+    updateUser(updatedFields) {
+        const session = this.getCurrentUser();
+        if (!session) return { success: false, message: 'You must be logged in to update your profile.' };
+
+        const users = this.getUsers();
+        const idx = users.findIndex(u => u.id === session.id);
+        if (idx === -1) return { success: false, message: 'User account not found.' };
+
+        // Validate email if being changed
+        if (updatedFields.email && updatedFields.email !== users[idx].email) {
+            if (!this.isValidEmail(updatedFields.email)) {
+                return { success: false, message: 'Please enter a valid email address.' };
+            }
+            if (users.find((u, i) => i !== idx && u.email === updatedFields.email)) {
+                return { success: false, message: 'An account with this email already exists.' };
+            }
+        }
+
+        // Apply allowed field updates
+        const allowed = ['practiceName', 'email', 'phone', 'address'];
+        allowed.forEach(field => {
+            if (updatedFields[field] !== undefined) {
+                users[idx][field] = updatedFields[field];
+            }
+        });
+
+        localStorage.setItem(this.storageKey, JSON.stringify(users));
+
+        // Refresh session with updated values
+        const updatedSession = {
+            id: users[idx].id,
+            email: users[idx].email,
+            practiceName: users[idx].practiceName,
+            loginTime: session.loginTime
+        };
+        localStorage.setItem(this.sessionKey, JSON.stringify(updatedSession));
+        this.updateAuthUI();
+
+        return { success: true, message: 'Profile updated successfully!' };
+    }
+
+    // Update password
+    updatePassword(currentPassword, newPassword) {
+        const session = this.getCurrentUser();
+        if (!session) return { success: false, message: 'You must be logged in to change your password.' };
+
+        const users = this.getUsers();
+        const idx = users.findIndex(u => u.id === session.id);
+        if (idx === -1) return { success: false, message: 'User account not found.' };
+
+        // Verify current password
+        if (atob(users[idx].password) !== currentPassword) {
+            return { success: false, message: 'Current password is incorrect.' };
+        }
+
+        if (newPassword.length < 6) {
+            return { success: false, message: 'New password must be at least 6 characters long.' };
+        }
+
+        users[idx].password = btoa(newPassword);
+        localStorage.setItem(this.storageKey, JSON.stringify(users));
+
+        return { success: true, message: 'Password changed successfully!' };
+    }
+
+    // ── Admin-only data methods ──────────────────────────────────────
+
+    // Get all non-admin member practices
+    getAllPractices() {
+        return this.getUsers().filter(u => !u.isAdmin);
+    }
+
+    // Activate or deactivate a practice account
+    setUserActiveStatus(id, isActive) {
+        if (!this.isCurrentUserAdmin()) return { success: false, message: 'Admin access required.' };
+        const users = this.getUsers();
+        const idx = users.findIndex(u => u.id === id);
+        if (idx === -1) return { success: false, message: 'User not found.' };
+        users[idx].isActive = isActive;
+        localStorage.setItem(this.storageKey, JSON.stringify(users));
+        return { success: true, message: `Account ${isActive ? 'activated' : 'deactivated'} successfully.` };
+    }
+
+    // Delete a practice account (cannot delete admin accounts)
+    adminDeleteUser(id) {
+        if (!this.isCurrentUserAdmin()) return { success: false, message: 'Admin access required.' };
+        const users = this.getUsers();
+        const target = users.find(u => u.id === id);
+        if (!target) return { success: false, message: 'User not found.' };
+        if (target.isAdmin) return { success: false, message: 'Cannot delete admin accounts.' };
+        const filtered = users.filter(u => u.id !== id);
+        localStorage.setItem(this.storageKey, JSON.stringify(filtered));
+        return { success: true, message: 'Practice account deleted.' };
+    }
+
+    // Admin: update any practice's profile fields
+    adminUpdateUser(id, updatedFields) {
+        if (!this.isCurrentUserAdmin()) return { success: false, message: 'Admin access required.' };
+        const users = this.getUsers();
+        const idx = users.findIndex(u => u.id === id);
+        if (idx === -1) return { success: false, message: 'User not found.' };
+        if (users[idx].isAdmin) return { success: false, message: 'Cannot edit admin accounts here.' };
+
+        if (updatedFields.email && updatedFields.email !== users[idx].email) {
+            if (!this.isValidEmail(updatedFields.email)) {
+                return { success: false, message: 'Invalid email address.' };
+            }
+            if (users.find((u, i) => i !== idx && u.email === updatedFields.email)) {
+                return { success: false, message: 'Email already in use by another account.' };
+            }
+        }
+
+        const allowed = ['practiceName', 'email', 'phone', 'address'];
+        allowed.forEach(field => {
+            if (updatedFields[field] !== undefined) users[idx][field] = updatedFields[field];
+        });
+        localStorage.setItem(this.storageKey, JSON.stringify(users));
+        return { success: true, message: 'Practice details updated.' };
+    }
+
+    // Admin: reset a practice's password without knowing the current one
+    adminResetPassword(id, newPassword) {
+        if (!this.isCurrentUserAdmin()) return { success: false, message: 'Admin access required.' };
+        if (newPassword.length < 6) return { success: false, message: 'Password must be at least 6 characters.' };
+        const users = this.getUsers();
+        const idx = users.findIndex(u => u.id === id);
+        if (idx === -1) return { success: false, message: 'User not found.' };
+        if (users[idx].isAdmin) return { success: false, message: 'Cannot reset admin password here.' };
+        users[idx].password = btoa(newPassword);
+        localStorage.setItem(this.storageKey, JSON.stringify(users));
+        return { success: true, message: 'Password reset successfully.' };
+    }
+
+    // ─────────────────────────────────────────────────────────────────
+
     // Require authentication for page
     requireAuth(redirectUrl = 'login.html') {
         if (!this.isLoggedIn()) {
             window.location.href = redirectUrl + '?redirect=' + encodeURIComponent(window.location.pathname);
+            return false;
+        }
+        return true;
+    }
+
+    // Require admin role for page
+    requireAdmin(redirectUrl = 'index.html') {
+        if (!this.isLoggedIn()) {
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+            return false;
+        }
+        if (!this.isCurrentUserAdmin()) {
+            window.location.href = redirectUrl;
             return false;
         }
         return true;
