@@ -58,25 +58,34 @@
         <div class="content-wrapper">
             <section class="auth-page">
                 <div class="auth-container">
-                    <h1>Register Your Practice</h1>
-                    <p class="auth-subtitle">Create an account to access member pricing and exclusive services</p>
+                    <h1>Professional Sign Up</h1>
+                    <p class="auth-subtitle">Create an account as a vet or veterinary nurse to access resources and member services</p>
 
                     <div id="signupMessage" class="message" style="display: none;"></div>
 
                     <form id="signupForm" class="auth-form">
                         <div class="form-group">
-                            <label for="practiceName">Practice Name <span style="color: red;">*</span></label>
-                            <input type="text" id="practiceName" name="practiceName" placeholder="Your Veterinary Practice" required autocomplete="organization">
+                            <label for="practiceName">Full Name <span style="color: red;">*</span></label>
+                            <input type="text" id="practiceName" name="practiceName" placeholder="Your full name" required autocomplete="name">
                         </div>
 
                         <div class="form-group">
-                            <label for="email">Practice Email Address <span style="color: red;">*</span></label>
+                            <label for="professionalRole">Professional Role <span style="color: red;">*</span></label>
+                            <select id="professionalRole" name="professionalRole" required>
+                                <option value="">Select your role</option>
+                                <option value="vet">Vet</option>
+                                <option value="veterinary_nurse">Veterinary Nurse</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="email">Work Email Address <span style="color: red;">*</span></label>
                             <input type="email" id="email" name="email" placeholder="practice@example.com" required autocomplete="email">
-                            <small class="form-help">Use your official practice email address</small>
+                            <small class="form-help">Use your professional work email address</small>
                         </div>
 
                         <div class="form-group">
-                            <label for="phone">Practice Phone Number</label>
+                            <label for="phone">Phone Number</label>
                             <input type="tel" id="phone" name="phone" placeholder="01234 567890" autocomplete="tel">
                         </div>
 
@@ -136,9 +145,9 @@
                     </div>
 
                     <div class="info-box" style="margin-top: 2rem;">
-                        <h3>Member Benefits:</h3>
+                        <h3>Professional Benefits:</h3>
                         <ul>
-                            <li>✓ Access to exclusive member pricing</li>
+                            <li>✓ Access to clinical resources section</li>
                             <li>✓ Free radiographic interpretation</li>
                             <li>✓ Priority booking for surgeries</li>
                             <li>✓ 48-hour advice turnaround</li>
@@ -184,6 +193,7 @@
             e.preventDefault();
             
             const practiceName = document.getElementById('practiceName').value;
+            const professionalRole = document.getElementById('professionalRole').value;
             const email = document.getElementById('email').value;
             const phone = document.getElementById('phone').value;
             const addressLine1 = document.getElementById('addressLine1').value;
@@ -221,7 +231,9 @@
                 county: county
             };
             
-            const result = auth.signup(practiceName, email, password, phone, address);
+            const result = auth.signup(practiceName, email, password, phone, address, {
+                role: professionalRole
+            });
             
             messageDiv.style.display = 'block';
             messageDiv.textContent = result.message;
@@ -232,7 +244,7 @@
                 // Auto-login and redirect after successful signup
                 setTimeout(() => {
                     auth.login(email, password);
-                    window.location.href = 'pricing.html';
+                    window.location.href = 'resources.html';
                 }, 1500);
             } else {
                 messageDiv.className = 'message error-message';

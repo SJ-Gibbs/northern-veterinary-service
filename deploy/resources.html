@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Login - Northern Veterinary Service</title>
-    <meta name="description" content="Login to access member pricing and services">
+    <title>Professional Resources - Northern Veterinary Service</title>
+    <meta name="description" content="Clinical resources for veterinary professionals.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="style.css">
@@ -16,7 +16,7 @@
                 <h1 class="site-title">Northern Veterinary Service</h1>
                 <p class="tagline">Veterinary Peripatetic Services</p>
             </div>
-        
+
             <nav class="navbar" role="navigation" aria-label="Main navigation">
                 <button class="mobile-menu-toggle" aria-label="Toggle navigation menu">
                     <span></span>
@@ -29,11 +29,11 @@
                     <li><a href="casestories.html">Case Stories</a></li>
                     <li><a href="pricing.html">Pricing</a></li>
                     <li><a href="booking.html">Advice & Booking</a></li>
+                    <li><a href="resources.html" class="active" aria-current="page">Resources</a></li>
                     <li><a href="policies.html">Policies</a></li>
                 </ul>
             </nav>
 
-            <!-- Auth Section -->
             <div class="auth-section">
                 <div class="auth-buttons" id="authButtons">
                     <a href="login.html" class="btn-auth btn-login">Login</a>
@@ -56,34 +56,27 @@
 
     <main>
         <div class="content-wrapper">
-            <section class="auth-page">
-                <div class="auth-container">
-                    <h1>Professional Login</h1>
-                    <p class="auth-subtitle">Login as a vet or veterinary nurse to access protected resources and member services</p>
+            <section class="content-section">
+                <h2>Professional Resources</h2>
+                <p>This area is restricted to registered vets and veterinary nurses.</p>
+                <p>Use these resources to support case planning, post-operative monitoring, and communication with clients.</p>
+            </section>
 
-                    <div id="loginMessage" class="message" style="display: none;"></div>
+            <section class="content-section">
+                <h2>Clinical Downloads</h2>
+                <ul>
+                    <li>Orthopaedic case triage checklist</li>
+                    <li>Soft tissue referral template</li>
+                    <li>Post-operative discharge guidance sheet</li>
+                    <li>Analgesia and sedation quick reference guide</li>
+                </ul>
+                <p><em>Note:</em> If you want these as downloadable files, we can wire in PDF links next.</p>
+            </section>
 
-                    <form id="loginForm" class="auth-form">
-                        <div class="form-group">
-                            <label for="email">Email Address <span style="color: red;">*</span></label>
-                            <input type="email" id="email" name="email" placeholder="practice@example.com" required autocomplete="email">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="password">Password <span style="color: red;">*</span></label>
-                            <input type="password" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
-                        </div>
-
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-full">Login</button>
-                        </div>
-                    </form>
-
-                    <div class="auth-footer">
-                        <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
-                        <p class="security-note">🔒 Your information is secure and encrypted</p>
-                    </div>
-                </div>
+            <section class="content-section">
+                <h2>Need More Support?</h2>
+                <p>For urgent clinical advice, contact us directly via WhatsApp at <a href="https://wa.me/447763836276">+44 7763 836276</a>.</p>
+                <a href="booking.html" class="btn btn-primary">Submit an Advice Request</a>
             </section>
         </div>
     </main>
@@ -117,38 +110,7 @@
     <script src="auth.js"></script>
     <script src="index.js"></script>
     <script>
-        // Handle login form submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-            const messageDiv = document.getElementById('loginMessage');
-            
-            const result = auth.login(email, password);
-            
-            messageDiv.style.display = 'block';
-            messageDiv.textContent = result.message;
-            
-            if (result.success) {
-                messageDiv.className = 'message success-message';
-                
-                // Redirect after successful login
-                setTimeout(() => {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const redirect = urlParams.get('redirect');
-                    window.location.href = redirect || 'index.html';
-                }, 1000);
-            } else {
-                messageDiv.className = 'message error-message';
-            }
-        });
-
-        // Redirect if already logged in
-        if (auth.isLoggedIn()) {
-            window.location.href = 'index.html';
-        }
+        auth.requireProfessionalAccess('index.html');
     </script>
 </body>
 </html>
-

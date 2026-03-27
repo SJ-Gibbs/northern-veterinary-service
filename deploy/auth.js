@@ -6,6 +6,7 @@ class AuthSystem {
     constructor() {
         this.storageKey = 'nvs_users';
         this.sessionKey = 'nvs_current_user';
+        this.professionalRoles = ['vet', 'veterinary_nurse'];
         this.init();
     }
 
@@ -17,6 +18,7 @@ class AuthSystem {
 
         // Seed default admin account if none exists
         this.seedAdmin();
+        this.seedDemoProfessionalUser();
         
         // Update UI based on auth state
         this.updateAuthUI();
@@ -38,9 +40,30 @@ class AuthSystem {
             address: { line1: '', line2: '', city: '', postcode: '', county: '' },
             createdAt: new Date().toISOString(),
             isActive: true,
-            isAdmin: true
+            isAdmin: true,
+            role: 'admin'
         };
         users.push(adminUser);
+        localStorage.setItem(this.storageKey, JSON.stringify(users));
+    }
+
+    // Seed requested professional login (idempotent)
+    seedDemoProfessionalUser() {
+        const users = this.getUsers();
+        const demoEmail = 'info@nothernveterinaryservices.co.uk';
+        if (users.find(u => u.email === demoEmail)) return;
+        const demoUser = {
+            id: 'nvs-demo-vet-001',
+            practiceName: 'NVS Professional User',
+            email: demoEmail,
+            password: btoa('1'),
+            phone: '',
+            address: { line1: '', line2: '', city: '', postcode: '', county: '' },
+            role: 'vet',
+            createdAt: new Date().toISOString(),
+            isActive: true
+        };
+        users.push(demoUser);
         localStorage.setItem(this.storageKey, JSON.stringify(users));
     }
 
@@ -73,8 +96,9 @@ class AuthSystem {
     }
 
     // Register a new user
-    signup(practiceName, email, password, phone = '', address = null) {
+    signup(practiceName, email, password, phone = '', address = null, options = {}) {
         const users = this.getUsers();
+        const role = this.normalizeRole(options.role);
         
         // Check if email already exists
         if (users.find(user => user.email === email)) {
@@ -89,6 +113,10 @@ class AuthSystem {
         // Validate password strength
         if (password.length < 6) {
             return { success: false, message: 'Password must be at least 6 characters long.' };
+        }
+
+        if (role && !this.professionalRoles.includes(role)) {
+            return { success: false, message: 'Please select a valid professional role.' };
         }
         
         // Create new user
@@ -105,6 +133,7 @@ class AuthSystem {
                 postcode: '',
                 county: ''
             },
+            role,
             createdAt: new Date().toISOString(),
             isActive: true
         };
@@ -140,6 +169,7 @@ class AuthSystem {
             email: user.email,
             practiceName: user.practiceName,
             isAdmin: user.isAdmin || false,
+            role: this.getUserRole(user),
             loginTime: new Date().toISOString()
         };
         
@@ -178,6 +208,28 @@ class AuthSystem {
         return emailRegex.test(email);
     }
 
+    // Normalize incoming role values to storage keys
+    normalizeRole(role) {
+        if (!role) return '';
+        const normalized = role.toString().trim().toLowerCase();
+        if (normalized === 'nurse') return 'veterinary_nurse';
+        return normalized;
+    }
+
+    // Human-readable role label
+    getRoleLabel(role) {
+        if (role === 'vet') return 'Vet';
+        if (role === 'veterinary_nurse') return 'Veterinary Nurse';
+        return 'Member';
+    }
+
+    // Resolve role from user record (including legacy users)
+    getUserRole(user) {
+        if (!user) return '';
+        if (user.isAdmin) return 'admin';
+        return this.normalizeRole(user.role);
+    }
+
     // Check if the currently logged-in user is an admin
     // (reads from full user record so old sessions without isAdmin still work)
     isCurrentUserAdmin() {
@@ -185,6 +237,16 @@ class AuthSystem {
         if (!session) return false;
         const user = this.getUsers().find(u => u.id === session.id);
         return user ? (user.isAdmin === true) : false;
+    }
+
+    // Check if current user is a logged-in professional (vet or veterinary nurse)
+    isCurrentUserProfessional() {
+        const session = this.getCurrentUser();
+        if (!session) return false;
+        if (session.isAdmin) return true;
+        const user = this.getUsers().find(u => u.id === session.id);
+        if (!user) return false;
+        return this.professionalRoles.includes(this.getUserRole(user));
     }
 
     // Update UI based on authentication state
@@ -197,9 +259,14 @@ class AuthSystem {
         if (this.isLoggedIn()) {
             const isAdmin = this.isCurrentUserAdmin();
             const user = this.getCurrentUser();
+            const isProfessional = this.isCurrentUserProfessional();
             if (authButtons) authButtons.style.display = 'none';
             if (userMenu) userMenu.style.display = 'block';
-            if (userName) userName.textContent = isAdmin ? '⚙️ Admin' : user.practiceName;
+            if (userName) {
+                userName.textContent = isAdmin
+                    ? '⚙️ Admin'
+                    : `${user.practiceName} (${this.getRoleLabel(user.role)})`;
+            }
 
             // Dynamically inject Admin Panel link for admin users
             if (dropdownMenu && isAdmin && !document.getElementById('adminPanelLink')) {
@@ -216,9 +283,28 @@ class AuthSystem {
                     dropdownMenu.prepend(link);
                 }
             }
+
+            // Dynamically inject Resources link for professional users
+            const navList = document.querySelector('.nav-list');
+            if (navList) {
+                const existingResourcesLink = navList.querySelector('a[href="resources.html"]');
+                if (isProfessional && !existingResourcesLink) {
+                    const li = document.createElement('li');
+                    li.id = 'resourcesNavLink';
+                    const link = document.createElement('a');
+                    link.href = 'resources.html';
+                    link.textContent = 'Resources';
+                    li.appendChild(link);
+                    navList.appendChild(li);
+                } else if (!isProfessional && existingResourcesLink) {
+                    existingResourcesLink.closest('li')?.remove();
+                }
+            }
         } else {
             if (authButtons) authButtons.style.display = 'flex';
             if (userMenu) userMenu.style.display = 'none';
+            const existingResourcesLink = document.querySelector('.nav-list a[href="resources.html"]');
+            if (existingResourcesLink) existingResourcesLink.closest('li')?.remove();
         }
     }
 
@@ -264,6 +350,7 @@ class AuthSystem {
             id: users[idx].id,
             email: users[idx].email,
             practiceName: users[idx].practiceName,
+            role: this.getUserRole(users[idx]),
             loginTime: session.loginTime
         };
         localStorage.setItem(this.sessionKey, JSON.stringify(updatedSession));
@@ -382,6 +469,19 @@ class AuthSystem {
             return false;
         }
         if (!this.isCurrentUserAdmin()) {
+            window.location.href = redirectUrl;
+            return false;
+        }
+        return true;
+    }
+
+    // Require a veterinary professional role for restricted pages
+    requireProfessionalAccess(redirectUrl = 'index.html') {
+        if (!this.isLoggedIn()) {
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+            return false;
+        }
+        if (!this.isCurrentUserProfessional()) {
             window.location.href = redirectUrl;
             return false;
         }
