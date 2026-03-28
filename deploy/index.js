@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ===== Add Fade-in Animation to Sections =====
     initScrollAnimations();
+
 });
 
 /**

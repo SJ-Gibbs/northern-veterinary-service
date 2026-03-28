@@ -7,6 +7,8 @@ class AuthSystem {
         this.storageKey = 'nvs_users';
         this.sessionKey = 'nvs_current_user';
         this.professionalRoles = ['vet', 'veterinary_nurse'];
+        /** Single master admin login (Admin Panel, user management) */
+        this.masterAdminEmail = 'info@northernveterinaryservices.co.uk';
         this.init();
     }
 
@@ -16,10 +18,8 @@ class AuthSystem {
             localStorage.setItem(this.storageKey, JSON.stringify([]));
         }
 
-        // Seed default admin account if none exists
-        this.seedAdmin();
-        this.seedDemoProfessionalUser();
-        
+        this.ensureMasterAdminAccount();
+
         // Update UI based on auth state
         this.updateAuthUI();
         
@@ -27,43 +27,57 @@ class AuthSystem {
         this.attachEventListeners();
     }
 
-    // Seed a default admin account (idempotent – safe to call on every init)
-    seedAdmin() {
+    // Ensures info@northernveterinaryservices.co.uk is the only admin (runs every init)
+    ensureMasterAdminAccount() {
+        const MASTER = this.masterAdminEmail;
+        const typoEmail = 'info@nothernveterinaryservices.co.uk';
+        const legacyAdminEmail = 'admin@northernveterinaryservice.co.uk';
         const users = this.getUsers();
-        if (users.find(u => u.isAdmin === true)) return; // already seeded
-        const adminUser = {
-            id: 'nvs-admin-001',
-            practiceName: 'NVS Admin',
-            email: 'admin@northernveterinaryservice.co.uk',
-            password: btoa('NVSadmin2026!'),
-            phone: '',
-            address: { line1: '', line2: '', city: '', postcode: '', county: '' },
-            createdAt: new Date().toISOString(),
-            isActive: true,
-            isAdmin: true,
-            role: 'admin'
-        };
-        users.push(adminUser);
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-    }
 
-    // Seed requested professional login (idempotent)
-    seedDemoProfessionalUser() {
-        const users = this.getUsers();
-        const demoEmail = 'info@nothernveterinaryservices.co.uk';
-        if (users.find(u => u.email === demoEmail)) return;
-        const demoUser = {
-            id: 'nvs-demo-vet-001',
-            practiceName: 'NVS Professional User',
-            email: demoEmail,
-            password: btoa('1'),
-            phone: '',
-            address: { line1: '', line2: '', city: '', postcode: '', county: '' },
-            role: 'vet',
-            createdAt: new Date().toISOString(),
-            isActive: true
-        };
-        users.push(demoUser);
+        if (!users.find(u => u.email === MASTER)) {
+            const typoIdx = users.findIndex(u => u.email === typoEmail);
+            if (typoIdx !== -1) {
+                users[typoIdx].email = MASTER;
+                users[typoIdx].practiceName = users[typoIdx].practiceName || 'NVS Master Admin';
+            } else {
+                const legacyIdx = users.findIndex(
+                    u => u.email === legacyAdminEmail && u.isAdmin === true
+                );
+                if (legacyIdx !== -1) {
+                    users[legacyIdx].email = MASTER;
+                    users[legacyIdx].practiceName = 'NVS Master Admin';
+                } else if (!users.some(u => u.isAdmin === true)) {
+                    users.push({
+                        id: 'nvs-master-admin-001',
+                        practiceName: 'NVS Master Admin',
+                        email: MASTER,
+                        password: btoa('NVSadmin2026!'),
+                        phone: '',
+                        address: { line1: '', line2: '', city: '', postcode: '', county: '' },
+                        createdAt: new Date().toISOString(),
+                        isActive: true,
+                        isAdmin: true,
+                        role: 'admin',
+                        accountType: 'admin'
+                    });
+                }
+            }
+        }
+
+        const hasMaster = users.some(u => u.email === MASTER);
+        users.forEach(u => {
+            if (u.email === MASTER) {
+                u.isAdmin = true;
+                u.role = 'admin';
+                u.accountType = 'admin';
+            } else if (hasMaster && u.isAdmin === true) {
+                u.isAdmin = false;
+                if (u.role === 'admin') {
+                    u.role = u.accountType === 'practice' ? 'practice' : 'vet';
+                }
+            }
+        });
+
         localStorage.setItem(this.storageKey, JSON.stringify(users));
     }
 
@@ -98,7 +112,14 @@ class AuthSystem {
     // Register a new user
     signup(practiceName, email, password, phone = '', address = null, options = {}) {
         const users = this.getUsers();
-        const role = this.normalizeRole(options.role);
+        const accountType = options.accountType === 'practice' ? 'practice' : 'professional';
+        let role = this.normalizeRole(options.role);
+
+        if (accountType === 'practice') {
+            role = 'practice';
+        } else if (!role || !this.professionalRoles.includes(role)) {
+            return { success: false, message: 'Please select a valid professional role (Vet or Veterinary Nurse).' };
+        }
         
         // Check if email already exists
         if (users.find(user => user.email === email)) {
@@ -113,10 +134,6 @@ class AuthSystem {
         // Validate password strength
         if (password.length < 6) {
             return { success: false, message: 'Password must be at least 6 characters long.' };
-        }
-
-        if (role && !this.professionalRoles.includes(role)) {
-            return { success: false, message: 'Please select a valid professional role.' };
         }
         
         // Create new user
@@ -134,6 +151,7 @@ class AuthSystem {
                 county: ''
             },
             role,
+            accountType,
             createdAt: new Date().toISOString(),
             isActive: true
         };
@@ -170,6 +188,7 @@ class AuthSystem {
             practiceName: user.practiceName,
             isAdmin: user.isAdmin || false,
             role: this.getUserRole(user),
+            accountType: user.accountType || (this.getUserRole(user) === 'practice' ? 'practice' : 'professional'),
             loginTime: new Date().toISOString()
         };
         
@@ -220,6 +239,7 @@ class AuthSystem {
     getRoleLabel(role) {
         if (role === 'vet') return 'Vet';
         if (role === 'veterinary_nurse') return 'Veterinary Nurse';
+        if (role === 'practice') return 'Practice';
         return 'Member';
     }
 
@@ -351,6 +371,7 @@ class AuthSystem {
             email: users[idx].email,
             practiceName: users[idx].practiceName,
             role: this.getUserRole(users[idx]),
+            accountType: users[idx].accountType || (this.getUserRole(users[idx]) === 'practice' ? 'practice' : 'professional'),
             loginTime: session.loginTime
         };
         localStorage.setItem(this.sessionKey, JSON.stringify(updatedSession));
