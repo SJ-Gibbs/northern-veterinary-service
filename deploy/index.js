@@ -258,7 +258,7 @@ function initSmoothScrolling() {
  * Highlight active page in navigation
  */
 function highlightActivePage() {
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const currentPage = window.location.pathname.split('/').pop() || 'home.html';
     const navLinks = document.querySelectorAll('.nav-list a');
     
     navLinks.forEach(link => {
@@ -266,7 +266,7 @@ function highlightActivePage() {
         const linkPage = link.getAttribute('href');
         
         if (linkPage === currentPage || 
-            (currentPage === '' && linkPage === 'index.html')) {
+            (currentPage === '' && linkPage === 'home.html')) {
             link.classList.add('active');
             link.setAttribute('aria-current', 'page');
         }

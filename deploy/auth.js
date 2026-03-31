@@ -200,7 +200,7 @@ class AuthSystem {
     // Logout user
     logout() {
         localStorage.removeItem(this.sessionKey);
-        window.location.href = 'index.html';
+        window.location.href = 'home.html';
     }
 
     // Check if user is logged in
@@ -484,7 +484,7 @@ class AuthSystem {
     }
 
     // Require admin role for page
-    requireAdmin(redirectUrl = 'index.html') {
+    requireAdmin(redirectUrl = 'home.html') {
         if (!this.isLoggedIn()) {
             window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
             return false;
@@ -497,7 +497,7 @@ class AuthSystem {
     }
 
     // Require a veterinary professional role for restricted pages
-    requireProfessionalAccess(redirectUrl = 'index.html') {
+    requireProfessionalAccess(redirectUrl = 'home.html') {
         if (!this.isLoggedIn()) {
             window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
             return false;
