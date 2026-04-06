@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Sign Up - Northern Veterinary Service</title>
-    <meta name="description" content="Create an account as a vet, veterinary nurse, or as a veterinary practice to book NVS services.">
+    <meta name="description" content="Create a team member or veterinary practice account for Northern Veterinary Service.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="style.css">
@@ -63,15 +63,15 @@
                     <!-- Step 1: account type -->
                     <div id="signupChoice" class="signup-path-choice">
                         <h1>Create an account</h1>
-                        <p class="auth-subtitle">Choose whether you are registering as an individual professional or as a veterinary practice.</p>
+                        <p class="auth-subtitle">Choose a <strong>team member</strong> account (Northern Veterinary Service staff) or a <strong>practice</strong> account (to book services).</p>
                         <div class="signup-path-cards" role="group" aria-label="Account type">
                             <button type="button" class="signup-path-card" id="chooseProfessional">
-                                <span class="signup-path-card-title">Vet or veterinary nurse</span>
-                                <span class="signup-path-card-desc">For individuals who need access to clinical resources, tools, and professional content.</span>
+                                <span class="signup-path-card-title">Team member</span>
+                                <span class="signup-path-card-desc">For NVS staff: manage your availability planner, view booking requests, and access clinical resources.</span>
                             </button>
                             <button type="button" class="signup-path-card" id="choosePractice">
                                 <span class="signup-path-card-title">Veterinary practice</span>
-                                <span class="signup-path-card-desc">For practices booking NVS services, viewing member pricing, and submitting advice requests.</span>
+                                <span class="signup-path-card-desc">For member practices: submit Advice &amp; Booking requests and view member pricing.</span>
                             </button>
                         </div>
                     </div>
@@ -81,8 +81,8 @@
                         <p class="signup-back">
                             <button type="button" class="btn-link-back" id="backFromProfessional">← Change account type</button>
                         </p>
-                        <h1>Professional sign up</h1>
-                        <p class="auth-subtitle">Create an account as a vet or veterinary nurse.</p>
+                        <h1>Team member sign up</h1>
+                        <p class="auth-subtitle">Northern Veterinary Service staff — vet or veterinary nurse.</p>
 
                         <form id="signupFormProfessional" class="auth-form">
                             <div class="form-group">
@@ -156,16 +156,16 @@
                             </div>
 
                             <div class="form-group">
-                                <button type="submit" class="btn btn-primary btn-full">Create professional account</button>
+                                <button type="submit" class="btn btn-primary btn-full">Create team member account</button>
                             </div>
                         </form>
 
                         <div class="info-box" style="margin-top: 2rem;">
-                            <h3>Professional benefits</h3>
+                            <h3>Team member access</h3>
                             <ul>
-                                <li>✓ Access to the clinical resources section</li>
-                                <li>✓ Member pricing and practice benefits where applicable</li>
-                                <li>✓ Priority booking and advice pathways</li>
+                                <li>✓ Clinical resources and discharge forms</li>
+                                <li>✓ Personal availability planner</li>
+                                <li>✓ Booking requests inbox (submissions from practices)</li>
                             </ul>
                         </div>
                     </div>
@@ -176,7 +176,7 @@
                             <button type="button" class="btn-link-back" id="backFromPractice">← Change account type</button>
                         </p>
                         <h1>Practice sign up</h1>
-                        <p class="auth-subtitle">Register your veterinary practice to book NVS services and access member pricing.</p>
+                        <p class="auth-subtitle">Register your veterinary practice to book our services and access member pricing.</p>
 
                         <form id="signupFormPractice" class="auth-form">
                             <div class="form-group">
@@ -375,7 +375,7 @@
 
             const result = auth.signup(practiceName, email, password, phone, address, {
                 role: professionalRole,
-                accountType: 'professional'
+                accountType: 'team_member'
             });
 
             signupMessage.style.display = 'block';
@@ -385,7 +385,7 @@
                 signupMessage.className = 'message success-message';
                 setTimeout(function () {
                     auth.login(email, password);
-                    window.location.href = 'resources.html';
+                    window.location.href = 'home.html';
                 }, 1500);
             } else {
                 signupMessage.className = 'message error-message';
@@ -453,7 +453,7 @@
 
         var params = new URLSearchParams(window.location.search);
         var t = params.get('type');
-        if (t === 'professional') {
+        if (t === 'professional' || t === 'team') {
             showPanel('professional');
         } else if (t === 'practice') {
             showPanel('practice');

@@ -516,15 +516,21 @@
 
                 <!-- Page heading -->
                 <div class="admin-header">
-                    <h1>Admin Panel <span class="admin-badge">NVS Staff Only</span></h1>
-                    <div style="font-size:0.85rem;color:#888;">Member Practice Management</div>
+                    <div>
+                        <h1>Admin Panel <span class="admin-badge">Staff only</span></h1>
+                        <div style="font-size:0.85rem;color:#888;">Practices and team member accounts</div>
+                        <p id="diaryAdminLinkWrap" style="display:none;margin:0.75rem 0 0;font-size:0.92rem;">
+                            <a href="diary-admin.html" style="color:#1a5276;font-weight:600;">Booking diary</a>
+                            <span style="color:#aaa;"> — set availability on the public calendar (master admin only)</span>
+                        </p>
+                    </div>
                 </div>
 
                 <!-- Stats row -->
                 <div class="stats-row">
                     <div class="stat-card">
                         <div class="stat-value" id="statTotal">—</div>
-                        <div class="stat-label">Total Practices</div>
+                        <div class="stat-label">Total accounts</div>
                     </div>
                     <div class="stat-card stat-active">
                         <div class="stat-value" id="statActive">—</div>
@@ -557,7 +563,8 @@
                     <table class="practices-table" id="practicesTable">
                         <thead>
                             <tr>
-                                <th data-col="practiceName">Practice Name <span class="sort-arrow">↑</span></th>
+                                <th data-col="practiceName">Name <span class="sort-arrow">↑</span></th>
+                                <th data-col="accountType">Type <span class="sort-arrow">↑</span></th>
                                 <th data-col="email">Email <span class="sort-arrow">↑</span></th>
                                 <th class="col-location" data-col="city">Location <span class="sort-arrow">↑</span></th>
                                 <th class="col-phone" data-col="phone">Phone <span class="sort-arrow">↑</span></th>
@@ -595,7 +602,9 @@
                 <!-- VIEW tab -->
                 <div class="modal-tab-panel active" id="mtab-view">
                     <div id="viewModalMsg" class="modal-msg"></div>
-                    <div class="modal-info-row"><span class="modal-info-label">Practice Name</span><span class="modal-info-value" id="mv-practiceName">—</span></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Name</span><span class="modal-info-value" id="mv-practiceName">—</span></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Account type</span><span class="modal-info-value" id="mv-accountType">—</span></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Role</span><span class="modal-info-value" id="mv-role">—</span></div>
                     <div class="modal-info-row"><span class="modal-info-label">Email</span><span class="modal-info-value" id="mv-email">—</span></div>
                     <div class="modal-info-row"><span class="modal-info-label">Phone</span><span class="modal-info-value" id="mv-phone">—</span></div>
                     <div class="modal-info-row"><span class="modal-info-label">Address</span><span class="modal-info-value" id="mv-address">—</span></div>
@@ -717,6 +726,11 @@
     // ── Guard: admin only ──────────────────────────────────────────
     auth.requireAdmin('home.html');
 
+    if (auth.isCurrentUserMasterAdmin()) {
+        var dw = document.getElementById('diaryAdminLinkWrap');
+        if (dw) dw.style.display = 'block';
+    }
+
     // ══════════════════════════════════════════════════════════════
     //  State
     // ══════════════════════════════════════════════════════════════
@@ -794,6 +808,10 @@
             let va = a[sortCol] || '', vb = b[sortCol] || '';
             if (sortCol === 'isActive') { va = a.isActive ? 1 : 0; vb = b.isActive ? 1 : 0; }
             if (sortCol === 'city')     { va = a.address?.city || ''; vb = b.address?.city || ''; }
+            if (sortCol === 'accountType') {
+                va = a.accountType === 'practice' ? 'practice' : (a.accountType === 'team_member' ? 'team_member' : '');
+                vb = b.accountType === 'practice' ? 'practice' : (b.accountType === 'team_member' ? 'team_member' : '');
+            }
             if (typeof va === 'string') va = va.toLowerCase();
             if (typeof vb === 'string') vb = vb.toLowerCase();
             if (va < vb) return sortDir === 'asc' ? -1 :  1;
@@ -803,7 +821,7 @@
 
         renderTable(filtered);
         document.getElementById('resultsCount').textContent =
-            filtered.length + ' of ' + allPractices.length + ' practice' + (allPractices.length !== 1 ? 's' : '');
+            filtered.length + ' of ' + allPractices.length + ' account' + (allPractices.length !== 1 ? 's' : '');
     }
 
     function renderTable(list) {
@@ -811,7 +829,7 @@
 
         if (list.length === 0) {
             tbody.innerHTML = `
-                <tr><td colspan="7">
+                <tr><td colspan="8">
                     <div class="empty-state">
                         <div class="empty-icon">🏥</div>
                         <p>No practices found matching your search.</p>
@@ -828,9 +846,11 @@
             const toggleLabel = p.isActive ? 'Deactivate' : 'Activate';
             const toggleClass = p.isActive ? 'btn-action btn-toggle-on' : 'btn-action btn-toggle-off';
 
+            const typeCell = escHtml(auth.getAccountTypeLabel(p));
             return `
             <tr data-id="${p.id}">
                 <td class="practice-name-cell">${escHtml(p.practiceName)}</td>
+                <td>${typeCell}</td>
                 <td class="email-cell">${escHtml(p.email)}</td>
                 <td class="col-location location-cell">${escHtml(location)}</td>
                 <td class="col-phone">${escHtml(p.phone || '—')}</td>
@@ -925,6 +945,8 @@
 
         // Populate VIEW tab
         document.getElementById('mv-practiceName').textContent = fmt(p.practiceName);
+        document.getElementById('mv-accountType').textContent = auth.getAccountTypeLabel(p);
+        document.getElementById('mv-role').textContent = auth.getRoleLabel(auth.getUserRole(p));
         document.getElementById('mv-email').textContent        = fmt(p.email);
         document.getElementById('mv-phone').textContent        = fmt(p.phone, 'Not provided');
         document.getElementById('mv-address').textContent      = fmtAddress(p.address);

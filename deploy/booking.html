@@ -60,51 +60,76 @@
         <div class="content-wrapper">
             <section class="content-section">
                 <h1>Request Advice or Book a Service</h1>
-                <p class="text-center">Complete the form below to request expert advice or book a service appointment. We'll respond within 48 hours, or sooner for urgent cases.</p>
+                <p class="text-center">Complete the form below to request expert advice or book a service appointment. We'll use your registered account contact details and respond within 48 hours, or sooner for urgent cases.</p>
+                <p class="booking-account-summary" id="bookingAccountSummary" aria-live="polite"></p>
 
                 <form id="bookingform" method="POST" enctype="multipart/form-data">
-                    
-                    <div class="form-group">
-                        <label for="practiceName">Practice Name <span style="color: red;">*</span></label>
-                        <input type="text" id="practiceName" name="practiceName" placeholder="Enter your practice name" required> 
-                        <div class="error-message"></div>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="email">Email Address <span style="color: red;">*</span></label>
-                        <input type="email" id="email" name="email" placeholder="practice@example.com" required> 
-                        <div class="error-message"></div>
-                    </div>
+                    <input type="hidden" id="practiceName" name="practiceName" value="" required>
+                    <input type="hidden" id="email" name="email" value="" required>
+                    <input type="hidden" id="phone" name="phone" value="">
 
                     <div class="form-group">
-                        <label for="phone">Practice Phone Number</label>
-                        <input type="tel" id="phone" name="phone" placeholder="01234 567890"> 
-                        <div class="error-message"></div>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="servicerequired">Service Required <span style="color: red;">*</span></label>
+                        <label for="servicerequired">Service required <span style="color: red;">*</span></label>
                         <select id="servicerequired" name="servicerequired" required>
-                            <option value="">-- Please Select --</option>
-                            <option value="orthopaedics">Orthopaedic Surgery</option>
-                            <option value="softtissue">Soft Tissue Surgery</option>
-                            <option value="ultrasonography">Ultrasonography/Echocardiography</option>
-                            <option value="endoscopy">Endoscopy</option>
-                            <option value="radiographic">Radiographic Interpretation (Free for members)</option>
-                            <option value="advice">General Advice Request</option>
+                            <option value="">— Select a service —</option>
+                            <option value="orthopaedics">Orthopaedic surgery</option>
+                            <option value="softtissue">Soft tissue surgery</option>
+                            <option value="laparoscopic">Laparoscopic surgery</option>
+                            <option value="ultrasonography">Ultrasonography / echocardiography</option>
+                            <option value="veterinary_locum">Veterinary Locum</option>
                         </select>
                         <div class="error-message"></div>
                     </div>
+
+                    <div class="form-group booking-locum-role-group" id="locumRoleGroup" hidden>
+                        <span class="booking-locum-role-heading" id="locumRoleLabel">Locum role <span style="color: red;">*</span></span>
+                        <div class="booking-locum-options" role="radiogroup" aria-labelledby="locumRoleLabel">
+                            <label class="booking-locum-radio-label">
+                                <input type="radio" name="locumRole" value="veterinary_surgeon">
+                                Veterinary Surgeon
+                            </label>
+                            <label class="booking-locum-radio-label">
+                                <input type="radio" name="locumRole" value="veterinary_nurse">
+                                Veterinary Nurse
+                            </label>
+                        </div>
+                        <div class="error-message"></div>
+                    </div>
+
+                    <div class="form-group" id="procedureNameGroup" hidden>
+                        <label for="procedureNameIfKnown">Procedure name (if known) (optional)</label>
+                        <input type="text" id="procedureNameIfKnown" name="procedureNameIfKnown" placeholder="e.g. TPLO" autocomplete="off">
+                        <div class="error-message"></div>
+                    </div>
                 
-                    <div class="form-group">
-                        <label for="History">Patient History & Request Details <span style="color: red;">*</span></label>
-                        <textarea id="History" name="History" rows="6" placeholder="Please provide details about the patient, symptoms, diagnosis, and what service you're requesting..." required></textarea>
+                    <div class="form-group booking-calendar-group">
+                        <span class="booking-calendar-label" id="bookingCalLabel">Preferred date (if booking a service)</span>
+                        <div class="booking-calendar" id="bookingCalendar" role="application" aria-labelledby="bookingCalLabel" aria-describedby="bookingCalLegend">
+                            <div class="booking-calendar-toolbar">
+                                <button type="button" class="booking-cal-nav" id="bookingCalPrev" aria-label="Previous month">‹</button>
+                                <h3 class="booking-calendar-title" id="bookingCalTitle">Month 2026</h3>
+                                <button type="button" class="booking-cal-nav" id="bookingCalNext" aria-label="Next month">›</button>
+                            </div>
+                            <div class="booking-calendar-weekdays" aria-hidden="true">
+                                <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+                            </div>
+                            <div class="booking-calendar-grid" id="bookingCalGrid"></div>
+                            <ul class="booking-calendar-legend" id="bookingCalLegend">
+                                <li><span class="booking-cal-swatch booking-cal-swatch--available"></span> Available</li>
+                                <li><span class="booking-cal-swatch booking-cal-swatch--limited"></span> Limited availability</li>
+                                <li><span class="booking-cal-swatch booking-cal-swatch--unavailable"></span> Unavailable</li>
+                            </ul>
+                            <p class="booking-calendar-mode-hint" id="bookingCalModeHint" aria-live="polite"></p>
+                            <p class="booking-calendar-selected" id="bookingCalSelected" aria-live="polite">No date selected — choose an available or limited day.</p>
+                        </div>
+                        <input type="hidden" id="preferredDate" name="preferredDate" value="">
+                        <input type="hidden" id="preferredDates" name="preferredDates" value="" disabled>
                         <div class="error-message"></div>
                     </div>
 
                     <div class="form-group">
-                        <label for="preferredDate">Preferred Date (if booking a service)</label>
-                        <input type="date" id="preferredDate" name="preferredDate">
+                        <label for="History">Patient History & Request Details <span style="color: red;">*</span></label>
+                        <textarea id="History" name="History" rows="6" placeholder="Please provide details about the patient, symptoms, diagnosis, and what service you're requesting..." required></textarea>
                         <div class="error-message"></div>
                     </div>
 
@@ -161,6 +186,15 @@
     </footer>
 
     <script src="auth.js"></script>
+    <script>
+        auth.requireAuth('login.html');
+        if (!auth.canAccessBookingForm()) {
+            window.location.href = 'home.html';
+        }
+    </script>
+    <script src="booking-requests.js"></script>
     <script src="index.js"></script>
+    <script src="booking-diary.js"></script>
+    <script src="booking.js"></script>
 </body>
 </html>

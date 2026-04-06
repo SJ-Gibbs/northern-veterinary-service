@@ -111,8 +111,21 @@ function initFormValidation() {
  * @returns {boolean} - True if valid, false otherwise
  */
 function validateField(field) {
-    const value = field.value.trim();
     const fieldType = field.type;
+
+    if (fieldType === 'radio') {
+        if (!field.hasAttribute('required')) {
+            return true;
+        }
+        const form = field.form;
+        const checked = form ? form.querySelector(`input[name="${field.name}"]:checked`) : null;
+        const isValid = !!checked;
+        const errorMessage = isValid ? '' : 'Please select an option';
+        showFieldError(field, isValid, errorMessage);
+        return isValid;
+    }
+
+    const value = field.value.trim();
     const isRequired = field.hasAttribute('required');
     
     let isValid = true;
@@ -196,6 +209,19 @@ function handleFormSubmission(form) {
     
     submitBtn.disabled = true;
     submitBtn.value = 'Submitting...';
+
+    if (form.id === 'bookingform' && typeof BookingRequests !== 'undefined') {
+        const fd = new FormData(form);
+        const data = {};
+        fd.forEach((value, key) => {
+            if (key === 'file' && value && typeof value === 'object' && value.name) {
+                data.fileName = value.name;
+            } else if (key !== 'file') {
+                data[key] = typeof value === 'string' ? value : String(value);
+            }
+        });
+        BookingRequests.append(data);
+    }
     
     // Simulate submission
     setTimeout(() => {

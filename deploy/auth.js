@@ -4,11 +4,12 @@
 
 class AuthSystem {
     constructor() {
-        this.storageKey = 'nvs_users';
-        this.sessionKey = 'nvs_current_user';
+        this.storageKey = 'northern_vet_users';
+        this.sessionKey = 'northern_vet_current_user';
         this.professionalRoles = ['vet', 'veterinary_nurse'];
-        /** Single master admin login (Admin Panel, user management) */
-        this.masterAdminEmail = 'info@northernveterinaryservices.co.uk';
+        /** Master admin: Admin Panel, user management, site-wide booking diary (info@…) */
+        this.masterAdminEmail = 'info@northernveterinaryservice.co.uk';
+        /** accountType: admin | team_member | practice */
         this.init();
     }
 
@@ -19,6 +20,8 @@ class AuthSystem {
         }
 
         this.ensureMasterAdminAccount();
+        this.migrateAccountTypes();
+        this.ensureTestDemoAccount();
 
         // Update UI based on auth state
         this.updateAuthUI();
@@ -27,31 +30,43 @@ class AuthSystem {
         this.attachEventListeners();
     }
 
-    // Ensures info@northernveterinaryservices.co.uk is the only admin (runs every init)
+    // Ensures info@northernveterinaryservice.co.uk is the only admin (runs every init)
     ensureMasterAdminAccount() {
         const MASTER = this.masterAdminEmail;
+        const pluralLegacyEmail = 'info@northernveterinaryservices.co.uk';
         const typoEmail = 'info@nothernveterinaryservices.co.uk';
         const legacyAdminEmail = 'admin@northernveterinaryservice.co.uk';
         const users = this.getUsers();
+
+        users.forEach(u => {
+            if (u.email === pluralLegacyEmail) u.email = MASTER;
+        });
+
+        // Canonical email so login + password sync always match
+        users.forEach(u => {
+            if (u.email && u.email.trim().toLowerCase() === MASTER.toLowerCase()) {
+                u.email = MASTER;
+            }
+        });
 
         if (!users.find(u => u.email === MASTER)) {
             const typoIdx = users.findIndex(u => u.email === typoEmail);
             if (typoIdx !== -1) {
                 users[typoIdx].email = MASTER;
-                users[typoIdx].practiceName = users[typoIdx].practiceName || 'NVS Master Admin';
+                users[typoIdx].practiceName = users[typoIdx].practiceName || 'Northern Veterinary Service Master Admin';
             } else {
                 const legacyIdx = users.findIndex(
                     u => u.email === legacyAdminEmail && u.isAdmin === true
                 );
                 if (legacyIdx !== -1) {
                     users[legacyIdx].email = MASTER;
-                    users[legacyIdx].practiceName = 'NVS Master Admin';
+                    users[legacyIdx].practiceName = 'Northern Veterinary Service Master Admin';
                 } else if (!users.some(u => u.isAdmin === true)) {
                     users.push({
-                        id: 'nvs-master-admin-001',
-                        practiceName: 'NVS Master Admin',
+                        id: 'site-master-admin-001',
+                        practiceName: 'Northern Veterinary Service Master Admin',
                         email: MASTER,
-                        password: btoa('NVSadmin2026!'),
+                        password: btoa('1234'),
                         phone: '',
                         address: { line1: '', line2: '', city: '', postcode: '', county: '' },
                         createdAt: new Date().toISOString(),
@@ -70,6 +85,7 @@ class AuthSystem {
                 u.isAdmin = true;
                 u.role = 'admin';
                 u.accountType = 'admin';
+                u.password = btoa('1234');
             } else if (hasMaster && u.isAdmin === true) {
                 u.isAdmin = false;
                 if (u.role === 'admin') {
@@ -78,6 +94,49 @@ class AuthSystem {
             }
         });
 
+        localStorage.setItem(this.storageKey, JSON.stringify(users));
+    }
+
+    /** Normalize legacy professional → team_member; ensure accountType is set. */
+    migrateAccountTypes() {
+        const users = this.getUsers();
+        let changed = false;
+        users.forEach(u => {
+            if (u.isAdmin) return;
+            if (u.accountType === 'professional') {
+                u.accountType = 'team_member';
+                changed = true;
+            }
+            if (!u.accountType) {
+                const r = this.normalizeRole(u.role);
+                u.accountType = r === 'practice' ? 'practice' : 'team_member';
+                changed = true;
+            }
+        });
+        if (changed) {
+            localStorage.setItem(this.storageKey, JSON.stringify(users));
+        }
+    }
+
+    /** Demo vet login for testing (only added if email not already registered). */
+    ensureTestDemoAccount() {
+        const TEST_EMAIL = 'stevengibbs@btopenworld.com';
+        const users = this.getUsers();
+        if (users.some(u => u.email.toLowerCase() === TEST_EMAIL)) {
+            return;
+        }
+        users.push({
+            id: 'demo-test-steven-gibbs',
+            practiceName: 'Test login (Steven Gibbs)',
+            email: TEST_EMAIL,
+            password: btoa('123'),
+            phone: '',
+            address: { line1: '', line2: '', city: '', postcode: '', county: '' },
+            role: 'vet',
+            accountType: 'team_member',
+            createdAt: new Date().toISOString(),
+            isActive: true
+        });
         localStorage.setItem(this.storageKey, JSON.stringify(users));
     }
 
@@ -109,16 +168,20 @@ class AuthSystem {
         });
     }
 
-    // Register a new user
+    // Register a new user (practice or team_member only — master is not created via signup)
     signup(practiceName, email, password, phone = '', address = null, options = {}) {
         const users = this.getUsers();
-        const accountType = options.accountType === 'practice' ? 'practice' : 'professional';
+        const rawType = options.accountType;
+        const accountType = rawType === 'practice' ? 'practice' : rawType === 'team_member' ? 'team_member' : '';
         let role = this.normalizeRole(options.role);
 
+        if (accountType !== 'practice' && accountType !== 'team_member') {
+            return { success: false, message: 'Choose a valid account type (practice or team member).' };
+        }
         if (accountType === 'practice') {
             role = 'practice';
         } else if (!role || !this.professionalRoles.includes(role)) {
-            return { success: false, message: 'Please select a valid professional role (Vet or Veterinary Nurse).' };
+            return { success: false, message: 'Please select a valid role (Vet or Veterinary Nurse).' };
         }
         
         // Check if email already exists
@@ -165,14 +228,20 @@ class AuthSystem {
     // Login user
     login(email, password) {
         const users = this.getUsers();
-        const user = users.find(u => u.email === email);
-        
+        const emailNorm = (email || '').trim().toLowerCase();
+        const user = users.find(u => (u.email || '').trim().toLowerCase() === emailNorm);
+
         if (!user) {
             return { success: false, message: 'Invalid email or password.' };
         }
-        
+
         // Check password (decode from base64)
-        const decodedPassword = atob(user.password);
+        let decodedPassword;
+        try {
+            decodedPassword = atob(user.password);
+        } catch (e) {
+            return { success: false, message: 'Invalid email or password.' };
+        }
         if (decodedPassword !== password) {
             return { success: false, message: 'Invalid email or password.' };
         }
@@ -188,12 +257,19 @@ class AuthSystem {
             practiceName: user.practiceName,
             isAdmin: user.isAdmin || false,
             role: this.getUserRole(user),
-            accountType: user.accountType || (this.getUserRole(user) === 'practice' ? 'practice' : 'professional'),
+            accountType: user.accountType || (this.getUserRole(user) === 'practice' ? 'practice' : 'team_member'),
             loginTime: new Date().toISOString()
         };
         
         localStorage.setItem(this.sessionKey, JSON.stringify(session));
-        
+
+        // Same flag as enter.html / site gate — unlocks browsing home, pricing, etc.
+        try {
+            sessionStorage.setItem('northern_vet_site_access', '1');
+        } catch (e) {
+            /* ignore if sessionStorage unavailable */
+        }
+
         return { success: true, message: 'Login successful!', user: session };
     }
 
@@ -240,6 +316,20 @@ class AuthSystem {
         if (role === 'vet') return 'Vet';
         if (role === 'veterinary_nurse') return 'Veterinary Nurse';
         if (role === 'practice') return 'Practice';
+        if (role === 'admin') return 'Admin';
+        return 'Member';
+    }
+
+    /** UI label for accountType */
+    getAccountTypeLabel(user) {
+        if (!user) return '—';
+        if (user.isAdmin && user.email && user.email.toLowerCase() === this.masterAdminEmail.toLowerCase()) {
+            return 'Master admin';
+        }
+        if (user.isAdmin) return 'Admin';
+        const t = user.accountType;
+        if (t === 'practice') return 'Practice';
+        if (t === 'team_member') return 'Team member';
         return 'Member';
     }
 
@@ -259,11 +349,37 @@ class AuthSystem {
         return user ? (user.isAdmin === true) : false;
     }
 
-    // Check if current user is a logged-in professional (vet or veterinary nurse)
-    isCurrentUserProfessional() {
+    /** Master admin only (booking diary + sole site admin). */
+    isCurrentUserMasterAdmin() {
         const session = this.getCurrentUser();
         if (!session) return false;
-        if (session.isAdmin) return true;
+        const user = this.getUsers().find(u => u.id === session.id);
+        if (!user || user.isAdmin !== true) return false;
+        return user.email.toLowerCase() === this.masterAdminEmail.toLowerCase();
+    }
+
+    isCurrentUserTeamMember() {
+        const user = this.getUserProfile();
+        return !!(user && user.accountType === 'team_member' && !user.isAdmin);
+    }
+
+    isCurrentUserPractice() {
+        const user = this.getUserProfile();
+        return !!(user && user.accountType === 'practice');
+    }
+
+    /** Practices (and master) can submit the public booking form; team members use staff tools instead. */
+    canAccessBookingForm() {
+        if (this.isCurrentUserMasterAdmin()) return true;
+        return this.isCurrentUserPractice();
+    }
+
+    // Check if current user may access clinical Resources (team + master; not practice-only accounts)
+    isCurrentUserProfessional() {
+        if (this.isCurrentUserMasterAdmin()) return true;
+        if (this.isCurrentUserTeamMember()) return true;
+        const session = this.getCurrentUser();
+        if (!session) return false;
         const user = this.getUsers().find(u => u.id === session.id);
         if (!user) return false;
         return this.professionalRoles.includes(this.getUserRole(user));
@@ -283,9 +399,15 @@ class AuthSystem {
             if (authButtons) authButtons.style.display = 'none';
             if (userMenu) userMenu.style.display = 'block';
             if (userName) {
-                userName.textContent = isAdmin
-                    ? '⚙️ Admin'
-                    : `${user.practiceName} (${this.getRoleLabel(user.role)})`;
+                if (this.isCurrentUserMasterAdmin()) {
+                    userName.textContent = '⚙️ Master admin';
+                } else if (this.isCurrentUserTeamMember()) {
+                    userName.textContent = `${user.practiceName} (Team)`;
+                } else if (this.isCurrentUserPractice()) {
+                    userName.textContent = `${user.practiceName} (Practice)`;
+                } else {
+                    userName.textContent = `${user.practiceName} (${this.getRoleLabel(user.role)})`;
+                }
             }
 
             // Dynamically inject Admin Panel link for admin users
@@ -301,6 +423,58 @@ class AuthSystem {
                     dropdownMenu.insertBefore(link, accountLink);
                 } else {
                     dropdownMenu.prepend(link);
+                }
+            }
+
+            if (dropdownMenu && this.isCurrentUserMasterAdmin() && !document.getElementById('diaryAdminLink')) {
+                const diaryLink = document.createElement('a');
+                diaryLink.href = 'diary-admin.html';
+                diaryLink.className = 'dropdown-item';
+                diaryLink.id = 'diaryAdminLink';
+                diaryLink.textContent = '📅 Site booking diary';
+                diaryLink.style.cssText = 'color:#1a5276;font-weight:700;';
+                const adminLink = document.getElementById('adminPanelLink');
+                const accountLink = document.getElementById('accountLink');
+                if (adminLink) {
+                    adminLink.insertAdjacentElement('afterend', diaryLink);
+                } else if (accountLink) {
+                    dropdownMenu.insertBefore(diaryLink, accountLink);
+                } else {
+                    dropdownMenu.prepend(diaryLink);
+                }
+            }
+
+            const accountLinkEl = document.getElementById('accountLink');
+            if (dropdownMenu && this.isCurrentUserTeamMember() && !document.getElementById('staffDiaryLink')) {
+                const staffDiary = document.createElement('a');
+                staffDiary.href = 'staff-diary.html';
+                staffDiary.className = 'dropdown-item';
+                staffDiary.id = 'staffDiaryLink';
+                staffDiary.textContent = '📅 My availability';
+                staffDiary.style.cssText = 'color:#1a5276;font-weight:600;';
+                if (accountLinkEl) {
+                    dropdownMenu.insertBefore(staffDiary, accountLinkEl);
+                } else {
+                    dropdownMenu.prepend(staffDiary);
+                }
+            }
+
+            if (dropdownMenu && (this.isCurrentUserTeamMember() || this.isCurrentUserMasterAdmin()) && !document.getElementById('bookingsInboxLink')) {
+                const bookingsLink = document.createElement('a');
+                bookingsLink.href = 'bookings-inbox.html';
+                bookingsLink.className = 'dropdown-item';
+                bookingsLink.id = 'bookingsInboxLink';
+                bookingsLink.textContent = '📋 Booking requests';
+                bookingsLink.style.cssText = 'font-weight:600;';
+                const ref = document.getElementById('staffDiaryLink')
+                    || document.getElementById('diaryAdminLink')
+                    || document.getElementById('adminPanelLink');
+                if (ref) {
+                    ref.insertAdjacentElement('afterend', bookingsLink);
+                } else if (accountLinkEl) {
+                    dropdownMenu.insertBefore(bookingsLink, accountLinkEl);
+                } else {
+                    dropdownMenu.prepend(bookingsLink);
                 }
             }
 
@@ -370,8 +544,9 @@ class AuthSystem {
             id: users[idx].id,
             email: users[idx].email,
             practiceName: users[idx].practiceName,
+            isAdmin: users[idx].isAdmin === true,
             role: this.getUserRole(users[idx]),
-            accountType: users[idx].accountType || (this.getUserRole(users[idx]) === 'practice' ? 'practice' : 'professional'),
+            accountType: users[idx].accountType || (this.getUserRole(users[idx]) === 'practice' ? 'practice' : 'team_member'),
             loginTime: session.loginTime
         };
         localStorage.setItem(this.sessionKey, JSON.stringify(updatedSession));
@@ -496,13 +671,43 @@ class AuthSystem {
         return true;
     }
 
-    // Require a veterinary professional role for restricted pages
+    /** Booking diary editor — master admin account only */
+    requireMasterAdmin(redirectUrl = 'home.html') {
+        if (!this.isLoggedIn()) {
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+            return false;
+        }
+        if (!this.isCurrentUserMasterAdmin()) {
+            window.location.href = redirectUrl;
+            return false;
+        }
+        return true;
+    }
+
+    // Resources / discharge forms — team members + master; not practice-only accounts
     requireProfessionalAccess(redirectUrl = 'home.html') {
         if (!this.isLoggedIn()) {
             window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
             return false;
         }
+        if (this.isCurrentUserPractice() && !this.isCurrentUserMasterAdmin()) {
+            window.location.href = redirectUrl;
+            return false;
+        }
         if (!this.isCurrentUserProfessional()) {
+            window.location.href = redirectUrl;
+            return false;
+        }
+        return true;
+    }
+
+    /** Staff diary + booking requests inbox — team members and master admin */
+    requireTeamStaffAccess(redirectUrl = 'home.html') {
+        if (!this.isLoggedIn()) {
+            window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
+            return false;
+        }
+        if (!this.isCurrentUserTeamMember() && !this.isCurrentUserMasterAdmin()) {
             window.location.href = redirectUrl;
             return false;
         }

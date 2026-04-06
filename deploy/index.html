@@ -10,8 +10,7 @@
 </head>
 <body class="gate-landing-page">
     <script>
-        sessionStorage.removeItem('nvs_from_gate');
-        if (sessionStorage.getItem('nvs_site_access') === '1') {
+        if (sessionStorage.getItem('northern_vet_site_access') === '1') {
             window.location.replace('home.html');
         }
     </script>
@@ -21,20 +20,40 @@
                 <h1 class="site-title">Northern Veterinary Service</h1>
                 <p class="tagline">Veterinary Peripatetic Services</p>
             </div>
+            <div class="auth-section">
+                <div class="auth-buttons" id="authButtons">
+                    <a href="login.html" class="btn-auth btn-login">Login</a>
+                    <a href="signup.html" class="btn-auth btn-signup">Sign Up</a>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button type="button" class="user-dropdown-btn" id="userDropdownBtn" aria-expanded="false" aria-haspopup="true">
+                        <span class="user-icon" aria-hidden="true">👤</span>
+                        <span class="user-name" id="userName"></span>
+                        <span class="dropdown-arrow" aria-hidden="true">▼</span>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu" role="menu">
+                        <a href="account.html" class="dropdown-item" id="accountLink" role="menuitem">My Account</a>
+                        <a href="#" class="dropdown-item" id="logoutBtn" role="menuitem">Logout</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </header>
 
     <main>
         <section class="hero gate-hero">
-            <div class="hero-image-strip" aria-label="Surgeon banner images">
-                <img src="images/Surgeon/Surgeon4.png" alt="">
-                <img src="images/Surgeon/Surgeon6.jpeg" alt="">
+            <div class="hero-image-strip" aria-label="Surgical procedures">
+                <div class="hero-img-panel hero-img-panel--surgeon-left">
+                    <img class="hero-surgeon-img" src="images/Surgeon/Surgeon4.png" alt="">
+                </div>
+                <div class="hero-img-panel hero-img-panel--surgeon-mid">
+                    <img class="hero-surgeon-img" src="images/Surgeon/Surgeon6.jpeg" alt="">
+                </div>
             </div>
-            <!-- Invisible hotspot on the left surgeon’s nose — only path to enter.html -->
-            <a href="enter.html" class="hero-nose-link" id="noseGateLink" aria-label="Continue to site access" title=""></a>
+            <div class="hero-scrim" aria-hidden="true"></div>
             <div class="hero-content">
                 <h2>Bringing Veterinary Services to Your Practice</h2>
-                <p class="gate-hint">This site is for authorised visitors only.</p>
+                <p class="gate-hint">This is a members only site</p>
             </div>
         </section>
     </main>
@@ -44,10 +63,7 @@
             <p>&copy; 2026 Verlexis Ltd. All rights reserved.</p>
         </div>
     </footer>
-    <script>
-        document.getElementById('noseGateLink').addEventListener('click', function () {
-            sessionStorage.setItem('nvs_from_gate', '1');
-        });
-    </script>
+    <script src="auth.js"></script>
+    <script src="index.js"></script>
 </body>
 </html>

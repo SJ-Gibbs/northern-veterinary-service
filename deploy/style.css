@@ -11,6 +11,11 @@
     --text-light: #666666;
     --bg-light: #f8f9fa;
     --bg-gray: #e9ecef;
+    /* Hero strip: true neutral greys (R=G=B) — no brown / warm tint */
+    --hero-scene-bg: #dbdbdb;
+    --hero-scene-bg-soft: #e8e8e8;
+    --hero-scene-bg-mid: #efefef;
+    --hero-scene-bg-deep: #d0d0d0;
     --border-color: #dee2e6;
     --white: #ffffff;
     --shadow-sm: 0 2px 4px rgba(0,0,0,0.1);
@@ -62,6 +67,13 @@ p {
     margin: 0 auto;
     padding: 1rem 2rem;
     position: relative;
+}
+
+/* Reserve space so absolutely positioned .auth-section (top right) does not overlap the title */
+@media (min-width: 769px) {
+    .header-container .logo-section {
+        padding-right: 12rem;
+    }
 }
 
 .logo-section {
@@ -130,166 +142,6 @@ p {
     color: var(--white);
 }
 
-/* ===== Hero Section ===== */
-/* Photos as full banner background — no blue gradient */
-.hero {
-    position: relative;
-    min-height: min(58vh, 560px);
-    /* Soft neutral underlay where masks feather — less harsh than page white, not a dark seam */
-    background: #e0e4e8;
-    color: var(--white);
-    padding: 0;
-    text-align: center;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Full-bleed surgeon images — overlapped with gradient masks for a soft centre join */
-.hero-image-strip {
-    position: absolute;
-    inset: 0;
-    z-index: 0;
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: 1fr;
-    width: 100%;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    line-height: 0;
-    background: #e0e4e8;
-}
-
-.hero-image-strip img {
-    grid-area: 1 / 1;
-    width: 57%;
-    min-width: 0;
-    height: 100%;
-    margin: 0;
-    padding: 0;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    object-fit: cover;
-    object-position: center;
-    display: block;
-    -webkit-mask-size: 100% 100%;
-    mask-size: 100% 100%;
-    -webkit-mask-repeat: no-repeat;
-    mask-repeat: no-repeat;
-}
-
-.hero-image-strip img:first-of-type {
-    justify-self: start;
-    align-self: stretch;
-    /* Wider feather — stronger blend opacity (compare A/B vs reduced-opacity version) */
-    -webkit-mask-image: linear-gradient(
-        90deg,
-        #000 0%,
-        #000 12%,
-        rgba(0, 0, 0, 0.96) 18%,
-        rgba(0, 0, 0, 0.9) 24%,
-        rgba(0, 0, 0, 0.82) 32%,
-        rgba(0, 0, 0, 0.72) 40%,
-        rgba(0, 0, 0, 0.6) 48%,
-        rgba(0, 0, 0, 0.48) 56%,
-        rgba(0, 0, 0, 0.36) 64%,
-        rgba(0, 0, 0, 0.25) 72%,
-        rgba(0, 0, 0, 0.15) 80%,
-        rgba(0, 0, 0, 0.08) 88%,
-        rgba(0, 0, 0, 0.03) 95%,
-        transparent 100%
-    );
-    mask-image: linear-gradient(
-        90deg,
-        #000 0%,
-        #000 12%,
-        rgba(0, 0, 0, 0.96) 18%,
-        rgba(0, 0, 0, 0.9) 24%,
-        rgba(0, 0, 0, 0.82) 32%,
-        rgba(0, 0, 0, 0.72) 40%,
-        rgba(0, 0, 0, 0.6) 48%,
-        rgba(0, 0, 0, 0.48) 56%,
-        rgba(0, 0, 0, 0.36) 64%,
-        rgba(0, 0, 0, 0.25) 72%,
-        rgba(0, 0, 0, 0.15) 80%,
-        rgba(0, 0, 0, 0.08) 88%,
-        rgba(0, 0, 0, 0.03) 95%,
-        transparent 100%
-    );
-}
-
-.hero-image-strip img:last-of-type {
-    justify-self: end;
-    align-self: stretch;
-    -webkit-mask-image: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(0, 0, 0, 0.03) 5%,
-        rgba(0, 0, 0, 0.08) 12%,
-        rgba(0, 0, 0, 0.15) 20%,
-        rgba(0, 0, 0, 0.25) 28%,
-        rgba(0, 0, 0, 0.36) 36%,
-        rgba(0, 0, 0, 0.48) 44%,
-        rgba(0, 0, 0, 0.6) 52%,
-        rgba(0, 0, 0, 0.72) 60%,
-        rgba(0, 0, 0, 0.82) 68%,
-        rgba(0, 0, 0, 0.9) 76%,
-        rgba(0, 0, 0, 0.96) 82%,
-        #000 88%,
-        #000 100%
-    );
-    mask-image: linear-gradient(
-        90deg,
-        transparent 0%,
-        rgba(0, 0, 0, 0.03) 5%,
-        rgba(0, 0, 0, 0.08) 12%,
-        rgba(0, 0, 0, 0.15) 20%,
-        rgba(0, 0, 0, 0.25) 28%,
-        rgba(0, 0, 0, 0.36) 36%,
-        rgba(0, 0, 0, 0.48) 44%,
-        rgba(0, 0, 0, 0.6) 52%,
-        rgba(0, 0, 0, 0.72) 60%,
-        rgba(0, 0, 0, 0.82) 68%,
-        rgba(0, 0, 0, 0.9) 76%,
-        rgba(0, 0, 0, 0.96) 82%,
-        #000 88%,
-        #000 100%
-    );
-}
-
-.hero-content {
-    position: relative;
-    z-index: 1;
-    max-width: 920px;
-    margin: 0 auto;
-    padding: 1.5rem 2rem;
-}
-
-.hero h2 {
-    font-size: clamp(2.1rem, 5.5vw, 3.75rem);
-    line-height: 1.12;
-    margin-bottom: 1.5rem;
-    color: var(--white);
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 2px 12px rgba(0, 0, 0, 0.45);
-}
-
-.hero-subtitle {
-    font-size: 1.25rem;
-    margin-bottom: 2rem;
-    opacity: 0.95;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.85), 0 2px 8px rgba(0, 0, 0, 0.4);
-}
-
-.hero-cta {
-    display: flex;
-    gap: 1rem;
-    justify-content: center;
-    flex-wrap: wrap;
-}
 
 /* ===== Buttons ===== */
 .btn {
@@ -584,6 +436,238 @@ button[type="submit"]:hover {
     box-shadow: var(--shadow-md);
 }
 
+/* ===== Booking calendar (Advice & Booking page) ===== */
+.booking-account-summary {
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--text-light);
+    margin: -0.5rem auto 1.25rem;
+    max-width: 36rem;
+}
+
+.booking-locum-role-heading {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.booking-locum-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem 1.5rem;
+    align-items: center;
+}
+
+.booking-locum-radio-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.booking-locum-radio-label input {
+    width: auto;
+    margin: 0;
+    accent-color: var(--primary-color);
+}
+
+.booking-calendar-group {
+    max-width: 100%;
+}
+
+.booking-calendar-label {
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 600;
+    color: var(--text-dark);
+}
+
+.booking-calendar {
+    border: 2px solid var(--border-color);
+    border-radius: 8px;
+    padding: 1rem;
+    background: var(--bg-light);
+}
+
+.booking-calendar-toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.booking-calendar-title {
+    margin: 0;
+    font-size: 1.15rem;
+    color: var(--primary-color);
+    font-weight: 600;
+    flex: 1;
+    text-align: center;
+}
+
+.booking-cal-nav {
+    flex: 0 0 auto;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0;
+    border: 2px solid var(--primary-color);
+    border-radius: 5px;
+    background: var(--white);
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    line-height: 1;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.booking-cal-nav:hover:not(:disabled) {
+    background: var(--primary-color);
+    color: var(--white);
+}
+
+.booking-cal-nav:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.booking-calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+    margin-bottom: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text-light);
+    text-align: center;
+}
+
+.booking-calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 4px;
+}
+
+.booking-cal-cell--pad {
+    min-height: 2.5rem;
+}
+
+.booking-cal-day {
+    min-height: 2.5rem;
+    padding: 0.25rem;
+    border: 2px solid transparent;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.booking-cal-day:disabled {
+    cursor: not-allowed;
+    opacity: 0.85;
+}
+
+.booking-cal-day--available {
+    background: #d1e7dd;
+    color: #0f5132;
+    border-color: #badbcc;
+}
+
+.booking-cal-day--available:hover:not(:disabled) {
+    background: #a3cfbb;
+    transform: scale(1.02);
+}
+
+.booking-cal-day--limited {
+    background: #fff3cd;
+    color: #664d03;
+    border-color: #ffecb5;
+}
+
+.booking-cal-day--limited:hover:not(:disabled) {
+    background: #ffe69c;
+    transform: scale(1.02);
+}
+
+.booking-cal-day--unavailable {
+    background: #f8d7da;
+    color: #842029;
+    border-color: #f5c2c7;
+}
+
+.booking-cal-day--selected {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 1px;
+    z-index: 1;
+}
+
+.booking-calendar-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1.25rem;
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    font-size: 0.8rem;
+    color: var(--text-light);
+}
+
+.booking-calendar-legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.booking-cal-swatch {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border-radius: 3px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.booking-cal-swatch--available {
+    background: #d1e7dd;
+}
+
+.booking-cal-swatch--limited {
+    background: #fff3cd;
+}
+
+.booking-cal-swatch--unavailable {
+    background: #f8d7da;
+}
+
+.booking-cal-swatch--diary-override {
+    border: 2px solid #1a5276;
+    background: transparent;
+}
+
+.booking-cal-day--diary-override {
+    box-shadow: inset 0 0 0 2px #1a5276;
+}
+
+.booking-calendar-mode-hint {
+    margin: 0 0 0.5rem;
+    font-size: 0.85rem;
+    color: var(--secondary-color);
+    line-height: 1.35;
+}
+
+.booking-calendar-mode-hint:empty {
+    display: none;
+}
+
+.booking-calendar-selected {
+    margin: 0.75rem 0 0;
+    font-size: 0.9rem;
+    color: var(--text-dark);
+    line-height: 1.4;
+}
+
 /* ===== Team Section ===== */
 .team-container {
     display: grid;
@@ -596,15 +680,17 @@ button[type="submit"]:hover {
 
 .staffbox {
     background-color: var(--white);
-    padding: 1.5rem;
-    border-radius: 10px;
+    padding: 0;
+    border-radius: 0;
     box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
     text-align: center;
     transition: var(--transition);
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     justify-content: flex-start;
+    overflow: hidden;
 }
 
 .staffbox:hover {
@@ -612,22 +698,30 @@ button[type="submit"]:hover {
     box-shadow: var(--shadow-lg);
 }
 
+/* Full image visible: natural aspect ratio, no cover crop */
 .staffPhoto {
     display: block;
-    width: 200px;
-    height: 200px;
-    min-width: 200px;
-    min-height: 200px;
-    max-width: 200px;
-    max-height: 200px;
-    border-radius: 50%;
-    object-fit: cover;
-    object-position: center;
-    margin: 0 auto 1rem auto;
-    border: 4px solid var(--primary-color);
+    width: 100%;
+    height: auto;
+    max-width: 100%;
+    border-radius: 0;
+    margin: 0;
+    border: none;
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.staffbox h2,
+.staffbox .staff-title {
+    padding-left: 1.25rem;
+    padding-right: 1.25rem;
+}
+
+.staffbox .staff-title:last-of-type {
+    padding-bottom: 1.25rem;
 }
 
 .staffbox h2 {
+    padding-top: 1.25rem;
     font-size: 1.3rem;
     color: var(--primary-color);
     margin: 0;
@@ -693,26 +787,199 @@ button[type="submit"]:hover {
     color: var(--primary-color);
 }
 
+/* ===== Hero banner (40% | 20% | 40% strip + centred overlay copy) ===== */
+.hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto;
+    width: 100%;
+    background: var(--hero-scene-bg-deep);
+    overflow: hidden;
+}
+
+.hero-image-strip {
+    grid-area: 1 / 1;
+    display: grid;
+    /* Two halves only — no middle column (avoids a visible “merge band” rectangle) */
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    align-items: stretch;
+    align-self: stretch;
+    min-height: clamp(220px, 38vh, 560px);
+    max-height: 620px;
+}
+
+.hero-img-panel {
+    position: relative;
+    overflow: hidden;
+    /* Same as .hero so masked areas don’t show a different flat colour */
+    background: var(--hero-scene-bg-deep);
+    min-height: clamp(220px, 38vh, 560px);
+}
+
+.hero-surgeon-img {
+    width: 100%;
+    height: 100%;
+    min-height: inherit;
+    object-fit: cover;
+    object-position: center;
+    display: block;
+    opacity: 0.98;
+    /* Monochrome photos + light lift (no colour cast) */
+    filter: grayscale(1) brightness(1.12);
+}
+
+/* Complementary masks: left fades out toward centre, right fades in from centre — no third column */
+@media (min-width: 769px) {
+    .hero-img-panel--surgeon-left .hero-surgeon-img {
+        -webkit-mask-image: linear-gradient(
+            90deg,
+            #000 0%,
+            #000 36%,
+            rgba(0, 0, 0, 0.92) 48%,
+            rgba(0, 0, 0, 0.65) 60%,
+            rgba(0, 0, 0, 0.38) 74%,
+            rgba(0, 0, 0, 0.14) 88%,
+            transparent 100%
+        );
+        mask-image: linear-gradient(
+            90deg,
+            #000 0%,
+            #000 36%,
+            rgba(0, 0, 0, 0.92) 48%,
+            rgba(0, 0, 0, 0.65) 60%,
+            rgba(0, 0, 0, 0.38) 74%,
+            rgba(0, 0, 0, 0.14) 88%,
+            transparent 100%
+        );
+    }
+
+    .hero-img-panel--surgeon-mid .hero-surgeon-img {
+        -webkit-mask-image: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(0, 0, 0, 0.14) 12%,
+            rgba(0, 0, 0, 0.38) 26%,
+            rgba(0, 0, 0, 0.65) 40%,
+            rgba(0, 0, 0, 0.92) 52%,
+            #000 64%,
+            #000 100%
+        );
+        mask-image: linear-gradient(
+            90deg,
+            transparent 0%,
+            rgba(0, 0, 0, 0.14) 12%,
+            rgba(0, 0, 0, 0.38) 26%,
+            rgba(0, 0, 0, 0.65) 40%,
+            rgba(0, 0, 0, 0.92) 52%,
+            #000 64%,
+            #000 100%
+        );
+    }
+}
+
+.hero-scrim {
+    grid-area: 1 / 1;
+    z-index: 1;
+    align-self: stretch;
+    min-height: 0;
+    /* Monochrome look via gradient only — no backdrop-filter (heavy on GPU) */
+    background: linear-gradient(
+        180deg,
+        rgba(0, 0, 0, 0.14) 0%,
+        rgba(0, 0, 0, 0.3) 42%,
+        rgba(0, 0, 0, 0.42) 100%
+    );
+    pointer-events: none;
+}
+
+.hero-content {
+    grid-area: 1 / 1;
+    z-index: 2;
+    place-self: center;
+    width: 100%;
+    max-width: min(48rem, 94vw);
+    margin: 0;
+    padding: 1.5rem 1.25rem;
+    text-align: center;
+    background: none;
+    border: none;
+}
+
+.hero h2 {
+    font-size: clamp(2.1rem, 5.2vw, 3.35rem);
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 1.15rem;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    text-shadow:
+        0 2px 4px rgba(0, 0, 0, 0.6),
+        0 10px 32px rgba(0, 0, 0, 0.4);
+}
+
+.hero-cta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Buttons readable on photo + scrim */
+.hero-content .btn {
+    font-size: 1.125rem;
+    padding: 0.85rem 1.65rem;
+}
+
+.hero-content .btn-primary {
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+}
+
+.hero-content .btn-secondary {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--white);
+    border-color: rgba(255, 255, 255, 0.88);
+}
+
+.hero-content .btn-secondary:hover {
+    background: rgba(255, 255, 255, 0.28);
+    color: var(--white);
+    border-color: var(--white);
+}
+
+.gate-hero .hero-content .gate-hint {
+    font-size: 1.2rem;
+    line-height: 1.45;
+    color: rgba(255, 255, 255, 0.95);
+    text-shadow:
+        0 1px 3px rgba(0, 0, 0, 0.75),
+        0 6px 20px rgba(0, 0, 0, 0.35);
+}
+
 /* ===== Footer ===== */
 .site-footer {
     background-color: var(--primary-color);
     color: var(--white);
-    padding: 3rem 2rem 1rem;
-    margin-top: 4rem;
+    padding: 1.75rem 2rem 0.65rem;
+    margin-top: 3rem;
 }
 
 .footer-content {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
+    gap: 1.35rem 1.5rem;
     max-width: 1200px;
-    margin: 0 auto 2rem;
+    margin: 0 auto 1.15rem;
 }
 
 .footer-section h3 {
     color: var(--white);
-    margin-bottom: 1rem;
-    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
 }
 
 .footer-section p {
@@ -741,22 +1008,53 @@ button[type="submit"]:hover {
 
 .footer-bottom {
     text-align: center;
-    padding-top: 2rem;
+    padding-top: 1rem;
     border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Gate / minimal footer: only copyright — avoid a second empty blue band (extra padding + rule) */
+.site-footer:not(:has(.footer-content)) {
+    padding: 0.85rem 2rem;
+}
+
+.site-footer:not(:has(.footer-content)) .footer-bottom {
+    border-top: none;
+    padding-top: 0;
 }
 
 /* ===== Responsive Design ===== */
 @media (max-width: 768px) {
-    .hero {
-        min-height: min(50vh, 460px);
+    .hero-image-strip {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto;
+        min-height: 0;
+        max-height: none;
+    }
+
+    .hero-img-panel--surgeon-left .hero-surgeon-img,
+    .hero-img-panel--surgeon-mid .hero-surgeon-img {
+        -webkit-mask-image: none;
+        mask-image: none;
+    }
+
+    .hero-img-panel {
+        min-height: clamp(160px, 28vh, 280px);
     }
 
     .hero-content {
-        padding: 1.25rem 1.25rem;
+        padding: 1.25rem 1rem;
     }
 
     .hero h2 {
-        font-size: clamp(1.85rem, 6.5vw, 2.45rem);
+        font-size: clamp(1.95rem, 6.8vw, 2.85rem);
+    }
+
+    .gate-hero .hero-content .gate-hint {
+        font-size: 1.1rem;
+    }
+
+    .hero-content .btn {
+        font-size: 1.05rem;
     }
     
     .hero-subtitle {
@@ -1218,6 +1516,10 @@ button[type="submit"]:hover {
 
 /* Mobile responsive for auth */
 @media (max-width: 768px) {
+    .header-container .logo-section {
+        padding-right: 0;
+    }
+
     .auth-section {
         position: static;
         margin-top: 1rem;
@@ -1658,32 +1960,6 @@ button[type="submit"]:hover {
     flex: 1;
 }
 
-.gate-hero {
-    position: relative;
-}
-
-.gate-hero .hero-nose-link {
-    position: absolute;
-    z-index: 2;
-    left: 24%;
-    top: 36%;
-    width: clamp(48px, 7vw, 88px);
-    height: clamp(40px, 5.5vw, 72px);
-    border-radius: 50%;
-    cursor: pointer;
-    background: rgba(255, 255, 255, 0.02);
-    border: 0;
-    padding: 0;
-    text-indent: -9999px;
-    overflow: hidden;
-    box-shadow: none;
-}
-
-.gate-hero .hero-nose-link:focus-visible {
-    outline: 2px solid var(--accent-color);
-    outline-offset: 3px;
-}
-
 .gate-hint {
     font-size: 0.95rem;
     opacity: 0.92;
@@ -1763,9 +2039,3 @@ button[type="submit"]:hover {
     color: var(--white);
 }
 
-@media (max-width: 768px) {
-    .gate-hero .hero-nose-link {
-        left: 18%;
-        top: 34%;
-    }
-}

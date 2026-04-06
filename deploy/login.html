@@ -59,8 +59,8 @@
         <div class="content-wrapper">
             <section class="auth-page">
                 <div class="auth-container">
-                    <h1>Professional Login</h1>
-                    <p class="auth-subtitle">Login as a vet or veterinary nurse to access protected resources and member services</p>
+                    <h1>Member login</h1>
+                    <p class="auth-subtitle">Sign in as a Northern Veterinary Service <strong>team member</strong> or as a <strong>member practice</strong>. Use the email and password for your account type.</p>
 
                     <div id="loginMessage" class="message" style="display: none;"></div>
 
@@ -134,11 +134,9 @@
             if (result.success) {
                 messageDiv.className = 'message success-message';
                 
-                // Redirect after successful login
-                setTimeout(() => {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const redirect = urlParams.get('redirect');
-                    window.location.href = redirect || 'home.html';
+                // Always continue on the home page after login
+                setTimeout(function () {
+                    window.location.href = 'home.html';
                 }, 1000);
             } else {
                 messageDiv.className = 'message error-message';
