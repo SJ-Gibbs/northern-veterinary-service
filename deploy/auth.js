@@ -385,6 +385,29 @@ class AuthSystem {
         return this.professionalRoles.includes(this.getUserRole(user));
     }
 
+    /**
+     * When logged in, make the header site title link to home.html; when logged out, plain heading.
+     */
+    applyLogoHomeLink() {
+        const section = document.querySelector('.logo-section');
+        if (!section) return;
+        const h1 = section.querySelector('h1.site-title');
+        if (!h1) return;
+        const link = section.querySelector('a.site-logo-home');
+
+        if (this.isLoggedIn()) {
+            if (link && link.contains(h1)) return;
+            const a = document.createElement('a');
+            a.href = 'home.html';
+            a.className = 'site-logo-home';
+            a.setAttribute('aria-label', 'Home — Northern Veterinary Service');
+            h1.parentNode.insertBefore(a, h1);
+            a.appendChild(h1);
+        } else if (link && link.contains(h1)) {
+            link.replaceWith(h1);
+        }
+    }
+
     // Update UI based on authentication state
     updateAuthUI() {
         const authButtons = document.getElementById('authButtons');
@@ -396,6 +419,9 @@ class AuthSystem {
             const isAdmin = this.isCurrentUserAdmin();
             const user = this.getCurrentUser();
             const isProfessional = this.isCurrentUserProfessional();
+            /** Main nav Resources link: master admin always, plus vets/nurses/team (not practice-only). */
+            const showResourcesInMainNav =
+                this.isCurrentUserMasterAdmin() || this.isCurrentUserProfessional();
             if (authButtons) authButtons.style.display = 'none';
             if (userMenu) userMenu.style.display = 'block';
             if (userName) {
@@ -478,19 +504,24 @@ class AuthSystem {
                 }
             }
 
-            // Dynamically inject Resources link for professional users
+            // Dynamically inject Resources link (same order as resources.html: before Policies)
             const navList = document.querySelector('.nav-list');
             if (navList) {
                 const existingResourcesLink = navList.querySelector('a[href="resources.html"]');
-                if (isProfessional && !existingResourcesLink) {
+                if (showResourcesInMainNav && !existingResourcesLink) {
                     const li = document.createElement('li');
                     li.id = 'resourcesNavLink';
                     const link = document.createElement('a');
                     link.href = 'resources.html';
                     link.textContent = 'Resources';
                     li.appendChild(link);
-                    navList.appendChild(li);
-                } else if (!isProfessional && existingResourcesLink) {
+                    const policiesItem = navList.querySelector('a[href="policies.html"]')?.closest('li');
+                    if (policiesItem) {
+                        policiesItem.insertAdjacentElement('beforebegin', li);
+                    } else {
+                        navList.appendChild(li);
+                    }
+                } else if (!showResourcesInMainNav && existingResourcesLink) {
                     existingResourcesLink.closest('li')?.remove();
                 }
             }
@@ -500,6 +531,7 @@ class AuthSystem {
             const existingResourcesLink = document.querySelector('.nav-list a[href="resources.html"]');
             if (existingResourcesLink) existingResourcesLink.closest('li')?.remove();
         }
+        this.applyLogoHomeLink();
     }
 
     // Get full user profile (including fields not stored in session)

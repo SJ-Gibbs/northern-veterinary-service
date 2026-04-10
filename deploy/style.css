@@ -86,6 +86,25 @@ p {
     margin: 0;
 }
 
+/* Logged-in users: site title in header links to home (see auth.js applyLogoHomeLink) */
+.logo-section a.site-logo-home {
+    text-decoration: none;
+    color: inherit;
+    display: inline-block;
+}
+
+.logo-section a.site-logo-home:hover .site-title,
+.logo-section a.site-logo-home:focus-visible .site-title {
+    text-decoration: underline;
+    text-underline-offset: 3px;
+}
+
+.logo-section a.site-logo-home:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 3px;
+    border-radius: 2px;
+}
+
 .tagline {
     font-size: 0.9rem;
     color: var(--text-light);
@@ -698,16 +717,27 @@ button[type="submit"]:hover {
     box-shadow: var(--shadow-lg);
 }
 
-/* Full image visible: natural aspect ratio, no cover crop */
-.staffPhoto {
-    display: block;
+/* Square frame; image absolutely fills it (object-fit cover) */
+.staffbox .staff-photo-frame {
+    position: relative;
     width: 100%;
-    height: auto;
-    max-width: 100%;
-    border-radius: 0;
+    aspect-ratio: 1 / 1;
+    overflow: hidden;
+    flex-shrink: 0;
+    border-bottom: 3px solid var(--primary-color);
+    background-color: var(--white);
+}
+
+.staffbox .staffPhoto {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    display: block;
     margin: 0;
     border: none;
-    border-bottom: 3px solid var(--primary-color);
+    object-fit: cover;
+    object-position: center 32%;
 }
 
 .staffbox h2,
