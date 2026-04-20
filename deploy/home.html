@@ -59,12 +59,14 @@
     <main>
         <!-- Hero Section -->
         <section class="hero">
-            <div class="hero-image-strip" aria-label="Surgical procedures">
+            <div class="hero-image-strip" aria-label="Surgical and diagnostic imaging" data-hero-banner-cycle>
                 <div class="hero-img-panel hero-img-panel--surgeon-left">
-                    <img class="hero-surgeon-img" src="images/Herophoto/Surgeon4.png" alt="Steven Gibbs BVSc MRCVS — surgical procedure" fetchpriority="high" decoding="async">
+                    <img class="hero-surgeon-img hero-banner-layer hero-banner-layer--a" src="images/Herophoto/Surgeon4.png" alt="Steven Gibbs BVSc MRCVS — surgical procedure" fetchpriority="high" decoding="async">
+                    <img class="hero-surgeon-img hero-banner-layer hero-banner-layer--b" src="images/Herophoto/ultrasound1.png" alt="Ultrasound imaging" loading="lazy" decoding="async">
                 </div>
                 <div class="hero-img-panel hero-img-panel--surgeon-mid">
-                    <img class="hero-surgeon-img" src="images/Herophoto/Surgeon6.jpeg" alt="Veterinary surgeon procedure" decoding="async">
+                    <img class="hero-surgeon-img hero-banner-layer hero-banner-layer--a" src="images/Herophoto/Surgeon6.jpeg" alt="Veterinary surgeon procedure" decoding="async">
+                    <img class="hero-surgeon-img hero-banner-layer hero-banner-layer--b" src="images/Herophoto/ultrasound2.jpeg" alt="Ultrasound imaging" loading="lazy" decoding="async">
                 </div>
             </div>
             <div class="hero-scrim" aria-hidden="true"></div>
@@ -188,6 +190,7 @@
 
     <script src="auth.js"></script>
     <script src="index.js"></script>
+    <script src="hero-banner.js"></script>
     <script>
         document.getElementById('siteExitLink').addEventListener('click', function (e) {
             e.preventDefault();
