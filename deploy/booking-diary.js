@@ -65,6 +65,19 @@
         saveOverrides(o);
     }
 
+    /** Merge server map into site overrides (used by diary-admin + API). */
+    function importSiteOverrides(obj) {
+        if (!obj || typeof obj !== 'object') return;
+        var o = getOverrides();
+        Object.keys(obj).forEach(function (k) {
+            var st = obj[k];
+            if (st === 'available' || st === 'limited' || st === 'unavailable') {
+                o[k] = st;
+            }
+        });
+        saveOverrides(o);
+    }
+
     function getBookingAvailability(iso) {
         var over = getOverride(iso);
         if (over) return over;
@@ -114,10 +127,106 @@
         }
     }
 
+    function importStaffOverrides(userId, obj) {
+        if (!userId || !obj || typeof obj !== 'object') return;
+        var all = getAllStaffDiaries();
+        if (!all[userId]) all[userId] = {};
+        Object.keys(obj).forEach(function (k) {
+            var st = obj[k];
+            if (st === 'available' || st === 'limited' || st === 'unavailable') {
+                all[userId][k] = st;
+            }
+        });
+        saveAllStaffDiaries(all);
+    }
+
     function getStaffBookingAvailability(userId, iso) {
         var over = getStaffOverride(userId, iso);
         if (over) return over;
         return getDemoAvailability(iso);
+    }
+
+    var USERS_KEY = 'northern_vet_users';
+    var BOOKING_REQ_KEY = 'northern_vet_booking_requests';
+
+    /** Active team_member accounts (for aggregating who can work on a day). */
+    function getTeamMemberUserIds() {
+        try {
+            var raw = localStorage.getItem(USERS_KEY);
+            var users = raw ? JSON.parse(raw) : [];
+            if (!Array.isArray(users)) return [];
+            return users
+                .filter(function (u) {
+                    return (
+                        u &&
+                        u.accountType === 'team_member' &&
+                        !u.isAdmin &&
+                        u.isActive !== false
+                    );
+                })
+                .map(function (u) {
+                    return u.id;
+                });
+        } catch (e) {
+            return [];
+        }
+    }
+
+    function getBookingRequestsList() {
+        try {
+            var raw = localStorage.getItem(BOOKING_REQ_KEY);
+            var list = raw ? JSON.parse(raw) : [];
+            return Array.isArray(list) ? list : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
+    /** True if any stored request uses this calendar day (single or locum multi-date). */
+    function dateHasBookingRequest(iso) {
+        var list = getBookingRequestsList();
+        for (var i = 0; i < list.length; i++) {
+            var d = (list[i] && list[i].data) || {};
+            var pd = d.preferredDate;
+            if (pd && String(pd).trim() === iso) return true;
+            var pds = d.preferredDates;
+            if (pds && typeof pds === 'string') {
+                var parts = pds.split(',');
+                for (var j = 0; j < parts.length; j++) {
+                    if (String(parts[j]).trim() === iso) return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Member practice calendar (booking.html): same CSS classes as before —
+     * available = green, limited = amber, unavailable = red.
+     * Green: site diary allows the day, ≥1 team member available/limited, no booking request on that date.
+     * Amber: same but at least one booking request already uses that date.
+     * Red: site diary closed, or no team member is available/limited that day.
+     * If there are no team_member accounts, falls back to site diary + demo rules only.
+     */
+    function getMemberPracticeCalendarStatus(iso) {
+        var site = getBookingAvailability(iso);
+        if (site === 'unavailable') return 'unavailable';
+
+        var teamIds = getTeamMemberUserIds();
+        if (teamIds.length === 0) {
+            return site;
+        }
+
+        var staffCount = 0;
+        for (var t = 0; t < teamIds.length; t++) {
+            var st = getStaffBookingAvailability(teamIds[t], iso);
+            if (st === 'available' || st === 'limited') staffCount++;
+        }
+        if (staffCount === 0) return 'unavailable';
+
+        if (dateHasBookingRequest(iso)) return 'limited';
+
+        return 'available';
     }
 
     global.BookingDiary = {
@@ -129,9 +238,14 @@
         setOverride: setOverride,
         clearOverride: clearOverride,
         getOverrides: getOverrides,
+        importSiteOverrides: importSiteOverrides,
         getStaffOverride: getStaffOverride,
         setStaffOverride: setStaffOverride,
         clearStaffOverride: clearStaffOverride,
-        getStaffBookingAvailability: getStaffBookingAvailability
+        getStaffBookingAvailability: getStaffBookingAvailability,
+        importStaffOverrides: importStaffOverrides,
+        getTeamMemberUserIds: getTeamMemberUserIds,
+        dateHasBookingRequest: dateHasBookingRequest,
+        getMemberPracticeCalendarStatus: getMemberPracticeCalendarStatus
     };
 })(typeof window !== 'undefined' ? window : this);

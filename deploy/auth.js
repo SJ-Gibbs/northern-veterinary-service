@@ -1,309 +1,160 @@
-// Authentication System for Northern Veterinary Service
-// NOTE: This is a client-side demo authentication system using localStorage
-// For production use, implement proper server-side authentication with secure password hashing
+// Northern Veterinary Service — API-backed auth (Express session + MySQL)
+// Run the site via: node server/app.js (serves /api and static deploy/)
+
+const OFFERABLE_SERVICES_CATALOG = [
+    {
+        section: 'Orthopaedic procedures',
+        items: [
+            { id: 'fracture_repair_simple', label: 'Fracture Repair (Simple)' },
+            { id: 'fracture_repair_complex', label: 'Fracture Repair (Complex)' },
+            { id: 'tplo', label: 'Tibial Plateau Levelling Osteotomy (TPLO)' },
+            { id: 'fho', label: 'Femoral Head and Neck Excision (FHO)' },
+            { id: 'medial_patella_luxation_repair', label: 'Medial Patella Luxation Repair' },
+            { id: 'carpal_arthrodesis', label: 'Carpal Arthrodesis' },
+            { id: 'tarsal_arthrodesis', label: 'Tarsal Arthrodesis' },
+            { id: 'hif_repair', label: 'Humeral Intracondylar Fissure (HIF) Repair' },
+            { id: 'angular_limb_deformity_correction', label: 'Angular Limb Deformity Correction' }
+        ]
+    },
+    {
+        section: 'Soft tissue procedures',
+        items: [
+            { id: 'perineal_urethrostomy', label: 'Perineal Urethrostomy' },
+            { id: 'tecabo', label: 'Total Ear Canal Ablation & Bulla Osteotomy (TECABO)' },
+            { id: 'mass_excision_simple', label: 'Mass Excision (Simple)' },
+            { id: 'mass_excision_complex', label: 'Mass Excision with Complex Reconstruction' },
+            { id: 'diaphragmatic_hernia_repair', label: 'Diaphragmatic Hernia Repair' },
+            { id: 'perineal_hernia_repair', label: 'Perineal Hernia Repair' },
+            { id: 'nephrectomy', label: 'Nephrectomy' },
+            { id: 'liver_lobectomy', label: 'Liver Lobectomy' }
+        ]
+    },
+    {
+        section: 'Minimally invasive',
+        items: [{ id: 'laparoscopic_surgery', label: 'Laparoscopic surgery' }]
+    },
+    {
+        section: 'Diagnostic services',
+        items: [
+            { id: 'ultrasonography_abdominal', label: 'Ultrasonography (Abdominal)' },
+            { id: 'echocardiography', label: 'Echocardiography' },
+            { id: 'endoscopy_gastroscopy_colonoscopy', label: 'Endoscopy (Gastroscopy/Colonoscopy)' },
+            { id: 'radiographic_interpretation', label: 'Radiographic Interpretation (Member Practices)' },
+            { id: 'consultation_advice', label: 'Consultation & Advice (Member Practices)' }
+        ]
+    },
+    {
+        section: 'Other',
+        items: [{ id: 'veterinary_locum', label: 'Veterinary locum' }]
+    }
+];
+
+const OFFERABLE_SERVICE_IDS = OFFERABLE_SERVICES_CATALOG.flatMap(s => s.items.map(i => i.id));
+
+const LEGACY_SERVICES_EXPAND = {
+    orthopaedics: OFFERABLE_SERVICES_CATALOG[0].items.map(i => i.id),
+    softtissue: OFFERABLE_SERVICES_CATALOG[1].items.map(i => i.id),
+    laparoscopic: ['laparoscopic_surgery'],
+    ultrasonography: ['ultrasonography_abdominal', 'echocardiography'],
+    veterinary_locum: ['veterinary_locum']
+};
+
+const LEGACY_SERVICE_KEYS = new Set(Object.keys(LEGACY_SERVICES_EXPAND));
+
+const API = '';
+
+async function apiFetch(path, options = {}) {
+    const { body, headers, ...rest } = options;
+    const o = { credentials: 'include', ...rest };
+    o.headers = { ...(headers || {}) };
+    if (body !== undefined) {
+        if (body instanceof FormData) {
+            o.body = body;
+        } else if (typeof body === 'object') {
+            o.headers['Content-Type'] = 'application/json';
+            o.body = JSON.stringify(body);
+        } else {
+            o.body = body;
+        }
+    }
+    return fetch(API + path, o);
+}
 
 class AuthSystem {
     constructor() {
-        this.storageKey = 'northern_vet_users';
-        this.sessionKey = 'northern_vet_current_user';
         this.professionalRoles = ['vet', 'veterinary_nurse'];
-        /** Master admin: Admin Panel, user management, site-wide booking diary (info@…) */
         this.masterAdminEmail = 'info@northernveterinaryservice.co.uk';
-        /** accountType: admin | team_member | practice */
-        this.init();
-    }
-
-    init() {
-        // Initialize users storage if it doesn't exist
-        if (!localStorage.getItem(this.storageKey)) {
-            localStorage.setItem(this.storageKey, JSON.stringify([]));
-        }
-
-        this.ensureMasterAdminAccount();
-        this.migrateAccountTypes();
-        this.ensureTestDemoAccount();
-
-        // Update UI based on auth state
-        this.updateAuthUI();
-        
-        // Add event listeners
+        this._session = null;
+        this._profile = null;
+        this._adminUsersCache = null;
+        this._hydrated = false;
+        this.ready = this._bootstrap();
         this.attachEventListeners();
     }
 
-    // Ensures info@northernveterinaryservice.co.uk is the only admin (runs every init)
-    ensureMasterAdminAccount() {
-        const MASTER = this.masterAdminEmail;
-        const pluralLegacyEmail = 'info@northernveterinaryservices.co.uk';
-        const typoEmail = 'info@nothernveterinaryservices.co.uk';
-        const legacyAdminEmail = 'admin@northernveterinaryservice.co.uk';
-        const users = this.getUsers();
-
-        users.forEach(u => {
-            if (u.email === pluralLegacyEmail) u.email = MASTER;
-        });
-
-        // Canonical email so login + password sync always match
-        users.forEach(u => {
-            if (u.email && u.email.trim().toLowerCase() === MASTER.toLowerCase()) {
-                u.email = MASTER;
-            }
-        });
-
-        if (!users.find(u => u.email === MASTER)) {
-            const typoIdx = users.findIndex(u => u.email === typoEmail);
-            if (typoIdx !== -1) {
-                users[typoIdx].email = MASTER;
-                users[typoIdx].practiceName = users[typoIdx].practiceName || 'Northern Veterinary Service Master Admin';
-            } else {
-                const legacyIdx = users.findIndex(
-                    u => u.email === legacyAdminEmail && u.isAdmin === true
-                );
-                if (legacyIdx !== -1) {
-                    users[legacyIdx].email = MASTER;
-                    users[legacyIdx].practiceName = 'Northern Veterinary Service Master Admin';
-                } else if (!users.some(u => u.isAdmin === true)) {
-                    users.push({
-                        id: 'site-master-admin-001',
-                        practiceName: 'Northern Veterinary Service Master Admin',
-                        email: MASTER,
-                        password: btoa('1234'),
-                        phone: '',
-                        address: { line1: '', line2: '', city: '', postcode: '', county: '' },
-                        createdAt: new Date().toISOString(),
-                        isActive: true,
-                        isAdmin: true,
-                        role: 'admin',
-                        accountType: 'admin'
-                    });
-                }
-            }
-        }
-
-        const hasMaster = users.some(u => u.email === MASTER);
-        users.forEach(u => {
-            if (u.email === MASTER) {
-                u.isAdmin = true;
-                u.role = 'admin';
-                u.accountType = 'admin';
-                u.password = btoa('1234');
-            } else if (hasMaster && u.isAdmin === true) {
-                u.isAdmin = false;
-                if (u.role === 'admin') {
-                    u.role = u.accountType === 'practice' ? 'practice' : 'vet';
-                }
-            }
-        });
-
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-    }
-
-    /** Normalize legacy professional → team_member; ensure accountType is set. */
-    migrateAccountTypes() {
-        const users = this.getUsers();
-        let changed = false;
-        users.forEach(u => {
-            if (u.isAdmin) return;
-            if (u.accountType === 'professional') {
-                u.accountType = 'team_member';
-                changed = true;
-            }
-            if (!u.accountType) {
-                const r = this.normalizeRole(u.role);
-                u.accountType = r === 'practice' ? 'practice' : 'team_member';
-                changed = true;
-            }
-        });
-        if (changed) {
-            localStorage.setItem(this.storageKey, JSON.stringify(users));
-        }
-    }
-
-    /** Demo vet login for testing (only added if email not already registered). */
-    ensureTestDemoAccount() {
-        const TEST_EMAIL = 'stevengibbs@btopenworld.com';
-        const users = this.getUsers();
-        if (users.some(u => u.email.toLowerCase() === TEST_EMAIL)) {
-            return;
-        }
-        users.push({
-            id: 'demo-test-steven-gibbs',
-            practiceName: 'Test login (Steven Gibbs)',
-            email: TEST_EMAIL,
-            password: btoa('123'),
-            phone: '',
-            address: { line1: '', line2: '', city: '', postcode: '', county: '' },
-            role: 'vet',
-            accountType: 'team_member',
-            createdAt: new Date().toISOString(),
-            isActive: true
-        });
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-    }
-
-    attachEventListeners() {
-        const logoutBtn = document.getElementById('logoutBtn');
-        const userDropdownBtn = document.getElementById('userDropdownBtn');
-        const dropdownMenu = document.getElementById('dropdownMenu');
-        
-        if (logoutBtn) {
-            logoutBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                this.logout();
-            });
-        }
-        
-        if (userDropdownBtn) {
-            userDropdownBtn.addEventListener('click', (e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                dropdownMenu.classList.toggle('show');
-            });
-        }
-        
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (dropdownMenu && !e.target.closest('.user-menu')) {
-                dropdownMenu.classList.remove('show');
-            }
-        });
-    }
-
-    // Register a new user (practice or team_member only — master is not created via signup)
-    signup(practiceName, email, password, phone = '', address = null, options = {}) {
-        const users = this.getUsers();
-        const rawType = options.accountType;
-        const accountType = rawType === 'practice' ? 'practice' : rawType === 'team_member' ? 'team_member' : '';
-        let role = this.normalizeRole(options.role);
-
-        if (accountType !== 'practice' && accountType !== 'team_member') {
-            return { success: false, message: 'Choose a valid account type (practice or team member).' };
-        }
-        if (accountType === 'practice') {
-            role = 'practice';
-        } else if (!role || !this.professionalRoles.includes(role)) {
-            return { success: false, message: 'Please select a valid role (Vet or Veterinary Nurse).' };
-        }
-        
-        // Check if email already exists
-        if (users.find(user => user.email === email)) {
-            return { success: false, message: 'An account with this email already exists.' };
-        }
-        
-        // Validate email format
-        if (!this.isValidEmail(email)) {
-            return { success: false, message: 'Please enter a valid email address.' };
-        }
-        
-        // Validate password strength
-        if (password.length < 6) {
-            return { success: false, message: 'Password must be at least 6 characters long.' };
-        }
-        
-        // Create new user
-        const newUser = {
-            id: Date.now().toString(),
-            practiceName,
-            email,
-            password: btoa(password), // Basic encoding (NOT secure for production!)
-            phone,
-            address: address || {
-                line1: '',
-                line2: '',
-                city: '',
-                postcode: '',
-                county: ''
-            },
-            role,
-            accountType,
-            createdAt: new Date().toISOString(),
-            isActive: true
-        };
-        
-        users.push(newUser);
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-        
-        return { success: true, message: 'Account created successfully!' };
-    }
-
-    // Login user
-    login(email, password) {
-        const users = this.getUsers();
-        const emailNorm = (email || '').trim().toLowerCase();
-        const user = users.find(u => (u.email || '').trim().toLowerCase() === emailNorm);
-
-        if (!user) {
-            return { success: false, message: 'Invalid email or password.' };
-        }
-
-        // Check password (decode from base64)
-        let decodedPassword;
+    async _bootstrap() {
         try {
-            decodedPassword = atob(user.password);
+            const r = await apiFetch('/api/auth/me');
+            if (r.ok) {
+                const j = await r.json();
+                if (j && j.masterAdminEmail) {
+                    this.masterAdminEmail = j.masterAdminEmail;
+                }
+                if (j && j.user) {
+                    this._applyUser(j.user);
+                }
+            }
         } catch (e) {
-            return { success: false, message: 'Invalid email or password.' };
+            /* offline or static-only */
         }
-        if (decodedPassword !== password) {
-            return { success: false, message: 'Invalid email or password.' };
-        }
-        
-        if (!user.isActive && !user.isAdmin) {
-            return { success: false, message: 'This account has been deactivated. Please contact support.' };
-        }
-        
-        // Store session
-        const session = {
-            id: user.id,
-            email: user.email,
-            practiceName: user.practiceName,
-            isAdmin: user.isAdmin || false,
-            role: this.getUserRole(user),
-            accountType: user.accountType || (this.getUserRole(user) === 'practice' ? 'practice' : 'team_member'),
+        this._hydrated = true;
+        this.updateAuthUI();
+        return this;
+    }
+
+    _applyUser(profile) {
+        this._profile = profile;
+        this._session = {
+            id: profile.id,
+            email: profile.email,
+            practiceName: profile.practiceName,
+            isAdmin: !!profile.isAdmin,
+            role: this.getUserRole(profile),
+            accountType: profile.accountType || (this.getUserRole(profile) === 'practice' ? 'practice' : 'team_member'),
             loginTime: new Date().toISOString()
         };
-        
-        localStorage.setItem(this.sessionKey, JSON.stringify(session));
+    }
 
-        // Same flag as enter.html / site gate — unlocks browsing home, pricing, etc.
-        try {
-            sessionStorage.setItem('northern_vet_site_access', '1');
-        } catch (e) {
-            /* ignore if sessionStorage unavailable */
+    _clearClient() {
+        this._session = null;
+        this._profile = null;
+        this._adminUsersCache = null;
+    }
+
+    getOfferableServicesCatalog() {
+        return OFFERABLE_SERVICES_CATALOG;
+    }
+
+    validateRcvsRegistrationNumber(value) {
+        const s = String(value ?? '').trim();
+        if (s.length < 3) {
+            return { ok: false, message: 'Please enter your RCVS registration number.' };
         }
-
-        return { success: true, message: 'Login successful!', user: session };
+        return { ok: true, value: s };
     }
 
-    // Logout user
-    logout() {
-        localStorage.removeItem(this.sessionKey);
-        window.location.href = 'home.html';
+    validatePhoneNumber(value) {
+        const s = String(value ?? '').trim();
+        if (!s) {
+            return { ok: false, message: 'Phone number is required.' };
+        }
+        const digits = s.replace(/\D/g, '');
+        if (digits.length < 8) {
+            return { ok: false, message: 'Enter a valid phone number (at least 8 digits).' };
+        }
+        return { ok: true, value: s };
     }
 
-    // Check if user is logged in
-    isLoggedIn() {
-        const session = localStorage.getItem(this.sessionKey);
-        return session !== null;
-    }
-
-    // Get current user session
-    getCurrentUser() {
-        const session = localStorage.getItem(this.sessionKey);
-        return session ? JSON.parse(session) : null;
-    }
-
-    // Get all users (admin function)
-    getUsers() {
-        const users = localStorage.getItem(this.storageKey);
-        return users ? JSON.parse(users) : [];
-    }
-
-    // Email validation
-    isValidEmail(email) {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    }
-
-    // Normalize incoming role values to storage keys
     normalizeRole(role) {
         if (!role) return '';
         const normalized = role.toString().trim().toLowerCase();
@@ -311,7 +162,6 @@ class AuthSystem {
         return normalized;
     }
 
-    // Human-readable role label
     getRoleLabel(role) {
         if (role === 'vet') return 'Vet';
         if (role === 'veterinary_nurse') return 'Veterinary Nurse';
@@ -320,7 +170,6 @@ class AuthSystem {
         return 'Member';
     }
 
-    /** UI label for accountType */
     getAccountTypeLabel(user) {
         if (!user) return '—';
         if (user.isAdmin && user.email && user.email.toLowerCase() === this.masterAdminEmail.toLowerCase()) {
@@ -329,65 +178,128 @@ class AuthSystem {
         if (user.isAdmin) return 'Admin';
         const t = user.accountType;
         if (t === 'practice') return 'Practice';
-        if (t === 'team_member') return 'Team member';
+        if (t === 'team_member') return 'Team Member';
         return 'Member';
     }
 
-    // Resolve role from user record (including legacy users)
     getUserRole(user) {
         if (!user) return '';
         if (user.isAdmin) return 'admin';
         return this.normalizeRole(user.role);
     }
 
-    // Check if the currently logged-in user is an admin
-    // (reads from full user record so old sessions without isAdmin still work)
-    isCurrentUserAdmin() {
-        const session = this.getCurrentUser();
-        if (!session) return false;
-        const user = this.getUsers().find(u => u.id === session.id);
-        return user ? (user.isAdmin === true) : false;
+    isValidEmail(email) {
+        return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(String(email || '').trim());
     }
 
-    /** Master admin only (booking diary + sole site admin). */
+    async login(email, password) {
+        const r = await apiFetch('/api/auth/login', { method: 'POST', body: { email, password } });
+        const j = await r.json().catch(() => ({}));
+        if (j.success && j.user) {
+            this._applyUser(j.user);
+            try {
+                sessionStorage.setItem('northern_vet_site_access', '1');
+            } catch (e) {
+                /* ignore */
+            }
+            this.updateAuthUI();
+            return { success: true, message: j.message || 'Login successful!', user: this.getCurrentUser() };
+        }
+        return { success: false, message: j.message || 'Invalid email or password.' };
+    }
+
+    async logout() {
+        try {
+            await apiFetch('/api/auth/logout', { method: 'POST' });
+        } catch (e) {
+            /* ignore */
+        }
+        this._clearClient();
+        window.location.href = 'home.html';
+    }
+
+    isLoggedIn() {
+        return this._session !== null;
+    }
+
+    getCurrentUser() {
+        return this._session;
+    }
+
+    getUserProfile() {
+        return this._profile;
+    }
+
+    /** @deprecated use refreshAdminUsers — returns last cached list for admin UI */
+    getUsers() {
+        return this._adminUsersCache || [];
+    }
+
+    async refreshAdminUsers() {
+        const r = await apiFetch('/api/admin/users');
+        const j = await r.json();
+        if (!j.success) {
+            this._adminUsersCache = [];
+            return [];
+        }
+        this._adminUsersCache = (j.users || []).map(u => ({
+            id: String(u.id),
+            email: u.email,
+            practiceName: u.practiceName,
+            accountType: u.accountType,
+            role: u.role,
+            phone: u.phone,
+            rcvsRegistrationNumber: u.rcvsRegistrationNumber,
+            isAdmin: u.isAdmin,
+            isActive: u.isActive,
+            createdAt: u.createdAt,
+            address: u.address
+        }));
+        return this._adminUsersCache;
+    }
+
+    getAllPractices() {
+        return (this._adminUsersCache || []).filter(u => !u.isAdmin);
+    }
+
+    isCurrentUserAdmin() {
+        const s = this.getCurrentUser();
+        if (!s) return false;
+        return !!s.isAdmin;
+    }
+
     isCurrentUserMasterAdmin() {
-        const session = this.getCurrentUser();
-        if (!session) return false;
-        const user = this.getUsers().find(u => u.id === session.id);
-        if (!user || user.isAdmin !== true) return false;
-        return user.email.toLowerCase() === this.masterAdminEmail.toLowerCase();
+        const p = this.getUserProfile();
+        if (!p || !p.isAdmin) return false;
+        return !!p.isMasterAdmin;
     }
 
     isCurrentUserTeamMember() {
-        const user = this.getUserProfile();
-        return !!(user && user.accountType === 'team_member' && !user.isAdmin);
+        const p = this.getUserProfile();
+        return !!(p && p.accountType === 'team_member' && !p.isAdmin);
     }
 
     isCurrentUserPractice() {
-        const user = this.getUserProfile();
-        return !!(user && user.accountType === 'practice');
+        const p = this.getUserProfile();
+        return !!(p && p.accountType === 'practice');
     }
 
-    /** Practices (and master) can submit the public booking form; team members use staff tools instead. */
     canAccessBookingForm() {
         if (this.isCurrentUserMasterAdmin()) return true;
+        if (this.isCurrentUserTeamMember()) return true;
         return this.isCurrentUserPractice();
     }
 
-    // Check if current user may access clinical Resources (team + master; not practice-only accounts)
     isCurrentUserProfessional() {
         if (this.isCurrentUserMasterAdmin()) return true;
         if (this.isCurrentUserTeamMember()) return true;
-        const session = this.getCurrentUser();
-        if (!session) return false;
-        const user = this.getUsers().find(u => u.id === session.id);
-        if (!user) return false;
-        return this.professionalRoles.includes(this.getUserRole(user));
+        const s = this.getCurrentUser();
+        if (!s) return false;
+        const p = this.getUserProfile();
+        if (!p) return false;
+        return this.professionalRoles.includes(this.getUserRole(p));
     }
 
-    /**
-     * When logged in, make the header site title link to home.html; when logged out, plain heading.
-     */
     applyLogoHomeLink() {
         const section = document.querySelector('.logo-section');
         if (!section) return;
@@ -408,20 +320,48 @@ class AuthSystem {
         }
     }
 
-    // Update UI based on authentication state
+    applyTeamMemberMainNav() {
+        const navList = document.querySelector('.nav-list');
+        if (!navList) return;
+
+        const pathn = window.location.pathname || '';
+        const file = pathn.split('/').pop() || '';
+        const hash = ((window.location.hash || '') + '').replace(/^#/, '').toLowerCase();
+
+        const isAccount = file === 'account.html';
+        const isBookings = file === 'bookings-inbox.html';
+        const isStaffDiary = file === 'staff-diary.html';
+        const isResourcesArea = file === 'resources.html' || file === 'discharge-form.html';
+
+        const profileOn = isAccount && !['services', 'security'].includes(hash);
+        const servicesOn = isAccount && hash === 'services';
+        const securityOn = isAccount && hash === 'security';
+
+        const li = (href, text, on) => {
+            const cur = on ? ' class="active" aria-current="page"' : '';
+            return '<li><a href="' + href + '"' + cur + '>' + text + '</a></li>';
+        };
+
+        navList.innerHTML =
+            li('account.html', 'Profile', profileOn) +
+            li('bookings-inbox.html', 'Bookings', isBookings) +
+            li('staff-diary.html', 'My availability', isStaffDiary) +
+            li('resources.html', 'Resources', isResourcesArea) +
+            li('account.html#services', 'Services I offer', servicesOn) +
+            li('account.html#security', 'Security', securityOn);
+        navList.setAttribute('data-nvs-team-nav', 'true');
+    }
+
     updateAuthUI() {
         const authButtons = document.getElementById('authButtons');
         const userMenu = document.getElementById('userMenu');
         const userName = document.getElementById('userName');
         const dropdownMenu = document.getElementById('dropdownMenu');
-        
+
         if (this.isLoggedIn()) {
             const isAdmin = this.isCurrentUserAdmin();
             const user = this.getCurrentUser();
-            const isProfessional = this.isCurrentUserProfessional();
-            /** Main nav Resources link: master admin always, plus vets/nurses/team (not practice-only). */
-            const showResourcesInMainNav =
-                this.isCurrentUserMasterAdmin() || this.isCurrentUserProfessional();
+            const showResourcesInMainNav = this.isCurrentUserMasterAdmin() || this.isCurrentUserProfessional();
             if (authButtons) authButtons.style.display = 'none';
             if (userMenu) userMenu.style.display = 'block';
             if (userName) {
@@ -436,7 +376,30 @@ class AuthSystem {
                 }
             }
 
-            // Dynamically inject Admin Panel link for admin users
+            const userDropdownBtn = document.getElementById('userDropdownBtn');
+            const profileForAvatar = this.getUserProfile();
+            if (userDropdownBtn) {
+                let av = document.getElementById('headerUserAvatar');
+                const iconEl = userDropdownBtn.querySelector('.user-icon');
+                const photoSrc = profileForAvatar && (profileForAvatar.profilePhotoUrl || profileForAvatar.profilePhotoDataUrl);
+                if (photoSrc) {
+                    if (!av) {
+                        av = document.createElement('img');
+                        av.id = 'headerUserAvatar';
+                        av.className = 'user-menu-avatar';
+                        av.alt = '';
+                        av.width = 28;
+                        av.height = 28;
+                        userDropdownBtn.insertBefore(av, userDropdownBtn.firstChild);
+                    }
+                    av.src = photoSrc;
+                    if (iconEl) iconEl.style.display = 'none';
+                } else {
+                    if (av) av.remove();
+                    if (iconEl) iconEl.style.display = '';
+                }
+            }
+
             if (dropdownMenu && isAdmin && !document.getElementById('adminPanelLink')) {
                 const link = document.createElement('a');
                 link.href = 'admin.html';
@@ -470,218 +433,207 @@ class AuthSystem {
                 }
             }
 
-            const accountLinkEl = document.getElementById('accountLink');
-            if (dropdownMenu && this.isCurrentUserTeamMember() && !document.getElementById('staffDiaryLink')) {
-                const staffDiary = document.createElement('a');
-                staffDiary.href = 'staff-diary.html';
-                staffDiary.className = 'dropdown-item';
-                staffDiary.id = 'staffDiaryLink';
-                staffDiary.textContent = '📅 My availability';
-                staffDiary.style.cssText = 'color:#1a5276;font-weight:600;';
-                if (accountLinkEl) {
-                    dropdownMenu.insertBefore(staffDiary, accountLinkEl);
-                } else {
-                    dropdownMenu.prepend(staffDiary);
-                }
-            }
-
-            if (dropdownMenu && (this.isCurrentUserTeamMember() || this.isCurrentUserMasterAdmin()) && !document.getElementById('bookingsInboxLink')) {
+            if (dropdownMenu && this.isCurrentUserMasterAdmin() && !document.getElementById('bookingsInboxLink')) {
                 const bookingsLink = document.createElement('a');
                 bookingsLink.href = 'bookings-inbox.html';
                 bookingsLink.className = 'dropdown-item';
                 bookingsLink.id = 'bookingsInboxLink';
                 bookingsLink.textContent = '📋 Booking requests';
                 bookingsLink.style.cssText = 'font-weight:600;';
-                const ref = document.getElementById('staffDiaryLink')
-                    || document.getElementById('diaryAdminLink')
-                    || document.getElementById('adminPanelLink');
+                const ref = document.getElementById('diaryAdminLink') || document.getElementById('adminPanelLink');
                 if (ref) {
                     ref.insertAdjacentElement('afterend', bookingsLink);
-                } else if (accountLinkEl) {
-                    dropdownMenu.insertBefore(bookingsLink, accountLinkEl);
                 } else {
-                    dropdownMenu.prepend(bookingsLink);
+                    const accountLinkEl = document.getElementById('accountLink');
+                    if (accountLinkEl) {
+                        dropdownMenu.insertBefore(bookingsLink, accountLinkEl);
+                    } else {
+                        dropdownMenu.prepend(bookingsLink);
+                    }
                 }
             }
 
-            // Dynamically inject Resources link (same order as resources.html: before Policies)
+            const accountLinkEl = document.getElementById('accountLink');
+            if (dropdownMenu) {
+                const teamRes = document.getElementById('teamResourcesLink');
+                if (this.isCurrentUserTeamMember()) {
+                    if (!teamRes) {
+                        const resLink = document.createElement('a');
+                        resLink.href = 'resources.html';
+                        resLink.className = 'dropdown-item';
+                        resLink.id = 'teamResourcesLink';
+                        resLink.textContent = 'Resources';
+                        if (accountLinkEl) {
+                            dropdownMenu.insertBefore(resLink, accountLinkEl);
+                        } else {
+                            dropdownMenu.prepend(resLink);
+                        }
+                    }
+                } else if (teamRes) {
+                    teamRes.remove();
+                }
+            }
+
             const navList = document.querySelector('.nav-list');
             if (navList) {
-                const existingResourcesLink = navList.querySelector('a[href="resources.html"]');
-                if (showResourcesInMainNav && !existingResourcesLink) {
-                    const li = document.createElement('li');
-                    li.id = 'resourcesNavLink';
-                    const link = document.createElement('a');
-                    link.href = 'resources.html';
-                    link.textContent = 'Resources';
-                    li.appendChild(link);
-                    const policiesItem = navList.querySelector('a[href="policies.html"]')?.closest('li');
-                    if (policiesItem) {
-                        policiesItem.insertAdjacentElement('beforebegin', li);
-                    } else {
-                        navList.appendChild(li);
+                if (this.isCurrentUserTeamMember()) {
+                    this.applyTeamMemberMainNav();
+                } else {
+                    const existingResourcesLink = navList.querySelector('a[href="resources.html"]');
+                    if (showResourcesInMainNav && !existingResourcesLink) {
+                        const li = document.createElement('li');
+                        li.id = 'resourcesNavLink';
+                        const link = document.createElement('a');
+                        link.href = 'resources.html';
+                        link.textContent = 'Resources';
+                        li.appendChild(link);
+                        const policiesItem = navList.querySelector('a[href="policies.html"]')?.closest('li');
+                        if (policiesItem) {
+                            policiesItem.insertAdjacentElement('beforebegin', li);
+                        } else {
+                            navList.appendChild(li);
+                        }
+                    } else if (!showResourcesInMainNav && existingResourcesLink) {
+                        existingResourcesLink.closest('li')?.remove();
                     }
-                } else if (!showResourcesInMainNav && existingResourcesLink) {
-                    existingResourcesLink.closest('li')?.remove();
                 }
             }
         } else {
             if (authButtons) authButtons.style.display = 'flex';
             if (userMenu) userMenu.style.display = 'none';
+            document.getElementById('teamResourcesLink')?.remove();
             const existingResourcesLink = document.querySelector('.nav-list a[href="resources.html"]');
-            if (existingResourcesLink) existingResourcesLink.closest('li')?.remove();
+            if (existingResourcesLink) {
+                if (!document.querySelector('.nav-list')?.getAttribute('data-nvs-team-nav')) {
+                    existingResourcesLink.closest('li')?.remove();
+                }
+            }
+            const headerAv = document.getElementById('headerUserAvatar');
+            if (headerAv) headerAv.remove();
+            const btnOut = document.querySelector('.user-dropdown-btn .user-icon');
+            if (btnOut) btnOut.style.display = '';
         }
         this.applyLogoHomeLink();
     }
 
-    // Get full user profile (including fields not stored in session)
-    getUserProfile() {
-        const session = this.getCurrentUser();
-        if (!session) return null;
-        const users = this.getUsers();
-        return users.find(u => u.id === session.id) || null;
-    }
-
-    // Update user profile details
-    updateUser(updatedFields) {
-        const session = this.getCurrentUser();
-        if (!session) return { success: false, message: 'You must be logged in to update your profile.' };
-
-        const users = this.getUsers();
-        const idx = users.findIndex(u => u.id === session.id);
-        if (idx === -1) return { success: false, message: 'User account not found.' };
-
-        // Validate email if being changed
-        if (updatedFields.email && updatedFields.email !== users[idx].email) {
-            if (!this.isValidEmail(updatedFields.email)) {
-                return { success: false, message: 'Please enter a valid email address.' };
-            }
-            if (users.find((u, i) => i !== idx && u.email === updatedFields.email)) {
-                return { success: false, message: 'An account with this email already exists.' };
+    async signup(practiceName, email, password, phone = '', address = null, options = {}) {
+        const rawType = options.accountType;
+        const accountType = rawType === 'practice' ? 'practice' : rawType === 'team_member' ? 'team_member' : '';
+        let role = this.normalizeRole(options.role);
+        email = (email || '').trim();
+        const confirmEmail = (options.confirmEmail !== undefined ? String(options.confirmEmail) : '').trim();
+        if (confirmEmail && email.toLowerCase() !== confirmEmail.toLowerCase()) {
+            return { success: false, message: 'Email addresses do not match. Please check and try again.' };
+        }
+        if (!confirmEmail) {
+            return { success: false, message: 'Please confirm your email address.' };
+        }
+        if (accountType !== 'practice' && accountType !== 'team_member') {
+            return { success: false, message: 'Choose a valid account type (practice or team member).' };
+        }
+        if (accountType === 'practice') {
+            role = 'practice';
+        } else if (!role || !this.professionalRoles.includes(role)) {
+            return { success: false, message: 'Please select a valid role (Vet or Veterinary Nurse).' };
+        }
+        const rcvsCheck = this.validateRcvsRegistrationNumber(options.rcvsRegistrationNumber);
+        if (!rcvsCheck.ok) {
+            return { success: false, message: rcvsCheck.message };
+        }
+        const phoneCheck = this.validatePhoneNumber(phone);
+        if (!phoneCheck.ok) {
+            return { success: false, message: phoneCheck.message };
+        }
+        if (accountType === 'team_member') {
+            const v = options.profilePhotoDataUrl;
+            if (!v || typeof v !== 'string' || !v.startsWith('data:image/')) {
+                return { success: false, message: 'A profile photo is required.' };
             }
         }
+        if (!this.isValidEmail(email)) {
+            return { success: false, message: 'Please enter a valid email address.' };
+        }
+        if (password.length < 6) {
+            return { success: false, message: 'Password must be at least 6 characters long.' };
+        }
 
-        // Apply allowed field updates
-        const allowed = ['practiceName', 'email', 'phone', 'address'];
-        allowed.forEach(field => {
-            if (updatedFields[field] !== undefined) {
-                users[idx][field] = updatedFields[field];
+        const r = await apiFetch('/api/auth/register', {
+            method: 'POST',
+            body: {
+                practiceName,
+                email,
+                password,
+                phone: phoneCheck.value,
+                address: address || {},
+                accountType,
+                role,
+                rcvsRegistrationNumber: rcvsCheck.value,
+                confirmEmail,
+                profilePhotoDataUrl: options.profilePhotoDataUrl
             }
         });
-
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-
-        // Refresh session with updated values
-        const updatedSession = {
-            id: users[idx].id,
-            email: users[idx].email,
-            practiceName: users[idx].practiceName,
-            isAdmin: users[idx].isAdmin === true,
-            role: this.getUserRole(users[idx]),
-            accountType: users[idx].accountType || (this.getUserRole(users[idx]) === 'practice' ? 'practice' : 'team_member'),
-            loginTime: session.loginTime
-        };
-        localStorage.setItem(this.sessionKey, JSON.stringify(updatedSession));
-        this.updateAuthUI();
-
-        return { success: true, message: 'Profile updated successfully!' };
-    }
-
-    // Update password
-    updatePassword(currentPassword, newPassword) {
-        const session = this.getCurrentUser();
-        if (!session) return { success: false, message: 'You must be logged in to change your password.' };
-
-        const users = this.getUsers();
-        const idx = users.findIndex(u => u.id === session.id);
-        if (idx === -1) return { success: false, message: 'User account not found.' };
-
-        // Verify current password
-        if (atob(users[idx].password) !== currentPassword) {
-            return { success: false, message: 'Current password is incorrect.' };
+        const j = await r.json().catch(() => ({}));
+        if (j.success) {
+            return { success: true, message: j.message || 'Account created successfully!' };
         }
+        return { success: false, message: j.message || 'Registration failed.' };
+    }
 
-        if (newPassword.length < 6) {
-            return { success: false, message: 'New password must be at least 6 characters long.' };
+    async updateUser(updatedFields) {
+        const r = await apiFetch('/api/account/update', { method: 'PATCH', body: updatedFields });
+        const j = await r.json().catch(() => ({}));
+        if (j.success && j.user) {
+            this._applyUser(j.user);
+            this.updateAuthUI();
         }
-
-        users[idx].password = btoa(newPassword);
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-
-        return { success: true, message: 'Password changed successfully!' };
+        return { success: !!j.success, message: j.message || (j.success ? 'Saved.' : 'Update failed.') };
     }
 
-    // ── Admin-only data methods ──────────────────────────────────────
-
-    // Get all non-admin member practices
-    getAllPractices() {
-        return this.getUsers().filter(u => !u.isAdmin);
-    }
-
-    // Activate or deactivate a practice account
-    setUserActiveStatus(id, isActive) {
-        if (!this.isCurrentUserAdmin()) return { success: false, message: 'Admin access required.' };
-        const users = this.getUsers();
-        const idx = users.findIndex(u => u.id === id);
-        if (idx === -1) return { success: false, message: 'User not found.' };
-        users[idx].isActive = isActive;
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-        return { success: true, message: `Account ${isActive ? 'activated' : 'deactivated'} successfully.` };
-    }
-
-    // Delete a practice account (cannot delete admin accounts)
-    adminDeleteUser(id) {
-        if (!this.isCurrentUserAdmin()) return { success: false, message: 'Admin access required.' };
-        const users = this.getUsers();
-        const target = users.find(u => u.id === id);
-        if (!target) return { success: false, message: 'User not found.' };
-        if (target.isAdmin) return { success: false, message: 'Cannot delete admin accounts.' };
-        const filtered = users.filter(u => u.id !== id);
-        localStorage.setItem(this.storageKey, JSON.stringify(filtered));
-        return { success: true, message: 'Practice account deleted.' };
-    }
-
-    // Admin: update any practice's profile fields
-    adminUpdateUser(id, updatedFields) {
-        if (!this.isCurrentUserAdmin()) return { success: false, message: 'Admin access required.' };
-        const users = this.getUsers();
-        const idx = users.findIndex(u => u.id === id);
-        if (idx === -1) return { success: false, message: 'User not found.' };
-        if (users[idx].isAdmin) return { success: false, message: 'Cannot edit admin accounts here.' };
-
-        if (updatedFields.email && updatedFields.email !== users[idx].email) {
-            if (!this.isValidEmail(updatedFields.email)) {
-                return { success: false, message: 'Invalid email address.' };
-            }
-            if (users.find((u, i) => i !== idx && u.email === updatedFields.email)) {
-                return { success: false, message: 'Email already in use by another account.' };
-            }
-        }
-
-        const allowed = ['practiceName', 'email', 'phone', 'address'];
-        allowed.forEach(field => {
-            if (updatedFields[field] !== undefined) users[idx][field] = updatedFields[field];
+    async updatePassword(currentPassword, newPassword) {
+        const r = await apiFetch('/api/account/password', {
+            method: 'POST',
+            body: { currentPassword, newPassword }
         });
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-        return { success: true, message: 'Practice details updated.' };
+        const j = await r.json().catch(() => ({}));
+        return { success: !!j.success, message: j.message || 'Could not change password.' };
     }
 
-    // Admin: reset a practice's password without knowing the current one
-    adminResetPassword(id, newPassword) {
-        if (!this.isCurrentUserAdmin()) return { success: false, message: 'Admin access required.' };
-        if (newPassword.length < 6) return { success: false, message: 'Password must be at least 6 characters.' };
-        const users = this.getUsers();
-        const idx = users.findIndex(u => u.id === id);
-        if (idx === -1) return { success: false, message: 'User not found.' };
-        if (users[idx].isAdmin) return { success: false, message: 'Cannot reset admin password here.' };
-        users[idx].password = btoa(newPassword);
-        localStorage.setItem(this.storageKey, JSON.stringify(users));
-        return { success: true, message: 'Password reset successfully.' };
+    async setUserActiveStatus(id, isActive) {
+        const r = await apiFetch('/api/admin/users/' + encodeURIComponent(id) + '/active', {
+            method: 'POST',
+            body: { isActive: !!isActive }
+        });
+        const j = await r.json().catch(() => ({}));
+        if (j.success) await this.refreshAdminUsers();
+        return { success: !!j.success, message: j.message || 'Done.' };
     }
 
-    // ─────────────────────────────────────────────────────────────────
+    async adminDeleteUser(id) {
+        const r = await apiFetch('/api/admin/users/' + encodeURIComponent(id), { method: 'DELETE' });
+        const j = await r.json().catch(() => ({}));
+        if (j.success) await this.refreshAdminUsers();
+        return { success: !!j.success, message: j.message || 'Done.' };
+    }
 
-    // Require authentication for page
+    async adminUpdateUser(id, updatedFields) {
+        const r = await apiFetch('/api/admin/users/' + encodeURIComponent(id), {
+            method: 'PATCH',
+            body: updatedFields
+        });
+        const j = await r.json().catch(() => ({}));
+        if (j.success) await this.refreshAdminUsers();
+        return { success: !!j.success, message: j.message || 'Done.' };
+    }
+
+    async adminResetPassword(id, newPassword) {
+        const r = await apiFetch('/api/admin/users/' + encodeURIComponent(id) + '/reset-password', {
+            method: 'POST',
+            body: { newPassword }
+        });
+        const j = await r.json().catch(() => ({}));
+        return { success: !!j.success, message: j.message || 'Done.' };
+    }
+
     requireAuth(redirectUrl = 'login.html') {
         if (!this.isLoggedIn()) {
             window.location.href = redirectUrl + '?redirect=' + encodeURIComponent(window.location.pathname);
@@ -690,7 +642,6 @@ class AuthSystem {
         return true;
     }
 
-    // Require admin role for page
     requireAdmin(redirectUrl = 'home.html') {
         if (!this.isLoggedIn()) {
             window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
@@ -703,7 +654,6 @@ class AuthSystem {
         return true;
     }
 
-    /** Booking diary editor — master admin account only */
     requireMasterAdmin(redirectUrl = 'home.html') {
         if (!this.isLoggedIn()) {
             window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
@@ -716,7 +666,6 @@ class AuthSystem {
         return true;
     }
 
-    // Resources / discharge forms — team members + master; not practice-only accounts
     requireProfessionalAccess(redirectUrl = 'home.html') {
         if (!this.isLoggedIn()) {
             window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
@@ -733,7 +682,6 @@ class AuthSystem {
         return true;
     }
 
-    /** Staff diary + booking requests inbox — team members and master admin */
     requireTeamStaffAccess(redirectUrl = 'home.html') {
         if (!this.isLoggedIn()) {
             window.location.href = 'login.html?redirect=' + encodeURIComponent(window.location.pathname);
@@ -745,11 +693,44 @@ class AuthSystem {
         }
         return true;
     }
+
+    attachEventListeners() {
+        const logoutBtn = document.getElementById('logoutBtn');
+        const userDropdownBtn = document.getElementById('userDropdownBtn');
+        const dropdownMenu = document.getElementById('dropdownMenu');
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', e => {
+                e.preventDefault();
+                this.logout();
+            });
+        }
+
+        if (userDropdownBtn) {
+            userDropdownBtn.addEventListener('click', e => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (dropdownMenu) dropdownMenu.classList.toggle('show');
+            });
+        }
+
+        document.addEventListener('click', e => {
+            if (dropdownMenu && !e.target.closest('.user-menu')) {
+                dropdownMenu.classList.remove('show');
+            }
+        });
+
+        window.addEventListener('hashchange', () => {
+            if (this.isLoggedIn() && this.isCurrentUserTeamMember()) {
+                this.applyTeamMemberMainNav();
+            }
+        });
+    }
 }
 
-// Initialize auth system globally
 const auth = new AuthSystem();
-
-// Expose auth to window for use in other scripts
 window.auth = auth;
-
+window.OFFERABLE_SERVICE_IDS = OFFERABLE_SERVICE_IDS;
+window.OFFERABLE_SERVICES_CATALOG = OFFERABLE_SERVICES_CATALOG;
+window.LEGACY_SERVICES_EXPAND = LEGACY_SERVICES_EXPAND;
+window.LEGACY_SERVICE_KEYS = LEGACY_SERVICE_KEYS;

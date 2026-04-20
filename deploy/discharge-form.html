@@ -218,7 +218,8 @@
     <script src="auth.js"></script>
     <script src="index.js"></script>
     <script>
-        auth.requireProfessionalAccess('home.html');
+    auth.ready.then(function () {
+        if (!auth.requireProfessionalAccess('home.html')) return;
         document.getElementById('printFormBtn').addEventListener('click', function () {
             window.print();
         });
@@ -412,6 +413,7 @@
         });
 
         replaceTemplateTokens();
+    });
     </script>
 </body>
 </html>

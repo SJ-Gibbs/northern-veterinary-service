@@ -119,14 +119,14 @@
     <script src="index.js"></script>
     <script>
         // Handle login form submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const messageDiv = document.getElementById('loginMessage');
             
-            const result = auth.login(email, password);
+            const result = await auth.login(email, password);
             
             messageDiv.style.display = 'block';
             messageDiv.textContent = result.message;
@@ -143,10 +143,11 @@
             }
         });
 
-        // Redirect if already logged in
-        if (auth.isLoggedIn()) {
-            window.location.href = 'home.html';
-        }
+        auth.ready.then(function () {
+            if (auth.isLoggedIn()) {
+                window.location.href = 'home.html';
+            }
+        });
     </script>
 </body>
 </html>

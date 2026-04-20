@@ -72,7 +72,7 @@
                 <p class="text-muted" style="margin-top:0.25rem;color:#666;font-size:0.95rem;">Team member — plan your own days (stored locally in this browser).</p>
 
                 <div class="diary-admin-intro">
-                    The public Advice &amp; Booking calendar follows the <strong>site booking diary</strong> set by the master admin. This planner is for your own reference only unless you connect it to a server backend later.
+                    The member <strong>Advice &amp; Booking</strong> calendar combines the site diary with how many team members are available each day (and whether a request is already logged). This planner is stored in this browser; connect a server backend for production.
                     <br><br>
                     <a href="bookings-inbox.html">Booking requests</a>
                     &nbsp;·&nbsp;
@@ -133,10 +133,12 @@
     <script src="auth.js"></script>
     <script src="index.js"></script>
     <script>
-        auth.requireAuth('login.html');
-        if (!auth.isCurrentUserTeamMember()) {
-            window.location.href = auth.isCurrentUserMasterAdmin() ? 'diary-admin.html' : 'home.html';
-        }
+        auth.ready.then(function () {
+            if (!auth.requireAuth('login.html')) return;
+            if (!auth.isCurrentUserTeamMember()) {
+                window.location.href = auth.isCurrentUserMasterAdmin() ? 'diary-admin.html' : 'home.html';
+            }
+        });
     </script>
     <script src="booking-diary.js"></script>
     <script src="staff-diary.js"></script>

@@ -65,15 +65,28 @@
 
     function cycleOverride(iso) {
         var cur = BookingDiary.getOverride(iso);
+        var next = null;
         if (cur === null) {
+            next = 'available';
             BookingDiary.setOverride(iso, 'available');
         } else if (cur === 'available') {
+            next = 'limited';
             BookingDiary.setOverride(iso, 'limited');
         } else if (cur === 'limited') {
+            next = 'unavailable';
             BookingDiary.setOverride(iso, 'unavailable');
         } else {
+            next = 'clear';
             BookingDiary.clearOverride(iso);
         }
+        fetch('/api/calendar/site-overrides/' + encodeURIComponent(iso), {
+            method: 'PUT',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: next === 'clear' ? 'clear' : next })
+        }).catch(function () {
+            /* local still updated */
+        });
     }
 
     function render() {
@@ -142,5 +155,19 @@
             'Click a day to cycle: set available → limited → unavailable → clear (revert to default pattern). Changes apply immediately on the public booking calendar.';
     }
 
-    render();
+    fetch('/api/calendar/site-overrides', { credentials: 'include' })
+        .then(function (r) {
+            return r.json();
+        })
+        .then(function (j) {
+            if (j && j.success && j.overrides && BookingDiary.importSiteOverrides) {
+                BookingDiary.importSiteOverrides(j.overrides);
+            }
+        })
+        .catch(function () {
+            /* fall back to local */
+        })
+        .finally(function () {
+            render();
+        });
 })();

@@ -1,7 +1,7 @@
 /**
- * Booking page: availability calendar (demo pattern — replace with server data in production).
- * Green = available, amber = limited, red = unavailable.
- * Veterinary Locum: multiple dates (preferredDates); other services: single date (preferredDate).
+ * Booking page: calendar colours from BookingDiary.getMemberPracticeCalendarStatus when present.
+ * Green = team capacity & no existing request that day; amber = capacity but a request already booked;
+ * red = no capacity (site closed or no staff available). Veterinary Locum: preferredDates multi-select.
  */
 (function () {
     const grid = document.getElementById('bookingCalGrid');
@@ -36,10 +36,35 @@
         return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     }
 
+    var serverDayMap = null;
+
+    async function ensureServerCalendar(y, m) {
+        try {
+            var r = await fetch(
+                '/api/calendar/member-month?year=' + y + '&month=' + m,
+                { credentials: 'include' }
+            );
+            if (r.ok) {
+                var j = await r.json();
+                serverDayMap = j.days || {};
+            } else {
+                serverDayMap = null;
+            }
+        } catch (e) {
+            serverDayMap = null;
+        }
+    }
+
     /**
-     * Effective availability: master-admin diary overrides (booking-diary.js) then demo rules.
+     * Member practice schedule: server API when available, else booking-diary.js.
      */
     function getAvailability(iso) {
+        if (serverDayMap && serverDayMap[iso]) {
+            return serverDayMap[iso];
+        }
+        if (typeof BookingDiary !== 'undefined' && BookingDiary.getMemberPracticeCalendarStatus) {
+            return BookingDiary.getMemberPracticeCalendarStatus(iso);
+        }
         if (typeof BookingDiary !== 'undefined' && BookingDiary.getBookingAvailability) {
             return BookingDiary.getBookingAvailability(iso);
         }
@@ -101,7 +126,7 @@
             viewYear = Math.floor(total / 12);
             viewMonth = total % 12;
         }
-        render();
+        void ensureServerCalendar(viewYear, viewMonth).then(function () { render(); });
     }
 
     function formatDisplay(iso) {
@@ -141,7 +166,7 @@
         if (!modeHintEl) return;
         if (isLocum()) {
             modeHintEl.textContent =
-                'Veterinary Locum: click several days to add them; click again to remove. Limited days can be included.';
+                'Veterinary Locum: click several days; green = open, amber = a request already on that day, red = no staff availability.';
         } else {
             modeHintEl.textContent = '';
         }
@@ -150,11 +175,17 @@
     function updateSelectedMessage() {
         if (isLocum()) {
             if (selectedDates.length === 0) {
-                selectedEl.textContent = 'No dates selected — choose one or more available or limited days.';
+                selectedEl.textContent =
+                    'No dates selected — choose one or more green or amber days (red days are closed).';
             } else {
                 const lines = selectedDates.map(function (iso) {
                     const avail = getAvailability(iso);
-                    const tag = avail === 'limited' ? '(limited)' : '(available)';
+                    const tag =
+                        avail === 'limited'
+                            ? '(request already on this day)'
+                            : avail === 'available'
+                              ? '(open — no request yet)'
+                              : '(unavailable)';
                     return formatDisplay(iso) + ' ' + tag;
                 });
                 selectedEl.textContent =
@@ -167,13 +198,16 @@
             }
         } else {
             if (!selectedIso) {
-                selectedEl.textContent = 'No date selected — choose an available or limited day.';
+                selectedEl.textContent =
+                    'No date selected — choose a green (open) or amber (already has a request) day.';
             } else {
                 const avail = getAvailability(selectedIso);
                 const note =
                     avail === 'limited'
-                        ? 'Limited availability — we will confirm capacity when we reply.'
-                        : 'Available — we will confirm this slot when we reply.';
+                        ? 'A booking request is already logged for this day — you can still submit; we will review capacity.'
+                        : avail === 'available'
+                          ? 'Open date — no booking request yet for this day.'
+                          : 'No team availability on this date.';
                 selectedEl.textContent = 'Selected: ' + formatDisplay(selectedIso) + '. ' + note;
             }
         }
@@ -233,10 +267,10 @@
 
             const label =
                 avail === 'available'
-                    ? 'Available, ' + iso
+                    ? 'Open — team available, no booking yet, ' + iso
                     : avail === 'limited'
-                      ? 'Limited availability, ' + iso
-                      : 'Unavailable, ' + iso;
+                      ? 'Team available, booking already on this day, ' + iso
+                      : 'No availability, ' + iso;
 
             if (avail === 'unavailable') {
                 btn.disabled = true;
@@ -274,7 +308,20 @@
     viewYear = t.y;
     viewMonth = t.m;
     syncHiddenInputsForServiceMode();
-    render();
+    if (window.auth && auth.ready) {
+        auth.ready.then(function () {
+            return ensureServerCalendar(viewYear, viewMonth);
+        }).then(function () { render(); });
+    } else {
+        void ensureServerCalendar(viewYear, viewMonth).then(function () { render(); });
+    }
+
+    window.addEventListener('northern-vet-booking-requests-changed', function () {
+        void ensureServerCalendar(viewYear, viewMonth).then(function () {
+            render();
+            updateSelectedMessage();
+        });
+    });
 })();
 
 /** Fill hidden contact fields from logged-in account (booking page is auth-only). */
@@ -286,22 +333,22 @@
     const sum = document.getElementById('bookingAccountSummary');
     if (!pn || !em || !ph) return;
 
-    const session = auth.getCurrentUser();
-    if (!session) return;
-
-    const user = auth.getUsers().find(function (u) {
-        return u.id === session.id;
-    });
-    if (!user) return;
-
-    pn.value = user.practiceName || '';
-    em.value = user.email || '';
-    ph.value = user.phone || '';
-
-    if (sum) {
-        var label = user.practiceName || 'Your practice';
-        var mail = user.email || '';
-        sum.textContent = mail ? 'Signed in as ' + label + ' · ' + mail : 'Signed in as ' + label;
+    function fill() {
+        const user = auth.getUserProfile();
+        if (!user) return;
+        pn.value = user.practiceName || '';
+        em.value = user.email || '';
+        ph.value = user.phone || '';
+        if (sum) {
+            var label = user.practiceName || 'Your practice';
+            var mail = user.email || '';
+            sum.textContent = mail ? 'Signed in as ' + label + ' · ' + mail : 'Signed in as ' + label;
+        }
+    }
+    if (auth.ready) {
+        auth.ready.then(fill);
+    } else {
+        fill();
     }
 })();
 

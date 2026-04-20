@@ -103,13 +103,9 @@
     <script src="auth.js"></script>
     <script src="index.js"></script>
     <script>
-        auth.requireTeamStaffAccess('home.html');
-    </script>
-    <script src="booking-requests.js"></script>
-    <script>
         (function () {
             var root = document.getElementById('bookingsInboxRoot');
-            if (!root || typeof BookingRequests === 'undefined') return;
+            if (!root) return;
 
             function esc(s) {
                 return String(s == null ? '' : s)
@@ -128,36 +124,66 @@
                 }
             }
 
-            var rows = BookingRequests.getAll();
-            if (rows.length === 0) {
-                root.innerHTML = '<div class="bookings-empty">No booking requests yet. Submissions from the booking form will appear here.</div>';
-                return;
+            function renderTable(rows) {
+                if (rows.length === 0) {
+                    root.innerHTML = '<div class="bookings-empty">No booking requests yet. Submissions from the booking form will appear here.</div>';
+                    return;
+                }
+
+                var html = '<table class="bookings-table"><thead><tr>';
+                html += '<th>Received</th><th>Practice / contact</th><th>Service</th><th>Dates</th><th>Details</th>';
+                html += '</tr></thead><tbody>';
+
+                rows.forEach(function (row) {
+                    var d = row.data || {};
+                    var contact =
+                        esc(d.practiceName || '—') +
+                        (d.email ? '<br><small>' + esc(d.email) + '</small>' : '');
+                    var svc = esc(d.servicerequired || '—');
+                    var dates = esc(d.preferredDates || d.preferredDate || '—');
+                    var det = esc((d.History || '').slice(0, 400));
+                    if ((d.History || '').length > 400) det += '…';
+                    html += '<tr>';
+                    html += '<td>' + esc(fmt(row.submittedAt)) + '</td>';
+                    html += '<td>' + contact + '</td>';
+                    html += '<td>' + svc + '</td>';
+                    html += '<td>' + dates + '</td>';
+                    html += '<td>' + det + '</td>';
+                    html += '</tr>';
+                });
+
+                html += '</tbody></table>';
+                root.innerHTML = html;
             }
 
-            var html = '<table class="bookings-table"><thead><tr>';
-            html += '<th>Received</th><th>Practice / contact</th><th>Service</th><th>Dates</th><th>Details</th>';
-            html += '</tr></thead><tbody>';
-
-            rows.forEach(function (row) {
-                var d = row.data || {};
-                var contact =
-                    esc(d.practiceName || '—') +
-                    (d.email ? '<br><small>' + esc(d.email) + '</small>' : '');
-                var svc = esc(d.servicerequired || '—');
-                var dates = esc(d.preferredDates || d.preferredDate || '—');
-                var det = esc((d.History || '').slice(0, 400));
-                if ((d.History || '').length > 400) det += '…';
-                html += '<tr>';
-                html += '<td>' + esc(fmt(row.submittedAt)) + '</td>';
-                html += '<td>' + contact + '</td>';
-                html += '<td>' + svc + '</td>';
-                html += '<td>' + dates + '</td>';
-                html += '<td>' + det + '</td>';
-                html += '</tr>';
-            });
-
-            html += '</tbody></table>';
-            root.innerHTML = html;
+            auth.ready
+                .then(function () {
+                    if (!auth.requireTeamStaffAccess('home.html')) return null;
+                    return fetch('/api/bookings/inbox', { credentials: 'include' });
+                })
+                .then(function (r) {
+                    if (!r || !r.ok) {
+                        if (root) {
+                            root.innerHTML =
+                                '<div class="bookings-empty">Could not load requests. Please refresh.</div>';
+                        }
+                        return;
+                    }
+                    return r.json();
+                })
+                .then(function (j) {
+                    if (!j) return;
+                    if (!j.success) {
+                        root.innerHTML =
+                            '<div class="bookings-empty">' + esc(j.message || 'Could not load.') + '</div>';
+                        return;
+                    }
+                    renderTable(j.requests || []);
+                })
+                .catch(function () {
+                    root.innerHTML =
+                        '<div class="bookings-empty">Could not load requests. Check your connection.</div>';
+                });
         })();
     </script>
 </body>

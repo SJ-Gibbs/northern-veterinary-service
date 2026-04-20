@@ -10,8 +10,10 @@
 
     if (!grid || !monthTitle || typeof BookingDiary === 'undefined' || typeof auth === 'undefined') return;
 
-    var userId = auth.getCurrentUser() && auth.getCurrentUser().id;
-    if (!userId) return;
+    function getUserId() {
+        var s = auth.getCurrentUser();
+        return s && s.id;
+    }
 
     var viewYear;
     var viewMonth;
@@ -67,19 +69,43 @@
     }
 
     function cycleOverride(iso) {
-        var cur = BookingDiary.getStaffOverride(userId, iso);
+        var uid = getUserId();
+        if (!uid) return;
+        var cur = BookingDiary.getStaffOverride(uid, iso);
+        var next = 'clear';
         if (cur === null) {
-            BookingDiary.setStaffOverride(userId, iso, 'available');
+            next = 'available';
+            BookingDiary.setStaffOverride(uid, iso, 'available');
         } else if (cur === 'available') {
-            BookingDiary.setStaffOverride(userId, iso, 'limited');
+            next = 'limited';
+            BookingDiary.setStaffOverride(uid, iso, 'limited');
         } else if (cur === 'limited') {
-            BookingDiary.setStaffOverride(userId, iso, 'unavailable');
+            next = 'unavailable';
+            BookingDiary.setStaffOverride(uid, iso, 'unavailable');
         } else {
-            BookingDiary.clearStaffOverride(userId, iso);
+            BookingDiary.clearStaffOverride(uid, iso);
         }
+        fetch(
+            '/api/calendar/staff/' + encodeURIComponent(uid) + '/' + encodeURIComponent(iso),
+            {
+                method: 'PUT',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status: next === 'clear' ? 'clear' : next })
+            }
+        ).catch(function () {
+            /* local updated */
+        });
     }
 
     function render() {
+        if (!getUserId()) {
+            if (grid) {
+                grid.innerHTML =
+                    '<p class="text-muted" style="color:#a00;padding:1rem;">Loading your diary…</p>';
+            }
+            return;
+        }
         monthTitle.textContent = new Date(viewYear, viewMonth, 1).toLocaleString('en-GB', {
             month: 'long',
             year: 'numeric'
@@ -100,10 +126,11 @@
             grid.appendChild(pad);
         }
 
+        var uid0 = getUserId();
         for (var d = 1; d <= daysInMonth; d++) {
             var iso = isoDate(viewYear, viewMonth, d);
-            var effective = BookingDiary.getStaffBookingAvailability(userId, iso);
-            var hasOverride = BookingDiary.getStaffOverride(userId, iso) !== null;
+            var effective = BookingDiary.getStaffBookingAvailability(uid0, iso);
+            var hasOverride = BookingDiary.getStaffOverride(uid0, iso) !== null;
 
             var btn = document.createElement('button');
             btn.type = 'button';
@@ -145,5 +172,37 @@
             'This is your personal availability planner. It does not change the public booking calendar (that is set under Site booking diary by the master admin). Click a day to cycle: available → limited → unavailable → clear.';
     }
 
-    render();
+    if (auth.ready) {
+        auth.ready.then(function () {
+            var uid = getUserId();
+            if (!uid) {
+                if (grid) {
+                    grid.innerHTML =
+                        '<p class="text-muted" style="color:#a00">Could not load your user session.</p>';
+                }
+                return;
+            }
+            return fetch('/api/calendar/staff/' + encodeURIComponent(uid), { credentials: 'include' });
+        })
+            .then(function (r) {
+                if (!r) return;
+                return r.json();
+            })
+            .then(function (j) {
+                var uid = getUserId();
+                if (j && j.success && j.overrides && uid && BookingDiary.importStaffOverrides) {
+                    BookingDiary.importStaffOverrides(String(uid), j.overrides);
+                }
+            })
+            .catch(function () {
+                /* */
+            })
+            .finally(function () {
+                if (getUserId()) {
+                    render();
+                }
+            });
+    } else {
+        render();
+    }
 })();

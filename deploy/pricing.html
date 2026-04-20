@@ -198,11 +198,11 @@
                         <tbody>
                             <tr> 
                                 <td>Ultrasonography (Abdominal)</td>
-                                <td>£250</td>
+                                <td>£400</td>
                             </tr>
                             <tr>
                                 <td>Echocardiography</td>
-                                <td>£300</td>
+                                <td>£400</td>
                             </tr>
                             <tr>
                                 <td>Endoscopy (Gastroscopy/Colonoscopy)</td>
@@ -308,16 +308,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             const loginRequired = document.getElementById('loginRequired');
             const pricingContent = document.getElementById('pricingContent');
-            
-            if (auth.isLoggedIn()) {
-                // User is logged in - show pricing
-                loginRequired.style.display = 'none';
-                pricingContent.style.display = 'block';
-            } else {
-                // User is not logged in - show login prompt
-                loginRequired.style.display = 'block';
-                pricingContent.style.display = 'none';
+            function apply() {
+                if (auth.isLoggedIn()) {
+                    loginRequired.style.display = 'none';
+                    pricingContent.style.display = 'block';
+                } else {
+                    loginRequired.style.display = 'block';
+                    pricingContent.style.display = 'none';
+                }
             }
+            auth.ready.then(apply);
         });
     </script>
 </body>

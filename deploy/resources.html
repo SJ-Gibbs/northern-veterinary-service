@@ -119,7 +119,9 @@
     <script src="auth.js"></script>
     <script src="index.js"></script>
     <script>
-        auth.requireProfessionalAccess('home.html');
+        auth.ready.then(function () {
+            auth.requireProfessionalAccess('home.html');
+        });
     </script>
 </body>
 </html>

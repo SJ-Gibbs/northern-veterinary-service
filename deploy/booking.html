@@ -115,9 +115,9 @@
                             </div>
                             <div class="booking-calendar-grid" id="bookingCalGrid"></div>
                             <ul class="booking-calendar-legend" id="bookingCalLegend">
-                                <li><span class="booking-cal-swatch booking-cal-swatch--available"></span> Available</li>
-                                <li><span class="booking-cal-swatch booking-cal-swatch--limited"></span> Limited availability</li>
-                                <li><span class="booking-cal-swatch booking-cal-swatch--unavailable"></span> Unavailable</li>
+                                <li><span class="booking-cal-swatch booking-cal-swatch--available"></span> Open (staff available, no booking yet)</li>
+                                <li><span class="booking-cal-swatch booking-cal-swatch--limited"></span> Busy (staff available, a request already booked)</li>
+                                <li><span class="booking-cal-swatch booking-cal-swatch--unavailable"></span> No availability</li>
                             </ul>
                             <p class="booking-calendar-mode-hint" id="bookingCalModeHint" aria-live="polite"></p>
                             <p class="booking-calendar-selected" id="bookingCalSelected" aria-live="polite">No date selected — choose an available or limited day.</p>
@@ -187,10 +187,12 @@
 
     <script src="auth.js"></script>
     <script>
-        auth.requireAuth('login.html');
-        if (!auth.canAccessBookingForm()) {
-            window.location.href = 'home.html';
-        }
+        auth.ready.then(function () {
+            if (!auth.requireAuth('login.html')) return;
+            if (!auth.canAccessBookingForm()) {
+                window.location.href = 'home.html';
+            }
+        });
     </script>
     <script src="booking-requests.js"></script>
     <script src="index.js"></script>

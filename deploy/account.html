@@ -225,6 +225,100 @@
             background: #eee;
             margin: 1.5rem 0;
         }
+
+        /* Team member: services checkboxes */
+        .services-offered-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin: 1rem 0 1.25rem;
+        }
+
+        .services-offered-list label {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            font-weight: 500;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+
+        .services-offered-list input {
+            margin-top: 0.2rem;
+            width: auto;
+        }
+
+        .services-offered-section {
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: var(--primary-color, #1a3a5c);
+            margin: 1.35rem 0 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .services-offered-section:first-child {
+            margin-top: 0;
+        }
+
+        .member-badge.team-member-badge {
+            background: #eaf6ef;
+            color: #1e6b3a;
+            border-color: #a8d5ba;
+        }
+
+        .availability-card-actions {
+            margin-top: 1rem;
+        }
+
+        .availability-card-actions .btn-save {
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .account-photo-row {
+            margin-bottom: 1.5rem;
+        }
+
+        .account-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #e0e0e0;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .account-avatar-large-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .account-avatar-placeholder {
+            font-size: 0.85rem;
+            color: #888;
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .account-photo-edit .account-photo-edit-row {
+            margin-bottom: 0.65rem;
+        }
+
+        .account-photo-edit input[type="file"] {
+            width: 100%;
+            max-width: 22rem;
+            font-size: 0.9rem;
+        }
+
+        .account-photo-edit #removeProfilePhotoBtn {
+            margin-top: 0.5rem;
+        }
     </style>
 </head>
 
@@ -278,14 +372,14 @@
         <div class="content-wrapper">
             <div class="account-page">
                 <h1>My Account</h1>
-                <p class="account-subtitle">Manage your practice profile and account settings</p>
+                <p class="account-subtitle" id="accountSubtitle">Manage your practice profile and account settings</p>
 
-                <div class="member-badge">✅ Active Member Practice</div>
+                <div class="member-badge" id="accountMemberBadge">✅ Active Member Practice</div>
 
                 <!-- Tabs -->
                 <div class="account-tabs">
-                    <button class="tab-btn active" data-tab="profile">Practice Profile</button>
-                    <button class="tab-btn" data-tab="security">Security</button>
+                    <button type="button" class="tab-btn active" data-tab="profile" id="tabBtnProfile">Practice Profile</button>
+                    <button type="button" class="tab-btn" data-tab="security">Security</button>
                 </div>
 
                 <!-- ── PROFILE TAB ─────────────────────────────── -->
@@ -300,13 +394,25 @@
 
                         <div id="profileMsg" class="status-msg"></div>
 
+                        <div class="account-photo-row" id="viewPhotoRow">
+                            <span class="info-label" style="display:block;margin-bottom:0.5rem;">Profile photo</span>
+                            <div class="account-avatar-large" id="viewAvatarWrap">
+                                <img id="viewProfilePhoto" src="" alt="" class="account-avatar-large-img" width="120" height="120" style="display:none;">
+                                <span class="account-avatar-placeholder" id="viewAvatarPlaceholder">No photo uploaded</span>
+                            </div>
+                        </div>
+
                         <div class="info-row">
-                            <span class="info-label">Practice Name</span>
+                            <span class="info-label" id="labelViewName">Practice Name</span>
                             <span class="info-value" id="viewPracticeName">—</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Email</span>
                             <span class="info-value" id="viewEmail">—</span>
+                        </div>
+                        <div class="info-row" id="viewRcvsRow" style="display: none;">
+                            <span class="info-label">RCVS registration</span>
+                            <span class="info-value" id="viewRcvs">—</span>
                         </div>
                         <div class="info-row">
                             <span class="info-label">Phone</span>
@@ -329,8 +435,22 @@
                         <div id="editMsg" class="status-msg"></div>
 
                         <form class="edit-form" id="editProfileForm" novalidate>
+                            <div class="form-group account-photo-edit">
+                                <label for="editProfilePhotoFile">Profile photo</label>
+                                <div class="account-photo-edit-row">
+                                    <div class="account-avatar-large" id="editAvatarWrap">
+                                        <img id="editProfilePhotoPreview" src="" alt="" class="account-avatar-large-img" width="120" height="120" style="display:none;">
+                                        <span class="account-avatar-placeholder" id="editAvatarPlaceholder">No photo yet</span>
+                                    </div>
+                                </div>
+                                <input type="file" id="editProfilePhotoFile" accept="image/jpeg,image/png,image/webp" autocomplete="off">
+                                <div>
+                                    <button type="button" class="btn-cancel" id="removeProfilePhotoBtn">Remove photo</button>
+                                </div>
+                            </div>
+
                             <div class="form-group">
-                                <label for="editPracticeName">Practice Name <span style="color:red">*</span></label>
+                                <label for="editPracticeName" id="labelEditName">Practice Name <span style="color:red">*</span></label>
                                 <input type="text" id="editPracticeName" placeholder="Your Veterinary Practice" required>
                             </div>
 
@@ -340,7 +460,18 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="editPhone">Practice Phone</label>
+                                <label for="editEmailConfirm">Confirm email <span style="color:red">*</span></label>
+                                <input type="email" id="editEmailConfirm" placeholder="Re-enter email" required autocomplete="email">
+                            </div>
+
+                            <div class="form-group" id="editRcvsGroup" style="display: none;">
+                                <label for="editRcvs">RCVS registration number <span style="color:red">*</span></label>
+                                <input type="text" id="editRcvs" placeholder="As on the RCVS Register" autocomplete="off">
+                                <small style="color:#666;font-size:0.85rem;display:block;margin-top:0.35rem;">Required for member practices and clinical team accounts.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editPhone">Practice Phone <span id="editPhoneRequiredStar" style="color:red;display:none">*</span></label>
                                 <input type="tel" id="editPhone" placeholder="01234 567890">
                             </div>
 
@@ -375,6 +506,37 @@
                                 <button type="button" class="btn-cancel" id="cancelEditBtn">Cancel</button>
                             </div>
                         </form>
+                    </div>
+                </div>
+
+                <!-- ── TEAM: SERVICES ─────────────────────────── -->
+                <div class="tab-panel" id="tab-services" data-team-only>
+                    <div class="profile-card">
+                        <h2>Services you can perform</h2>
+                        <p style="color:#555;font-size:0.93rem;margin-bottom:0.5rem;">
+                            Tick the procedures and services you can deliver. The list follows the <a href="pricing.html">member price list</a> (plus laparoscopic surgery and locum work).
+                        </p>
+                        <div id="servicesMsg" class="status-msg"></div>
+                        <form class="edit-form" id="servicesOfferedForm">
+                            <div class="services-offered-list" id="servicesCheckboxesMount" aria-label="Services offered"></div>
+                            <button type="submit" class="btn-save">Save services</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ── TEAM: AVAILABILITY ──────────────────────── -->
+                <div class="tab-panel" id="tab-availability" data-team-only>
+                    <div class="profile-card">
+                        <h2>Your availability</h2>
+                        <p style="color:#555;font-size:0.93rem;line-height:1.5;">
+                            Manage your working availability day by day (available, limited, or unavailable). Overrides are stored in this browser for your account.
+                        </p>
+                        <p style="color:#666;font-size:0.88rem;margin-top:0.75rem;">
+                            The public booking calendar visitors see is still controlled from the site booking diary (master admin). Your planner is for your own schedule and internal planning.
+                        </p>
+                        <div class="availability-card-actions">
+                            <a href="staff-diary.html" class="btn-save">Open availability calendar</a>
+                        </div>
                     </div>
                 </div>
 
@@ -451,18 +613,121 @@
     <script src="auth.js"></script>
     <script src="index.js"></script>
     <script>
-        // ── Guard: must be logged in ───────────────────────────
-        auth.requireAuth('login.html');
+    auth.ready.then(function () {
+        if (!auth.requireAuth('login.html')) return;
+
+        const isTeamMember = auth.isCurrentUserTeamMember();
+
+        if (!isTeamMember) {
+            document.querySelectorAll('[data-team-only]').forEach(el => el.remove());
+        } else {
+            document.body.classList.add('account-page--team');
+            const badge = document.getElementById('accountMemberBadge');
+            if (badge) {
+                badge.textContent = 'Team Member';
+                badge.classList.add('team-member-badge');
+            }
+            const sub = document.getElementById('accountSubtitle');
+            if (sub) {
+                sub.textContent = 'Manage your profile, the services you offer, and your availability.';
+            }
+            const vn = document.getElementById('labelViewName');
+            const en = document.getElementById('labelEditName');
+            if (vn) vn.textContent = 'Full name';
+            if (en) {
+                en.innerHTML = 'Full name <span style="color: red;">*</span>';
+            }
+            document.getElementById('tabBtnProfile').textContent = 'Profile';
+            const viewH2 = document.querySelector('#viewCard h2');
+            if (viewH2) {
+                const editLink = viewH2.querySelector('#editBtn');
+                viewH2.textContent = '';
+                viewH2.appendChild(document.createTextNode('Your details '));
+                if (editLink) viewH2.appendChild(editLink);
+            }
+            const editH2 = document.querySelector('#editCard h2');
+            if (editH2) editH2.textContent = 'Edit your details';
+
+            const tabsBar = document.querySelector('.account-tabs');
+            const secBtn = tabsBar && tabsBar.querySelector('[data-tab="security"]');
+            if (tabsBar && secBtn) {
+                [['services', 'Services I offer'], ['availability', 'Availability']].forEach(([tab, label]) => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'tab-btn';
+                    b.dataset.tab = tab;
+                    b.textContent = label;
+                    secBtn.insertAdjacentElement('beforebegin', b);
+                });
+            }
+
+            const mount = document.getElementById('servicesCheckboxesMount');
+            const catalog = auth.getOfferableServicesCatalog();
+            const profile = auth.getUserProfile();
+            const selected = new Set(Array.isArray(profile && profile.servicesOffered) ? profile.servicesOffered : []);
+            if (mount) {
+                catalog.forEach((sec) => {
+                    const h3 = document.createElement('h3');
+                    h3.className = 'services-offered-section';
+                    h3.textContent = sec.section;
+                    mount.appendChild(h3);
+                    sec.items.forEach(({ id, label }) => {
+                        const wrap = document.createElement('label');
+                        const inp = document.createElement('input');
+                        inp.type = 'checkbox';
+                        inp.name = 'service';
+                        inp.value = id;
+                        if (selected.has(id)) inp.checked = true;
+                        wrap.appendChild(inp);
+                        wrap.appendChild(document.createTextNode(label));
+                        mount.appendChild(wrap);
+                    });
+                });
+            }
+
+            document.getElementById('servicesOfferedForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const boxes = mount.querySelectorAll('input[name="service"]:checked');
+                const ids = Array.from(boxes).map(b => b.value);
+                const result = await auth.updateUser({ servicesOffered: ids });
+                const el = document.getElementById('servicesMsg');
+                if (el) {
+                    el.textContent = result.message;
+                    el.className = 'status-msg ' + (result.success ? 'success' : 'error');
+                    el.style.display = 'block';
+                    setTimeout(() => { el.style.display = 'none'; }, 5000);
+                }
+            });
+        }
 
         // ── Tab switching ──────────────────────────────────────
-        document.querySelectorAll('.tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => {
-                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-                btn.classList.add('active');
-                document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        function wireAccountTabs() {
+            document.querySelectorAll('.account-tabs .tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.dataset.tab;
+                    document.querySelectorAll('.account-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.account-page .tab-panel').forEach(p => p.classList.remove('active'));
+                    btn.classList.add('active');
+                    const panel = document.getElementById('tab-' + tab);
+                    if (panel) panel.classList.add('active');
+                });
             });
-        });
+        }
+        wireAccountTabs();
+
+        function activateAccountTabFromHash() {
+            const h = (location.hash || '').replace(/^#/, '').toLowerCase();
+            let tab = null;
+            if (!h || h === 'profile') tab = 'profile';
+            else if (h === 'services') tab = 'services';
+            else if (h === 'security') tab = 'security';
+            else if (h === 'availability') tab = 'availability';
+            if (!tab) return;
+            const btn = document.querySelector('.account-tabs .tab-btn[data-tab="' + tab + '"]');
+            if (btn) btn.click();
+        }
+        activateAccountTabFromHash();
+        window.addEventListener('hashchange', activateAccountTabFromHash);
 
         // ── Helpers ────────────────────────────────────────────
         function showMsg(id, text, type) {
@@ -484,16 +749,122 @@
             return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
         }
 
+        let accountPendingPhotoDataUrl = null;
+        let accountRemovePhoto = false;
+
+        function syncViewAvatar(profile) {
+            const img = document.getElementById('viewProfilePhoto');
+            const ph = document.getElementById('viewAvatarPlaceholder');
+            if (!img || !ph) return;
+            const pic = profile && (profile.profilePhotoUrl || profile.profilePhotoDataUrl);
+            if (pic) {
+                img.src = pic;
+                img.style.display = 'block';
+                ph.style.display = 'none';
+            } else {
+                img.removeAttribute('src');
+                img.style.display = 'none';
+                ph.style.display = 'block';
+            }
+        }
+
+        function syncEditAvatar(profile) {
+            const img = document.getElementById('editProfilePhotoPreview');
+            const ph = document.getElementById('editAvatarPlaceholder');
+            if (!img || !ph) return;
+            const url = accountPendingPhotoDataUrl || (profile && (profile.profilePhotoUrl || profile.profilePhotoDataUrl));
+            if (url && !accountRemovePhoto) {
+                img.src = url;
+                img.style.display = 'block';
+                ph.style.display = 'none';
+            } else {
+                img.removeAttribute('src');
+                img.style.display = 'none';
+                ph.style.display = 'block';
+            }
+        }
+
+        function resetPhotoDraftState() {
+            accountPendingPhotoDataUrl = null;
+            accountRemovePhoto = false;
+            const f = document.getElementById('editProfilePhotoFile');
+            if (f) f.value = '';
+        }
+
+        function compressImageFile(file) {
+            return new Promise(function (resolve, reject) {
+                if (!file || !file.type || !file.type.startsWith('image/')) {
+                    reject(new Error('Please choose a JPEG, PNG, or WebP image.'));
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const img = new Image();
+                    img.onload = function () {
+                        const maxDim = 512;
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        try {
+                            resolve(canvas.toDataURL('image/jpeg', 0.82));
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    img.onerror = function () {
+                        reject(new Error('Could not read image.'));
+                    };
+                    img.src = reader.result;
+                };
+                reader.onerror = function () {
+                    reject(new Error('Could not read file.'));
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showMemberRcvsFields(show) {
+            const vr = document.getElementById('viewRcvsRow');
+            const eg = document.getElementById('editRcvsGroup');
+            const er = document.getElementById('editRcvs');
+            if (vr) vr.style.display = show ? '' : 'none';
+            if (eg) eg.style.display = show ? '' : 'none';
+            if (er) er.required = !!show;
+        }
+
         // ── Populate view mode ─────────────────────────────────
         function populateView() {
             const profile = auth.getUserProfile();
             if (!profile) return;
+
+            const showRcvs =
+                !profile.isAdmin &&
+                (profile.accountType === 'practice' || profile.accountType === 'team_member');
+            showMemberRcvsFields(!!showRcvs);
+            if (showRcvs) {
+                const el = document.getElementById('viewRcvs');
+                if (el) el.textContent = profile.rcvsRegistrationNumber || '—';
+            }
 
             document.getElementById('viewPracticeName').textContent = profile.practiceName || '—';
             document.getElementById('viewEmail').textContent        = profile.email || '—';
             document.getElementById('viewPhone').textContent        = profile.phone || 'Not provided';
             document.getElementById('viewAddress').textContent      = formatAddress(profile.address);
             document.getElementById('viewCreatedAt').textContent    = formatDate(profile.createdAt);
+            syncViewAvatar(profile);
         }
 
         // ── Populate edit form ─────────────────────────────────
@@ -502,14 +873,32 @@
             if (!profile) return;
             const addr = profile.address || {};
 
+            resetPhotoDraftState();
+
+            const showRcvs =
+                !profile.isAdmin &&
+                (profile.accountType === 'practice' || profile.accountType === 'team_member');
+            showMemberRcvsFields(!!showRcvs);
+            const editRcvs = document.getElementById('editRcvs');
+            if (editRcvs) editRcvs.value = profile.rcvsRegistrationNumber || '';
+
             document.getElementById('editPracticeName').value  = profile.practiceName || '';
             document.getElementById('editEmail').value         = profile.email || '';
+            document.getElementById('editEmailConfirm').value  = profile.email || '';
+            const needsPhone =
+                !profile.isAdmin &&
+                (profile.accountType === 'practice' || profile.accountType === 'team_member');
+            const ep = document.getElementById('editPhone');
+            if (ep) ep.required = !!needsPhone;
+            const star = document.getElementById('editPhoneRequiredStar');
+            if (star) star.style.display = needsPhone ? 'inline' : 'none';
             document.getElementById('editPhone').value         = profile.phone || '';
             document.getElementById('editAddressLine1').value  = addr.line1 || '';
             document.getElementById('editAddressLine2').value  = addr.line2 || '';
             document.getElementById('editCity').value          = addr.city || '';
             document.getElementById('editPostcode').value      = addr.postcode || '';
             document.getElementById('editCounty').value        = addr.county || '';
+            syncEditAvatar(profile);
         }
 
         // ── Edit / Cancel toggles ──────────────────────────────
@@ -520,17 +909,42 @@
         });
 
         document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            resetPhotoDraftState();
             document.getElementById('editCard').style.display = 'none';
             document.getElementById('viewCard').style.display = 'block';
         });
 
+        document.getElementById('editProfilePhotoFile').addEventListener('change', function (ev) {
+            const file = ev.target.files && ev.target.files[0];
+            if (!file) return;
+            compressImageFile(file)
+                .then(function (dataUrl) {
+                    accountPendingPhotoDataUrl = dataUrl;
+                    accountRemovePhoto = false;
+                    syncEditAvatar(auth.getUserProfile());
+                })
+                .catch(function (err) {
+                    showMsg('editMsg', err.message || 'Could not process image.', 'error');
+                    ev.target.value = '';
+                });
+        });
+
+        document.getElementById('removeProfilePhotoBtn').addEventListener('click', function () {
+            accountPendingPhotoDataUrl = null;
+            accountRemovePhoto = true;
+            const f = document.getElementById('editProfilePhotoFile');
+            if (f) f.value = '';
+            syncEditAvatar(auth.getUserProfile());
+        });
+
         // ── Save profile ───────────────────────────────────────
-        document.getElementById('editProfileForm').addEventListener('submit', function(e) {
+        document.getElementById('editProfileForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const updatedFields = {
                 practiceName: document.getElementById('editPracticeName').value.trim(),
                 email:        document.getElementById('editEmail').value.trim(),
+                confirmEmail: document.getElementById('editEmailConfirm').value.trim(),
                 phone:        document.getElementById('editPhone').value.trim(),
                 address: {
                     line1:    document.getElementById('editAddressLine1').value.trim(),
@@ -541,30 +955,61 @@
                 }
             };
 
+            if (accountRemovePhoto) {
+                updatedFields.profilePhotoDataUrl = null;
+            } else if (accountPendingPhotoDataUrl) {
+                updatedFields.profilePhotoDataUrl = accountPendingPhotoDataUrl;
+            }
+
+            const prof = auth.getUserProfile();
+            const needsRcvs =
+                prof &&
+                !prof.isAdmin &&
+                (prof.accountType === 'practice' || prof.accountType === 'team_member');
+            if (needsRcvs) {
+                updatedFields.rcvsRegistrationNumber = document.getElementById('editRcvs').value.trim();
+            }
+
             if (!updatedFields.practiceName) {
                 showMsg('editMsg', 'Practice name is required.', 'error'); return;
             }
             if (!updatedFields.email) {
                 showMsg('editMsg', 'Email address is required.', 'error'); return;
             }
+            if (!updatedFields.confirmEmail) {
+                showMsg('editMsg', 'Please confirm your email address.', 'error'); return;
+            }
+            if (updatedFields.email.toLowerCase() !== updatedFields.confirmEmail.toLowerCase()) {
+                showMsg('editMsg', 'Email addresses do not match.', 'error'); return;
+            }
             if (!updatedFields.address.line1 || !updatedFields.address.city || !updatedFields.address.postcode) {
                 showMsg('editMsg', 'Address line 1, city, and postcode are required.', 'error'); return;
             }
 
-            const result = auth.updateUser(updatedFields);
-            showMsg('editMsg', result.message, result.success ? 'success' : 'error');
-
-            if (result.success) {
-                setTimeout(() => {
-                    document.getElementById('editCard').style.display = 'none';
-                    document.getElementById('viewCard').style.display = 'block';
-                    populateView();
-                }, 1200);
+            if (needsRcvs) {
+                const rc = auth.validateRcvsRegistrationNumber(updatedFields.rcvsRegistrationNumber);
+                if (!rc.ok) {
+                    showMsg('editMsg', rc.message, 'error');
+                    return;
+                }
             }
+
+            auth.updateUser(updatedFields).then(function (result) {
+                showMsg('editMsg', result.message, result.success ? 'success' : 'error');
+
+                if (result.success) {
+                    resetPhotoDraftState();
+                    setTimeout(() => {
+                        document.getElementById('editCard').style.display = 'none';
+                        document.getElementById('viewCard').style.display = 'block';
+                        populateView();
+                    }, 1200);
+                }
+            });
         });
 
         // ── Change password ────────────────────────────────────
-        document.getElementById('changePasswordForm').addEventListener('submit', function(e) {
+        document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
             e.preventDefault();
 
             const current  = document.getElementById('currentPassword').value;
@@ -575,7 +1020,7 @@
                 showMsg('pwMsg', 'New passwords do not match.', 'error'); return;
             }
 
-            const result = auth.updatePassword(current, newPw);
+            const result = await auth.updatePassword(current, newPw);
             showMsg('pwMsg', result.message, result.success ? 'success' : 'error');
 
             if (result.success) {
@@ -590,6 +1035,7 @@
 
         // ── Initial render ─────────────────────────────────────
         populateView();
+    });
     </script>
 </body>
 </html>

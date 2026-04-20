@@ -606,6 +606,7 @@
                     <div class="modal-info-row"><span class="modal-info-label">Account type</span><span class="modal-info-value" id="mv-accountType">—</span></div>
                     <div class="modal-info-row"><span class="modal-info-label">Role</span><span class="modal-info-value" id="mv-role">—</span></div>
                     <div class="modal-info-row"><span class="modal-info-label">Email</span><span class="modal-info-value" id="mv-email">—</span></div>
+                    <div class="modal-info-row" id="mv-rcvs-row"><span class="modal-info-label">RCVS registration</span><span class="modal-info-value" id="mv-rcvs">—</span></div>
                     <div class="modal-info-row"><span class="modal-info-label">Phone</span><span class="modal-info-value" id="mv-phone">—</span></div>
                     <div class="modal-info-row"><span class="modal-info-label">Address</span><span class="modal-info-value" id="mv-address">—</span></div>
                     <div class="modal-info-row"><span class="modal-info-label">Member Since</span><span class="modal-info-value" id="mv-createdAt">—</span></div>
@@ -626,7 +627,15 @@
                             <input type="email" id="ep-email" required>
                         </div>
                         <div class="form-group">
-                            <label for="ep-phone">Phone</label>
+                            <label for="ep-emailConfirm">Confirm email *</label>
+                            <input type="email" id="ep-emailConfirm" required autocomplete="email">
+                        </div>
+                        <div class="form-group" id="ep-rcvs-group">
+                            <label for="ep-rcvs">RCVS registration number *</label>
+                            <input type="text" id="ep-rcvs" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="ep-phone" id="ep-phone-label">Phone</label>
                             <input type="tel" id="ep-phone">
                         </div>
                         <div class="form-group">
@@ -723,8 +732,11 @@
     <script src="auth.js"></script>
     <script src="index.js"></script>
     <script>
+    (async function () {
+    await auth.ready;
+    await auth.refreshAdminUsers();
     // ── Guard: admin only ──────────────────────────────────────────
-    auth.requireAdmin('home.html');
+    if (!auth.requireAdmin('home.html')) return;
 
     if (auth.isCurrentUserMasterAdmin()) {
         var dw = document.getElementById('diaryAdminLinkWrap');
@@ -898,10 +910,10 @@
     // ══════════════════════════════════════════════════════════════
     //  Quick actions (table-level)
     // ══════════════════════════════════════════════════════════════
-    function toggleStatus(id, newStatus) {
-        const result = auth.setUserActiveStatus(id, newStatus);
+    async function toggleStatus(id, newStatus) {
+        const result = await auth.setUserActiveStatus(id, newStatus);
         if (result.success) {
-            reload();
+            await reload();
         } else {
             alert(result.message);
         }
@@ -921,13 +933,13 @@
         document.getElementById('confirmOverlay').classList.remove('open');
     });
 
-    document.getElementById('confirmDelete').addEventListener('click', () => {
+    document.getElementById('confirmDelete').addEventListener('click', async () => {
         if (!pendingDeleteId) return;
-        const result = auth.adminDeleteUser(pendingDeleteId);
+        const result = await auth.adminDeleteUser(pendingDeleteId);
         pendingDeleteId = null;
         document.getElementById('confirmOverlay').classList.remove('open');
         if (result.success) {
-            reload();
+            await reload();
         } else {
             alert(result.message);
         }
@@ -948,6 +960,13 @@
         document.getElementById('mv-accountType').textContent = auth.getAccountTypeLabel(p);
         document.getElementById('mv-role').textContent = auth.getRoleLabel(auth.getUserRole(p));
         document.getElementById('mv-email').textContent        = fmt(p.email);
+        const rcvsRow = document.getElementById('mv-rcvs-row');
+        const showRcvs =
+            !p.isAdmin && (p.accountType === 'practice' || p.accountType === 'team_member');
+        if (rcvsRow) rcvsRow.style.display = showRcvs ? '' : 'none';
+        if (showRcvs) {
+            document.getElementById('mv-rcvs').textContent = fmt(p.rcvsRegistrationNumber, '—');
+        }
         document.getElementById('mv-phone').textContent        = fmt(p.phone, 'Not provided');
         document.getElementById('mv-address').textContent      = fmtAddress(p.address);
         document.getElementById('mv-createdAt').textContent    = fmtDate(p.createdAt);
@@ -959,7 +978,23 @@
         document.getElementById('editUserId').value    = p.id;
         document.getElementById('ep-practiceName').value = p.practiceName || '';
         document.getElementById('ep-email').value        = p.email || '';
-        document.getElementById('ep-phone').value        = p.phone || '';
+        document.getElementById('ep-emailConfirm').value = p.email || '';
+        const epRcvsG = document.getElementById('ep-rcvs-group');
+        const epRcvs = document.getElementById('ep-rcvs');
+        if (epRcvsG && epRcvs) {
+            epRcvsG.style.display = showRcvs ? '' : 'none';
+            epRcvs.value = p.rcvsRegistrationNumber || '';
+            epRcvs.required = !!showRcvs;
+        }
+        const epPhone = document.getElementById('ep-phone');
+        const epPhoneLabel = document.getElementById('ep-phone-label');
+        if (epPhone) {
+            epPhone.value = p.phone || '';
+            epPhone.required = !!showRcvs;
+        }
+        if (epPhoneLabel) {
+            epPhoneLabel.textContent = showRcvs ? 'Phone *' : 'Phone';
+        }
         document.getElementById('ep-line1').value        = p.address?.line1 || '';
         document.getElementById('ep-line2').value        = p.address?.line2 || '';
         document.getElementById('ep-city').value         = p.address?.city || '';
@@ -1028,11 +1063,18 @@
     }
 
     // Save edit
-    function submitEdit() {
+    async function submitEdit() {
         const id = document.getElementById('editUserId').value;
+        const pEdit = auth.getUsers().find(u => u.id === id);
+        const needsRcvs =
+            pEdit &&
+            !pEdit.isAdmin &&
+            (pEdit.accountType === 'practice' || pEdit.accountType === 'team_member');
+
         const updatedFields = {
             practiceName: document.getElementById('ep-practiceName').value.trim(),
             email:        document.getElementById('ep-email').value.trim(),
+            confirmEmail: document.getElementById('ep-emailConfirm').value.trim(),
             phone:        document.getElementById('ep-phone').value.trim(),
             address: {
                 line1:    document.getElementById('ep-line1').value.trim(),
@@ -1043,17 +1085,34 @@
             }
         };
 
+        if (needsRcvs) {
+            updatedFields.rcvsRegistrationNumber = document.getElementById('ep-rcvs').value.trim();
+            const rc = auth.validateRcvsRegistrationNumber(updatedFields.rcvsRegistrationNumber);
+            if (!rc.ok) {
+                showMsg('editModalMsg', rc.message, 'error');
+                return;
+            }
+        }
+
         if (!updatedFields.practiceName) { showMsg('editModalMsg', 'Practice name is required.', 'error'); return; }
         if (!updatedFields.email)        { showMsg('editModalMsg', 'Email is required.', 'error'); return; }
+        if (!updatedFields.confirmEmail) {
+            showMsg('editModalMsg', 'Please confirm the email address.', 'error');
+            return;
+        }
+        if (updatedFields.email.toLowerCase() !== updatedFields.confirmEmail.toLowerCase()) {
+            showMsg('editModalMsg', 'Email addresses do not match.', 'error');
+            return;
+        }
         if (!updatedFields.address.line1 || !updatedFields.address.city || !updatedFields.address.postcode) {
             showMsg('editModalMsg', 'Address line 1, city, and postcode are required.', 'error'); return;
         }
 
-        const result = auth.adminUpdateUser(id, updatedFields);
+        const result = await auth.adminUpdateUser(id, updatedFields);
         showMsg('editModalMsg', result.message, result.success ? 'success' : 'error');
 
         if (result.success) {
-            reload();
+            await reload();
             setTimeout(() => {
                 // Refresh modal view tab with updated data
                 openModal(id);
@@ -1063,14 +1122,14 @@
     }
 
     // Reset password
-    function submitPasswordReset() {
+    async function submitPasswordReset() {
         const id = document.getElementById('resetUserId').value;
         const pw = document.getElementById('rp-password').value;
         const cf = document.getElementById('rp-confirm').value;
 
         if (pw !== cf) { showMsg('pwModalMsg', 'Passwords do not match.', 'error'); return; }
 
-        const result = auth.adminResetPassword(id, pw);
+        const result = await auth.adminResetPassword(id, pw);
         showMsg('pwModalMsg', result.message, result.success ? 'success' : 'error');
         if (result.success) {
             document.getElementById('rp-password').value = '';
@@ -1087,7 +1146,8 @@
     // ══════════════════════════════════════════════════════════════
     //  Load / reload data
     // ══════════════════════════════════════════════════════════════
-    function reload() {
+    async function reload() {
+        await auth.refreshAdminUsers();
         allPractices = auth.getAllPractices();
         updateStats(allPractices);
         applyFilterSort();
@@ -1103,6 +1163,7 @@
 
     // ── Initial load ───────────────────────────────────────────────
     reload();
+    })();
     </script>
 </body>
 </html>

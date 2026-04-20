@@ -205,25 +205,47 @@ function showFieldError(field, isValid, message) {
 function handleFormSubmission(form) {
     // Since there's no backend, show a success message
     const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
-    const originalText = submitBtn.value || submitBtn.textContent;
+    const originalText = (submitBtn.value != null && submitBtn.value !== '')
+        ? submitBtn.value
+        : submitBtn.textContent;
     
     submitBtn.disabled = true;
-    submitBtn.value = 'Submitting...';
-
-    if (form.id === 'bookingform' && typeof BookingRequests !== 'undefined') {
-        const fd = new FormData(form);
-        const data = {};
-        fd.forEach((value, key) => {
-            if (key === 'file' && value && typeof value === 'object' && value.name) {
-                data.fileName = value.name;
-            } else if (key !== 'file') {
-                data[key] = typeof value === 'string' ? value : String(value);
-            }
-        });
-        BookingRequests.append(data);
+    if (submitBtn.tagName === 'BUTTON') {
+        submitBtn.textContent = 'Submitting...';
+    } else {
+        submitBtn.value = 'Submitting...';
     }
-    
-    // Simulate submission
+
+    if (form.id === 'bookingform') {
+        const fd = new FormData(form);
+        (async function () {
+            try {
+                const res = await fetch('/api/bookings', { method: 'POST', body: fd, credentials: 'include' });
+                const j = await res.json().catch(() => ({}));
+                if (!res.ok || !j.success) {
+                    throw new Error(j.message || 'Could not submit request.');
+                }
+                try {
+                    window.dispatchEvent(new CustomEvent('northern-vet-booking-requests-changed'));
+                } catch (e) {
+                    /* ignore */
+                }
+            } catch (err) {
+                submitBtn.disabled = false;
+                if (submitBtn.tagName === 'BUTTON') {
+                    submitBtn.textContent = originalText;
+                } else {
+                    submitBtn.value = originalText;
+                }
+                alert(err.message || 'Submission failed. Please try again.');
+                return;
+            }
+            finishSuccess();
+        })();
+        return;
+    }
+
+    function finishSuccess() {
     setTimeout(() => {
         // Create success message
         const successDiv = document.createElement('div');
@@ -245,7 +267,11 @@ function handleFormSubmission(form) {
         form.insertBefore(successDiv, form.firstChild);
         form.reset();
         submitBtn.disabled = false;
-        submitBtn.value = originalText;
+        if (submitBtn.tagName === 'BUTTON') {
+            submitBtn.textContent = originalText;
+        } else {
+            submitBtn.value = originalText;
+        }
         
         // Scroll to success message
         successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -257,6 +283,7 @@ function handleFormSubmission(form) {
             setTimeout(() => successDiv.remove(), 500);
         }, 5000);
     }, 1000);
+    }
 }
 
 /**

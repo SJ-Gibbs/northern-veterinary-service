@@ -133,7 +133,9 @@
     <script src="auth.js"></script>
     <script src="index.js"></script>
     <script>
-        auth.requireMasterAdmin('home.html');
+        auth.ready.then(function () {
+            auth.requireMasterAdmin('home.html');
+        });
     </script>
     <script src="booking-diary.js"></script>
     <script src="diary-admin.js"></script>
