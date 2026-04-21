@@ -10,6 +10,7 @@
 </head>
 
 <body>
+    <script src="site-gate.js"></script>
     <header class="site-header">
         <div class="header-container">
             <div class="logo-section">
@@ -24,7 +25,7 @@
                     <span></span>
                 </button>
                 <ul class="nav-list">
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="home.html">Home</a></li>
                     <li><a href="theteam.html">The Team</a></li>
                     <li><a href="casestories.html">Case Stories</a></li>
                     <li><a href="pricing.html">Pricing</a></li>
@@ -46,7 +47,7 @@
                         <span class="dropdown-arrow">▼</span>
                     </button>
                     <div class="dropdown-menu" id="dropdownMenu">
-                        <a href="#" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="account.html" class="dropdown-item" id="accountLink">My Account</a>
                         <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
                     </div>
                 </div>
@@ -58,8 +59,8 @@
         <div class="content-wrapper">
             <section class="auth-page">
                 <div class="auth-container">
-                    <h1>Member Login</h1>
-                    <p class="auth-subtitle">Login to access member pricing and exclusive services</p>
+                    <h1>Member login</h1>
+                    <p class="auth-subtitle">Sign in as a Northern Veterinary Service <strong>team member</strong> or as a <strong>member practice</strong>. Use the email and password for your account type.</p>
 
                     <div id="loginMessage" class="message" style="display: none;"></div>
 
@@ -97,7 +98,7 @@
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul>
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="home.html">Home</a></li>
                     <li><a href="theteam.html">The Team</a></li>
                     <li><a href="pricing.html">Pricing</a></li>
                     <li><a href="policies.html">Policies</a></li>
@@ -118,14 +119,14 @@
     <script src="index.js"></script>
     <script>
         // Handle login form submission
-        document.getElementById('loginForm').addEventListener('submit', function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const email = document.getElementById('email').value;
             const password = document.getElementById('password').value;
             const messageDiv = document.getElementById('loginMessage');
             
-            const result = auth.login(email, password);
+            const result = await auth.login(email, password);
             
             messageDiv.style.display = 'block';
             messageDiv.textContent = result.message;
@@ -133,21 +134,20 @@
             if (result.success) {
                 messageDiv.className = 'message success-message';
                 
-                // Redirect after successful login
-                setTimeout(() => {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    const redirect = urlParams.get('redirect');
-                    window.location.href = redirect || 'index.html';
+                // Always continue on the home page after login
+                setTimeout(function () {
+                    window.location.href = 'home.html';
                 }, 1000);
             } else {
                 messageDiv.className = 'message error-message';
             }
         });
 
-        // Redirect if already logged in
-        if (auth.isLoggedIn()) {
-            window.location.href = 'index.html';
-        }
+        auth.ready.then(function () {
+            if (auth.isLoggedIn()) {
+                window.location.href = 'home.html';
+            }
+        });
     </script>
 </body>
 </html>

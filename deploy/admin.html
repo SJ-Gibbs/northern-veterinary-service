@@ -1,0 +1,1170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Panel - Northern Veterinary Service</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ══════════════════════════════════════
+           Admin Dashboard Styles
+           ══════════════════════════════════════ */
+
+        .admin-wrapper {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 4rem;
+        }
+
+        /* ── Page title ──────────────────────── */
+        .admin-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .admin-header h1 {
+            font-size: 1.8rem;
+            margin: 0;
+            color: var(--primary-color);
+        }
+
+        .admin-badge {
+            background: #c0392b;
+            color: #fff;
+            font-size: 0.75rem;
+            font-weight: 700;
+            padding: 0.25rem 0.7rem;
+            border-radius: 12px;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            vertical-align: middle;
+            margin-left: 0.6rem;
+        }
+
+        /* ── Stats cards ─────────────────────── */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) { .stats-row { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 420px) { .stats-row { grid-template-columns: 1fr; } }
+
+        .stat-card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        .stat-card .stat-value {
+            font-size: 2.4rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            line-height: 1;
+            margin-bottom: 0.35rem;
+        }
+
+        .stat-card .stat-label {
+            font-size: 0.82rem;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+        }
+
+        .stat-card.stat-active   .stat-value { color: #27ae60; }
+        .stat-card.stat-inactive .stat-value { color: #c0392b; }
+        .stat-card.stat-new      .stat-value { color: #2980b9; }
+
+        /* ── Controls bar ────────────────────── */
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.55rem 0.9rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.93rem;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(44,95,127,0.12);
+        }
+
+        .filter-select {
+            padding: 0.55rem 0.9rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.93rem;
+            background: #fff;
+            cursor: pointer;
+        }
+
+        .filter-select:focus { outline: none; border-color: var(--primary-color); }
+
+        .results-count {
+            font-size: 0.85rem;
+            color: #888;
+            margin-left: auto;
+            white-space: nowrap;
+        }
+
+        /* ── Practices table ─────────────────── */
+        .table-card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            overflow: hidden;
+        }
+
+        .practices-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.91rem;
+        }
+
+        .practices-table thead {
+            background: #f4f6f8;
+            border-bottom: 2px solid #e5e5e5;
+        }
+
+        .practices-table th {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #666;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        .practices-table th:hover { color: var(--primary-color); }
+        .practices-table th .sort-arrow { margin-left: 0.3em; opacity: 0.4; }
+        .practices-table th.sort-asc  .sort-arrow { opacity: 1; }
+        .practices-table th.sort-desc .sort-arrow { opacity: 1; transform: scaleY(-1); display: inline-block; }
+
+        .practices-table tbody tr {
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.15s;
+        }
+
+        .practices-table tbody tr:last-child { border-bottom: none; }
+        .practices-table tbody tr:hover { background: #f8fbfd; }
+
+        .practices-table td {
+            padding: 0.8rem 1rem;
+            vertical-align: middle;
+            color: #333;
+        }
+
+        .practice-name-cell {
+            font-weight: 600;
+            color: var(--primary-color);
+        }
+
+        .email-cell { color: #555; font-size: 0.88rem; }
+        .location-cell { color: #666; font-size: 0.88rem; }
+        .date-cell { color: #888; font-size: 0.85rem; white-space: nowrap; }
+
+        /* Status badges */
+        .badge {
+            display: inline-block;
+            padding: 0.2rem 0.65rem;
+            border-radius: 12px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+
+        .badge-active   { background: #d4edda; color: #155724; }
+        .badge-inactive { background: #f8d7da; color: #721c24; }
+
+        /* Action buttons */
+        .action-btns {
+            display: flex;
+            gap: 0.4rem;
+            align-items: center;
+            flex-wrap: nowrap;
+        }
+
+        .btn-action {
+            border: none;
+            border-radius: 4px;
+            padding: 0.3rem 0.65rem;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.15s;
+            white-space: nowrap;
+        }
+
+        .btn-action:hover { opacity: 0.8; }
+        .btn-view    { background: #d6eaf8; color: #1a5276; }
+        .btn-toggle-on  { background: #fde8d8; color: #922b21; } /* deactivate */
+        .btn-toggle-off { background: #d4efdf; color: #1e8449; } /* activate   */
+        .btn-delete  { background: #fadbd8; color: #922b21; }
+
+        /* Empty state */
+        .empty-state {
+            padding: 3rem 1rem;
+            text-align: center;
+            color: #aaa;
+        }
+
+        .empty-state .empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .empty-state p { font-size: 0.95rem; margin: 0; }
+
+        /* Responsive: hide less-critical columns on small screens */
+        @media (max-width: 900px) { .col-phone   { display: none; } }
+        @media (max-width: 700px) { .col-location { display: none; } }
+        @media (max-width: 540px) { .col-joined   { display: none; } }
+
+        /* ══ MODAL ════════════════════════════════════════════════ */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.45);
+            z-index: 2000;
+            overflow-y: auto;
+            padding: 2rem 1rem;
+        }
+
+        .modal-overlay.open { display: flex; align-items: flex-start; justify-content: center; }
+
+        .modal-box {
+            background: #fff;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 620px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+            overflow: hidden;
+            animation: modalIn 0.2s ease;
+        }
+
+        @keyframes modalIn {
+            from { opacity: 0; transform: translateY(-16px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-head {
+            background: var(--primary-color);
+            color: #fff;
+            padding: 1.1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .modal-head h2 { color: #fff; font-size: 1.1rem; margin: 0; }
+
+        .modal-close {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.4rem;
+            cursor: pointer;
+            line-height: 1;
+            padding: 0 0.25rem;
+            opacity: 0.85;
+        }
+
+        .modal-close:hover { opacity: 1; }
+
+        .modal-body { padding: 1.5rem; }
+
+        .modal-tabs {
+            display: flex;
+            border-bottom: 2px solid #eee;
+            margin-bottom: 1.25rem;
+        }
+
+        .modal-tab-btn {
+            background: none;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #888;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.15s, border-color 0.15s;
+        }
+
+        .modal-tab-btn.active { color: var(--primary-color); border-bottom-color: var(--primary-color); }
+        .modal-tab-panel { display: none; }
+        .modal-tab-panel.active { display: block; }
+
+        /* Profile view inside modal */
+        .modal-info-row {
+            display: flex;
+            gap: 1rem;
+            padding: 0.45rem 0;
+            border-bottom: 1px solid #f5f5f5;
+            font-size: 0.91rem;
+        }
+
+        .modal-info-row:last-child { border-bottom: none; }
+
+        .modal-info-label {
+            flex: 0 0 140px;
+            font-weight: 600;
+            font-size: 0.82rem;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            color: #777;
+        }
+
+        .modal-info-value { flex: 1; color: #222; }
+
+        /* Edit form inside modal */
+        .modal-form .form-group { margin-bottom: 1rem; }
+
+        .modal-form label {
+            display: block;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 0.28rem;
+        }
+
+        .modal-form input {
+            width: 100%;
+            padding: 0.55rem 0.8rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.92rem;
+            box-sizing: border-box;
+        }
+
+        .modal-form input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(44,95,127,0.1);
+        }
+
+        .modal-form-row2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        @media (max-width: 480px) { .modal-form-row2 { grid-template-columns: 1fr; } }
+
+        .modal-footer {
+            padding: 1rem 1.5rem;
+            background: #f9f9f9;
+            border-top: 1px solid #eee;
+            display: flex;
+            gap: 0.6rem;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+
+        .modal-msg {
+            display: none;
+            padding: 0.55rem 0.9rem;
+            border-radius: 5px;
+            font-size: 0.88rem;
+            margin-bottom: 1rem;
+        }
+
+        .modal-msg.success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .modal-msg.error   { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+
+        /* Modal action buttons */
+        .btn-modal-save {
+            background: var(--primary-color);
+            color: #fff;
+            border: none;
+            padding: 0.55rem 1.4rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-modal-save:hover { background: #25527e; }
+
+        .btn-modal-danger {
+            background: #c0392b;
+            color: #fff;
+            border: none;
+            padding: 0.55rem 1.2rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-left: auto;
+        }
+
+        .btn-modal-danger:hover { background: #a93226; }
+
+        .btn-modal-cancel {
+            background: none;
+            border: 1px solid #bbb;
+            color: #555;
+            padding: 0.55rem 1.1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            cursor: pointer;
+        }
+
+        .btn-modal-cancel:hover { border-color: #888; color: #222; }
+
+        /* ── Confirm dialog ──────────────────── */
+        .confirm-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 3000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .confirm-overlay.open { display: flex; }
+
+        .confirm-box {
+            background: #fff;
+            border-radius: 8px;
+            padding: 2rem;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+        }
+
+        .confirm-box .confirm-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+        .confirm-box h3 { margin-bottom: 0.5rem; font-size: 1.1rem; }
+        .confirm-box p  { color: #666; font-size: 0.92rem; margin-bottom: 1.5rem; }
+
+        .confirm-btns { display: flex; gap: 0.75rem; justify-content: center; }
+    </style>
+</head>
+
+<body>
+    <script src="site-gate.js"></script>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <h1 class="site-title">Northern Veterinary Service</h1>
+                <p class="tagline">Veterinary Peripatetic Services</p>
+            </div>
+
+            <nav class="navbar" role="navigation" aria-label="Main navigation">
+                <button class="mobile-menu-toggle" aria-label="Toggle navigation menu">
+                    <span></span><span></span><span></span>
+                </button>
+                <ul class="nav-list">
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="casestories.html">Case Stories</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                    <li><a href="booking.html">Advice &amp; Booking</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </nav>
+
+            <div class="auth-section">
+                <div class="auth-buttons" id="authButtons">
+                    <a href="login.html" class="btn-auth btn-login">Login</a>
+                    <a href="signup.html" class="btn-auth btn-signup">Sign Up</a>
+                </div>
+                <div class="user-menu" id="userMenu" style="display:none;">
+                    <button class="user-dropdown-btn" id="userDropdownBtn">
+                        <span class="user-icon">👤</span>
+                        <span class="user-name" id="userName"></span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="account.html" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="content-wrapper">
+            <div class="admin-wrapper">
+
+                <!-- Page heading -->
+                <div class="admin-header">
+                    <div>
+                        <h1>Admin Panel <span class="admin-badge">Staff only</span></h1>
+                        <div style="font-size:0.85rem;color:#888;">Practices and team member accounts</div>
+                        <p id="diaryAdminLinkWrap" style="display:none;margin:0.75rem 0 0;font-size:0.92rem;">
+                            <a href="diary-admin.html" style="color:#1a5276;font-weight:600;">Booking diary</a>
+                            <span style="color:#aaa;"> — set availability on the public calendar (master admin only)</span>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Stats row -->
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-value" id="statTotal">—</div>
+                        <div class="stat-label">Total accounts</div>
+                    </div>
+                    <div class="stat-card stat-active">
+                        <div class="stat-value" id="statActive">—</div>
+                        <div class="stat-label">Active</div>
+                    </div>
+                    <div class="stat-card stat-inactive">
+                        <div class="stat-value" id="statInactive">—</div>
+                        <div class="stat-label">Inactive</div>
+                    </div>
+                    <div class="stat-card stat-new">
+                        <div class="stat-value" id="statNew">—</div>
+                        <div class="stat-label">New This Month</div>
+                    </div>
+                </div>
+
+                <!-- Search + filter controls -->
+                <div class="controls-bar">
+                    <input type="search" class="search-input" id="searchInput"
+                           placeholder="🔍  Search by practice name or email…">
+                    <select class="filter-select" id="statusFilter">
+                        <option value="all">All Statuses</option>
+                        <option value="active">Active only</option>
+                        <option value="inactive">Inactive only</option>
+                    </select>
+                    <span class="results-count" id="resultsCount"></span>
+                </div>
+
+                <!-- Practices table -->
+                <div class="table-card">
+                    <table class="practices-table" id="practicesTable">
+                        <thead>
+                            <tr>
+                                <th data-col="practiceName">Name <span class="sort-arrow">↑</span></th>
+                                <th data-col="accountType">Type <span class="sort-arrow">↑</span></th>
+                                <th data-col="email">Email <span class="sort-arrow">↑</span></th>
+                                <th class="col-location" data-col="city">Location <span class="sort-arrow">↑</span></th>
+                                <th class="col-phone" data-col="phone">Phone <span class="sort-arrow">↑</span></th>
+                                <th class="col-joined" data-col="createdAt">Joined <span class="sort-arrow">↑</span></th>
+                                <th data-col="isActive">Status <span class="sort-arrow">↑</span></th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="practicesBody">
+                            <!-- Populated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+
+            </div><!-- /admin-wrapper -->
+        </div><!-- /content-wrapper -->
+    </main>
+
+    <!-- ══ PRACTICE DETAIL / EDIT MODAL ══════════════════════════ -->
+    <div class="modal-overlay" id="practiceModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal-box">
+            <div class="modal-head">
+                <h2 id="modalTitle">Practice Details</h2>
+                <button class="modal-close" id="modalClose" aria-label="Close">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <!-- Modal tabs -->
+                <div class="modal-tabs">
+                    <button class="modal-tab-btn active" data-mtab="view">View</button>
+                    <button class="modal-tab-btn" data-mtab="edit">Edit Details</button>
+                    <button class="modal-tab-btn" data-mtab="password">Reset Password</button>
+                </div>
+
+                <!-- VIEW tab -->
+                <div class="modal-tab-panel active" id="mtab-view">
+                    <div id="viewModalMsg" class="modal-msg"></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Name</span><span class="modal-info-value" id="mv-practiceName">—</span></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Account type</span><span class="modal-info-value" id="mv-accountType">—</span></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Role</span><span class="modal-info-value" id="mv-role">—</span></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Email</span><span class="modal-info-value" id="mv-email">—</span></div>
+                    <div class="modal-info-row" id="mv-rcvs-row"><span class="modal-info-label">RCVS registration</span><span class="modal-info-value" id="mv-rcvs">—</span></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Phone</span><span class="modal-info-value" id="mv-phone">—</span></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Address</span><span class="modal-info-value" id="mv-address">—</span></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Member Since</span><span class="modal-info-value" id="mv-createdAt">—</span></div>
+                    <div class="modal-info-row"><span class="modal-info-label">Status</span><span class="modal-info-value" id="mv-status">—</span></div>
+                </div>
+
+                <!-- EDIT tab -->
+                <div class="modal-tab-panel" id="mtab-edit">
+                    <div id="editModalMsg" class="modal-msg"></div>
+                    <form class="modal-form" id="editPracticeForm" novalidate>
+                        <input type="hidden" id="editUserId">
+                        <div class="form-group">
+                            <label for="ep-practiceName">Practice Name *</label>
+                            <input type="text" id="ep-practiceName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ep-email">Email *</label>
+                            <input type="email" id="ep-email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ep-emailConfirm">Confirm email *</label>
+                            <input type="email" id="ep-emailConfirm" required autocomplete="email">
+                        </div>
+                        <div class="form-group" id="ep-rcvs-group">
+                            <label for="ep-rcvs">RCVS registration number *</label>
+                            <input type="text" id="ep-rcvs" required autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label for="ep-phone" id="ep-phone-label">Phone</label>
+                            <input type="tel" id="ep-phone">
+                        </div>
+                        <div class="form-group">
+                            <label for="ep-line1">Address Line 1 *</label>
+                            <input type="text" id="ep-line1" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="ep-line2">Address Line 2</label>
+                            <input type="text" id="ep-line2">
+                        </div>
+                        <div class="modal-form-row2">
+                            <div class="form-group">
+                                <label for="ep-city">City / Town *</label>
+                                <input type="text" id="ep-city" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="ep-postcode">Postcode *</label>
+                                <input type="text" id="ep-postcode" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label for="ep-county">County</label>
+                            <input type="text" id="ep-county">
+                        </div>
+                    </form>
+                </div>
+
+                <!-- RESET PASSWORD tab -->
+                <div class="modal-tab-panel" id="mtab-password">
+                    <div id="pwModalMsg" class="modal-msg"></div>
+                    <p style="color:#555;font-size:0.9rem;margin-bottom:1.25rem;">
+                        Set a new password for this practice. They should be advised to change it on their next login.
+                    </p>
+                    <form class="modal-form" id="resetPasswordForm" novalidate>
+                        <input type="hidden" id="resetUserId">
+                        <div class="form-group">
+                            <label for="rp-password">New Password *</label>
+                            <input type="password" id="rp-password" placeholder="Minimum 6 characters" required autocomplete="new-password">
+                        </div>
+                        <div class="form-group">
+                            <label for="rp-confirm">Confirm Password *</label>
+                            <input type="password" id="rp-confirm" placeholder="Re-enter new password" required autocomplete="new-password">
+                        </div>
+                    </form>
+                </div>
+
+            </div><!-- /modal-body -->
+
+            <div class="modal-footer" id="modalFooter">
+                <!-- Populated by JS based on active tab -->
+            </div>
+        </div><!-- /modal-box -->
+    </div>
+
+    <!-- ══ DELETE CONFIRM DIALOG ═════════════════════════════════ -->
+    <div class="confirm-overlay" id="confirmOverlay" role="alertdialog" aria-modal="true">
+        <div class="confirm-box">
+            <div class="confirm-icon">⚠️</div>
+            <h3>Delete Practice Account?</h3>
+            <p id="confirmMsg">This will permanently remove the practice account and cannot be undone.</p>
+            <div class="confirm-btns">
+                <button class="btn-modal-cancel" id="confirmCancel">Cancel</button>
+                <button class="btn-modal-danger" id="confirmDelete">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Northern Veterinary Service</h3>
+                <p>Peripatetic veterinary surgery services across Northern England</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="booking.html">Book Appointment</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: <a href="mailto:info@northernveterinaryservice.co.uk">info@northernveterinaryservice.co.uk</a></p>
+                <p>WhatsApp: <a href="https://wa.me/447763836276">+44 7763 836276</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Verlexis Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="index.js"></script>
+    <script>
+    (async function () {
+    await auth.ready;
+    await auth.refreshAdminUsers();
+    // ── Guard: admin only ──────────────────────────────────────────
+    if (!auth.requireAdmin('home.html')) return;
+
+    if (auth.isCurrentUserMasterAdmin()) {
+        var dw = document.getElementById('diaryAdminLinkWrap');
+        if (dw) dw.style.display = 'block';
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  State
+    // ══════════════════════════════════════════════════════════════
+    let allPractices  = [];   // full list
+    let filtered      = [];   // after search/filter
+    let sortCol       = 'createdAt';
+    let sortDir       = 'desc';
+    let activePracticeId = null;  // practice open in modal
+    let pendingDeleteId  = null;  // practice queued for deletion
+
+    // ══════════════════════════════════════════════════════════════
+    //  Helpers
+    // ══════════════════════════════════════════════════════════════
+    function fmt(val, fallback = '—') { return val || fallback; }
+
+    function fmtAddress(addr) {
+        if (!addr) return '—';
+        const parts = [addr.line1, addr.line2, addr.city, addr.county, addr.postcode].filter(Boolean);
+        return parts.length ? parts.join(', ') : '—';
+    }
+
+    function fmtDate(iso) {
+        if (!iso) return '—';
+        return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+    }
+
+    function isThisMonth(iso) {
+        if (!iso) return false;
+        const d = new Date(iso), now = new Date();
+        return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
+    }
+
+    function showMsg(id, text, type) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = text;
+        el.className = 'modal-msg ' + type;
+        el.style.display = 'block';
+        setTimeout(() => { el.style.display = 'none'; }, 5000);
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  Stats
+    // ══════════════════════════════════════════════════════════════
+    function updateStats(list) {
+        const active   = list.filter(p => p.isActive).length;
+        const inactive = list.length - active;
+        const newOnes  = list.filter(p => isThisMonth(p.createdAt)).length;
+        document.getElementById('statTotal').textContent    = list.length;
+        document.getElementById('statActive').textContent   = active;
+        document.getElementById('statInactive').textContent = inactive;
+        document.getElementById('statNew').textContent      = newOnes;
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  Sort + filter + render
+    // ══════════════════════════════════════════════════════════════
+    function applyFilterSort() {
+        const q      = document.getElementById('searchInput').value.trim().toLowerCase();
+        const status = document.getElementById('statusFilter').value;
+
+        filtered = allPractices.filter(p => {
+            const matchSearch = !q ||
+                p.practiceName.toLowerCase().includes(q) ||
+                p.email.toLowerCase().includes(q);
+            const matchStatus =
+                status === 'all' ||
+                (status === 'active'   &&  p.isActive) ||
+                (status === 'inactive' && !p.isActive);
+            return matchSearch && matchStatus;
+        });
+
+        // Sort
+        filtered.sort((a, b) => {
+            let va = a[sortCol] || '', vb = b[sortCol] || '';
+            if (sortCol === 'isActive') { va = a.isActive ? 1 : 0; vb = b.isActive ? 1 : 0; }
+            if (sortCol === 'city')     { va = a.address?.city || ''; vb = b.address?.city || ''; }
+            if (sortCol === 'accountType') {
+                va = a.accountType === 'practice' ? 'practice' : (a.accountType === 'team_member' ? 'team_member' : '');
+                vb = b.accountType === 'practice' ? 'practice' : (b.accountType === 'team_member' ? 'team_member' : '');
+            }
+            if (typeof va === 'string') va = va.toLowerCase();
+            if (typeof vb === 'string') vb = vb.toLowerCase();
+            if (va < vb) return sortDir === 'asc' ? -1 :  1;
+            if (va > vb) return sortDir === 'asc' ?  1 : -1;
+            return 0;
+        });
+
+        renderTable(filtered);
+        document.getElementById('resultsCount').textContent =
+            filtered.length + ' of ' + allPractices.length + ' account' + (allPractices.length !== 1 ? 's' : '');
+    }
+
+    function renderTable(list) {
+        const tbody = document.getElementById('practicesBody');
+
+        if (list.length === 0) {
+            tbody.innerHTML = `
+                <tr><td colspan="8">
+                    <div class="empty-state">
+                        <div class="empty-icon">🏥</div>
+                        <p>No practices found matching your search.</p>
+                    </div>
+                </td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = list.map(p => {
+            const location = [p.address?.city, p.address?.postcode].filter(Boolean).join(', ') || '—';
+            const statusBadge = p.isActive
+                ? '<span class="badge badge-active">Active</span>'
+                : '<span class="badge badge-inactive">Inactive</span>';
+            const toggleLabel = p.isActive ? 'Deactivate' : 'Activate';
+            const toggleClass = p.isActive ? 'btn-action btn-toggle-on' : 'btn-action btn-toggle-off';
+
+            const typeCell = escHtml(auth.getAccountTypeLabel(p));
+            return `
+            <tr data-id="${p.id}">
+                <td class="practice-name-cell">${escHtml(p.practiceName)}</td>
+                <td>${typeCell}</td>
+                <td class="email-cell">${escHtml(p.email)}</td>
+                <td class="col-location location-cell">${escHtml(location)}</td>
+                <td class="col-phone">${escHtml(p.phone || '—')}</td>
+                <td class="col-joined date-cell">${fmtDate(p.createdAt)}</td>
+                <td>${statusBadge}</td>
+                <td>
+                    <div class="action-btns">
+                        <button class="btn-action btn-view"    onclick="openModal('${p.id}')">View / Edit</button>
+                        <button class="${toggleClass}"          onclick="toggleStatus('${p.id}', ${!p.isActive})">${toggleLabel}</button>
+                        <button class="btn-action btn-delete"  onclick="confirmDelete('${p.id}')">Delete</button>
+                    </div>
+                </td>
+            </tr>`;
+        }).join('');
+    }
+
+    function escHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  Column sort
+    // ══════════════════════════════════════════════════════════════
+    document.querySelectorAll('.practices-table th[data-col]').forEach(th => {
+        th.addEventListener('click', () => {
+            const col = th.dataset.col;
+            if (sortCol === col) {
+                sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortCol = col;
+                sortDir = 'asc';
+            }
+            document.querySelectorAll('.practices-table th').forEach(h => {
+                h.classList.remove('sort-asc', 'sort-desc');
+            });
+            th.classList.add('sort-' + sortDir);
+            applyFilterSort();
+        });
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    //  Quick actions (table-level)
+    // ══════════════════════════════════════════════════════════════
+    async function toggleStatus(id, newStatus) {
+        const result = await auth.setUserActiveStatus(id, newStatus);
+        if (result.success) {
+            await reload();
+        } else {
+            alert(result.message);
+        }
+    }
+
+    function confirmDelete(id) {
+        const p = allPractices.find(u => u.id === id);
+        if (!p) return;
+        pendingDeleteId = id;
+        document.getElementById('confirmMsg').textContent =
+            `This will permanently delete the account for "${p.practiceName}". This cannot be undone.`;
+        document.getElementById('confirmOverlay').classList.add('open');
+    }
+
+    document.getElementById('confirmCancel').addEventListener('click', () => {
+        pendingDeleteId = null;
+        document.getElementById('confirmOverlay').classList.remove('open');
+    });
+
+    document.getElementById('confirmDelete').addEventListener('click', async () => {
+        if (!pendingDeleteId) return;
+        const result = await auth.adminDeleteUser(pendingDeleteId);
+        pendingDeleteId = null;
+        document.getElementById('confirmOverlay').classList.remove('open');
+        if (result.success) {
+            await reload();
+        } else {
+            alert(result.message);
+        }
+    });
+
+    // ══════════════════════════════════════════════════════════════
+    //  Modal
+    // ══════════════════════════════════════════════════════════════
+    function openModal(id) {
+        activePracticeId = id;
+        const p = auth.getUsers().find(u => u.id === id);
+        if (!p) return;
+
+        document.getElementById('modalTitle').textContent = p.practiceName;
+
+        // Populate VIEW tab
+        document.getElementById('mv-practiceName').textContent = fmt(p.practiceName);
+        document.getElementById('mv-accountType').textContent = auth.getAccountTypeLabel(p);
+        document.getElementById('mv-role').textContent = auth.getRoleLabel(auth.getUserRole(p));
+        document.getElementById('mv-email').textContent        = fmt(p.email);
+        const rcvsRow = document.getElementById('mv-rcvs-row');
+        const showRcvs =
+            !p.isAdmin && (p.accountType === 'practice' || p.accountType === 'team_member');
+        if (rcvsRow) rcvsRow.style.display = showRcvs ? '' : 'none';
+        if (showRcvs) {
+            document.getElementById('mv-rcvs').textContent = fmt(p.rcvsRegistrationNumber, '—');
+        }
+        document.getElementById('mv-phone').textContent        = fmt(p.phone, 'Not provided');
+        document.getElementById('mv-address').textContent      = fmtAddress(p.address);
+        document.getElementById('mv-createdAt').textContent    = fmtDate(p.createdAt);
+        document.getElementById('mv-status').innerHTML         = p.isActive
+            ? '<span class="badge badge-active">Active</span>'
+            : '<span class="badge badge-inactive">Inactive</span>';
+
+        // Populate EDIT tab
+        document.getElementById('editUserId').value    = p.id;
+        document.getElementById('ep-practiceName').value = p.practiceName || '';
+        document.getElementById('ep-email').value        = p.email || '';
+        document.getElementById('ep-emailConfirm').value = p.email || '';
+        const epRcvsG = document.getElementById('ep-rcvs-group');
+        const epRcvs = document.getElementById('ep-rcvs');
+        if (epRcvsG && epRcvs) {
+            epRcvsG.style.display = showRcvs ? '' : 'none';
+            epRcvs.value = p.rcvsRegistrationNumber || '';
+            epRcvs.required = !!showRcvs;
+        }
+        const epPhone = document.getElementById('ep-phone');
+        const epPhoneLabel = document.getElementById('ep-phone-label');
+        if (epPhone) {
+            epPhone.value = p.phone || '';
+            epPhone.required = !!showRcvs;
+        }
+        if (epPhoneLabel) {
+            epPhoneLabel.textContent = showRcvs ? 'Phone *' : 'Phone';
+        }
+        document.getElementById('ep-line1').value        = p.address?.line1 || '';
+        document.getElementById('ep-line2').value        = p.address?.line2 || '';
+        document.getElementById('ep-city').value         = p.address?.city || '';
+        document.getElementById('ep-postcode').value     = p.address?.postcode || '';
+        document.getElementById('ep-county').value       = p.address?.county || '';
+
+        // Populate RESET PASSWORD tab
+        document.getElementById('resetUserId').value = p.id;
+        document.getElementById('rp-password').value = '';
+        document.getElementById('rp-confirm').value  = '';
+
+        // Show view tab by default
+        switchModalTab('view');
+
+        // Clear any previous messages
+        ['viewModalMsg','editModalMsg','pwModalMsg'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.style.display = 'none';
+        });
+
+        document.getElementById('practiceModal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('practiceModal').classList.remove('open');
+        document.body.style.overflow = '';
+        activePracticeId = null;
+    }
+
+    document.getElementById('modalClose').addEventListener('click', closeModal);
+
+    document.getElementById('practiceModal').addEventListener('click', (e) => {
+        if (e.target === document.getElementById('practiceModal')) closeModal();
+    });
+
+    // Modal tabs
+    function switchModalTab(tab) {
+        document.querySelectorAll('.modal-tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.modal-tab-panel').forEach(p => p.classList.remove('active'));
+        document.querySelector(`.modal-tab-btn[data-mtab="${tab}"]`).classList.add('active');
+        document.getElementById('mtab-' + tab).classList.add('active');
+        renderModalFooter(tab);
+    }
+
+    document.querySelectorAll('.modal-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchModalTab(btn.dataset.mtab));
+    });
+
+    function renderModalFooter(tab) {
+        const footer = document.getElementById('modalFooter');
+        if (tab === 'view') {
+            footer.innerHTML = `
+                <button class="btn-modal-save" onclick="switchModalTab('edit')">✏️ Edit Details</button>
+                <button class="btn-modal-cancel" onclick="closeModal()">Close</button>
+                <button class="btn-modal-danger" onclick="confirmDelete('${activePracticeId}'); closeModal();">🗑 Delete</button>`;
+        } else if (tab === 'edit') {
+            footer.innerHTML = `
+                <button class="btn-modal-save" onclick="submitEdit()">Save Changes</button>
+                <button class="btn-modal-cancel" onclick="switchModalTab('view')">Cancel</button>`;
+        } else if (tab === 'password') {
+            footer.innerHTML = `
+                <button class="btn-modal-save" onclick="submitPasswordReset()">Reset Password</button>
+                <button class="btn-modal-cancel" onclick="closeModal()">Close</button>`;
+        }
+    }
+
+    // Save edit
+    async function submitEdit() {
+        const id = document.getElementById('editUserId').value;
+        const pEdit = auth.getUsers().find(u => u.id === id);
+        const needsRcvs =
+            pEdit &&
+            !pEdit.isAdmin &&
+            (pEdit.accountType === 'practice' || pEdit.accountType === 'team_member');
+
+        const updatedFields = {
+            practiceName: document.getElementById('ep-practiceName').value.trim(),
+            email:        document.getElementById('ep-email').value.trim(),
+            confirmEmail: document.getElementById('ep-emailConfirm').value.trim(),
+            phone:        document.getElementById('ep-phone').value.trim(),
+            address: {
+                line1:    document.getElementById('ep-line1').value.trim(),
+                line2:    document.getElementById('ep-line2').value.trim(),
+                city:     document.getElementById('ep-city').value.trim(),
+                postcode: document.getElementById('ep-postcode').value.trim(),
+                county:   document.getElementById('ep-county').value.trim()
+            }
+        };
+
+        if (needsRcvs) {
+            updatedFields.rcvsRegistrationNumber = document.getElementById('ep-rcvs').value.trim();
+            const rc = auth.validateRcvsRegistrationNumber(updatedFields.rcvsRegistrationNumber);
+            if (!rc.ok) {
+                showMsg('editModalMsg', rc.message, 'error');
+                return;
+            }
+        }
+
+        if (!updatedFields.practiceName) { showMsg('editModalMsg', 'Practice name is required.', 'error'); return; }
+        if (!updatedFields.email)        { showMsg('editModalMsg', 'Email is required.', 'error'); return; }
+        if (!updatedFields.confirmEmail) {
+            showMsg('editModalMsg', 'Please confirm the email address.', 'error');
+            return;
+        }
+        if (updatedFields.email.toLowerCase() !== updatedFields.confirmEmail.toLowerCase()) {
+            showMsg('editModalMsg', 'Email addresses do not match.', 'error');
+            return;
+        }
+        if (!updatedFields.address.line1 || !updatedFields.address.city || !updatedFields.address.postcode) {
+            showMsg('editModalMsg', 'Address line 1, city, and postcode are required.', 'error'); return;
+        }
+
+        const result = await auth.adminUpdateUser(id, updatedFields);
+        showMsg('editModalMsg', result.message, result.success ? 'success' : 'error');
+
+        if (result.success) {
+            await reload();
+            setTimeout(() => {
+                // Refresh modal view tab with updated data
+                openModal(id);
+                switchModalTab('view');
+            }, 800);
+        }
+    }
+
+    // Reset password
+    async function submitPasswordReset() {
+        const id = document.getElementById('resetUserId').value;
+        const pw = document.getElementById('rp-password').value;
+        const cf = document.getElementById('rp-confirm').value;
+
+        if (pw !== cf) { showMsg('pwModalMsg', 'Passwords do not match.', 'error'); return; }
+
+        const result = await auth.adminResetPassword(id, pw);
+        showMsg('pwModalMsg', result.message, result.success ? 'success' : 'error');
+        if (result.success) {
+            document.getElementById('rp-password').value = '';
+            document.getElementById('rp-confirm').value  = '';
+        }
+    }
+
+    // ══════════════════════════════════════════════════════════════
+    //  Search + filter events
+    // ══════════════════════════════════════════════════════════════
+    document.getElementById('searchInput').addEventListener('input', applyFilterSort);
+    document.getElementById('statusFilter').addEventListener('change', applyFilterSort);
+
+    // ══════════════════════════════════════════════════════════════
+    //  Load / reload data
+    // ══════════════════════════════════════════════════════════════
+    async function reload() {
+        await auth.refreshAdminUsers();
+        allPractices = auth.getAllPractices();
+        updateStats(allPractices);
+        applyFilterSort();
+    }
+
+    // Keyboard: Escape closes modal/confirm
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeModal();
+            document.getElementById('confirmOverlay').classList.remove('open');
+        }
+    });
+
+    // ── Initial load ───────────────────────────────────────────────
+    reload();
+    })();
+    </script>
+</body>
+</html>
+

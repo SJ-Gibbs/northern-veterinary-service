@@ -3,6 +3,10 @@
 
 // Define all case image collections
 const caseGalleries = {
+    winne: [
+        { src: 'images/Winnie/Winnie1.jpeg', caption: 'Winnie - TPLO - Image 1' },
+        { src: 'images/Winnie/Winnie2.png', caption: 'Winnie - TPLO - Image 2' }
+    ],
     norman: [
         { src: 'images/Norman/norman.jpeg', caption: 'Norman - Pre-operative Assessment' },
         { src: 'images/Norman/normanlateral.jpeg', caption: 'Norman - Lateral Radiograph' },
@@ -24,6 +28,24 @@ const caseGalleries = {
     ],
     skewerdog: [
         { src: 'images/SkewerDog/skewerdog.jpeg', caption: 'Foreign Body Removal - Emergency Case' }
+    ],
+    melanoma: [
+        { src: 'images/Melanoma/melanoma1.jpeg', caption: 'Melanoma Case - Initial Presentation' },
+        { src: 'images/Melanoma/melanoma2.jpeg', caption: 'Melanoma Case - Surgical Planning View' },
+        { src: 'images/Melanoma/melanoma3.jpeg', caption: 'Melanoma Case - Post-operative Review' },
+        { src: 'images/Melanoma/melanoma4.png', caption: 'Melanoma Case - Final Follow-up' }
+    ],
+    perinealhernia: [
+        { src: 'images/Perinealhernia/Perinealhernia1.jpeg', caption: 'Perineal Hernia - Image 1' },
+        { src: 'images/Perinealhernia/Perinealhernia2.jpeg', caption: 'Perineal Hernia - Image 2' },
+        { src: 'images/Perinealhernia/Perinealhernia3.jpeg', caption: 'Perineal Hernia - Image 3' },
+        { src: 'images/Perinealhernia/Perinealhernia4.jpeg', caption: 'Perineal Hernia - Image 4' },
+        { src: 'images/Perinealhernia/Perinealhernia5.jpeg', caption: 'Perineal Hernia - Image 5' }
+    ],
+    lacey: [
+        { src: 'images/Lacey/Lacey1.png', caption: 'Lacey - Inguinal Hernia - Image 1' },
+        { src: 'images/Lacey/Lacey2.jpeg', caption: 'Lacey - Inguinal Hernia - Image 2' },
+        { src: 'images/Lacey/Lacey3.jpeg', caption: 'Lacey - Inguinal Hernia - Image 3' }
     ]
 };
 

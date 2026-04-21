@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <title>Sign Up - Northern Veterinary Service</title>
-    <meta name="description" content="Register your practice for member pricing and services">
+    <meta name="description" content="Create a team member or veterinary practice account for Northern Veterinary Service.">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" href="favicon.ico">
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <script src="site-gate.js"></script>
     <header class="site-header">
         <div class="header-container">
             <div class="logo-section">
@@ -24,7 +25,7 @@
                     <span></span>
                 </button>
                 <ul class="nav-list">
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="home.html">Home</a></li>
                     <li><a href="theteam.html">The Team</a></li>
                     <li><a href="casestories.html">Case Stories</a></li>
                     <li><a href="pricing.html">Pricing</a></li>
@@ -33,7 +34,6 @@
                 </ul>
             </nav>
 
-            <!-- Auth Section -->
             <div class="auth-section">
                 <div class="auth-buttons" id="authButtons">
                     <a href="login.html" class="btn-auth btn-login">Login</a>
@@ -46,7 +46,7 @@
                         <span class="dropdown-arrow">▼</span>
                     </button>
                     <div class="dropdown-menu" id="dropdownMenu">
-                        <a href="#" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="account.html" class="dropdown-item" id="accountLink">My Account</a>
                         <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
                     </div>
                 </div>
@@ -57,93 +57,239 @@
     <main>
         <div class="content-wrapper">
             <section class="auth-page">
-                <div class="auth-container">
-                    <h1>Register Your Practice</h1>
-                    <p class="auth-subtitle">Create an account to access member pricing and exclusive services</p>
-
+                <div class="auth-container signup-wizard">
                     <div id="signupMessage" class="message" style="display: none;"></div>
 
-                    <form id="signupForm" class="auth-form">
-                        <div class="form-group">
-                            <label for="practiceName">Practice Name <span style="color: red;">*</span></label>
-                            <input type="text" id="practiceName" name="practiceName" placeholder="Your Veterinary Practice" required autocomplete="organization">
+                    <!-- Step 1: account type -->
+                    <div id="signupChoice" class="signup-path-choice">
+                        <h1>Create an account</h1>
+                        <p class="auth-subtitle">Choose a <strong>team member</strong> account (Northern Veterinary Service staff) or a <strong>practice</strong> account (to book services).</p>
+                        <div class="signup-path-cards" role="group" aria-label="Account type">
+                            <button type="button" class="signup-path-card" id="chooseProfessional">
+                                <span class="signup-path-card-title">Team member</span>
+                                <span class="signup-path-card-desc">For NVS staff: manage your availability planner, view booking requests, and access clinical resources.</span>
+                            </button>
+                            <button type="button" class="signup-path-card" id="choosePractice">
+                                <span class="signup-path-card-title">Veterinary practice</span>
+                                <span class="signup-path-card-desc">For member practices: submit Advice &amp; Booking requests and view member pricing.</span>
+                            </button>
                         </div>
+                    </div>
 
-                        <div class="form-group">
-                            <label for="email">Practice Email Address <span style="color: red;">*</span></label>
-                            <input type="email" id="email" name="email" placeholder="practice@example.com" required autocomplete="email">
-                            <small class="form-help">Use your official practice email address</small>
-                        </div>
+                    <!-- Professional (vet / nurse) -->
+                    <div id="professionalSignup" class="signup-path-panel" style="display: none;" hidden>
+                        <p class="signup-back">
+                            <button type="button" class="btn-link-back" id="backFromProfessional">← Change account type</button>
+                        </p>
+                        <h1>Team member sign up</h1>
+                        <p class="auth-subtitle">Northern Veterinary Service staff — vet or veterinary nurse.</p>
 
-                        <div class="form-group">
-                            <label for="phone">Practice Phone Number</label>
-                            <input type="tel" id="phone" name="phone" placeholder="01234 567890" autocomplete="tel">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="addressLine1">Practice Address Line 1 <span style="color: red;">*</span></label>
-                            <input type="text" id="addressLine1" name="addressLine1" placeholder="Street address" required autocomplete="address-line1">
-                        </div>
-
-                        <div class="form-group">
-                            <label for="addressLine2">Address Line 2</label>
-                            <input type="text" id="addressLine2" name="addressLine2" placeholder="Building, suite, etc. (optional)" autocomplete="address-line2">
-                        </div>
-
-                        <div class="form-row">
+                        <form id="signupFormProfessional" class="auth-form">
                             <div class="form-group">
-                                <label for="city">City/Town <span style="color: red;">*</span></label>
-                                <input type="text" id="city" name="city" placeholder="City" required autocomplete="address-level2">
+                                <label for="practiceName">Full Name <span style="color: red;">*</span></label>
+                                <input type="text" id="practiceName" name="practiceName" placeholder="Your full name" required autocomplete="name">
                             </div>
 
                             <div class="form-group">
-                                <label for="postcode">Postcode <span style="color: red;">*</span></label>
-                                <input type="text" id="postcode" name="postcode" placeholder="Postcode" required autocomplete="postal-code">
+                                <label for="professionalRole">Professional Role <span style="color: red;">*</span></label>
+                                <select id="professionalRole" name="professionalRole" required>
+                                    <option value="">Select your role</option>
+                                    <option value="vet">Vet</option>
+                                    <option value="veterinary_nurse">Veterinary Nurse</option>
+                                </select>
                             </div>
-                        </div>
 
-                        <div class="form-group">
-                            <label for="county">County</label>
-                            <input type="text" id="county" name="county" placeholder="County (optional)" autocomplete="address-level1">
-                        </div>
+                            <div class="form-group">
+                                <label for="signupProfilePhoto">Profile photo <span style="color: red;">*</span></label>
+                                <input type="file" id="signupProfilePhoto" name="signupProfilePhoto" accept="image/jpeg,image/png,image/webp" required>
+                                <small class="form-help">A clear head-and-shoulders image for your profile (JPEG, PNG, or WebP).</small>
+                                <div id="signupProfilePhotoPreviewWrap" style="margin-top:0.75rem;display:none;">
+                                    <img id="signupProfilePhotoPreview" alt="" width="96" height="96" style="border-radius:50%;object-fit:cover;border:1px solid #ddd;">
+                                </div>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="password">Password <span style="color: red;">*</span></label>
-                            <input type="password" id="password" name="password" placeholder="Minimum 6 characters" required autocomplete="new-password">
-                            <small class="form-help">Must be at least 6 characters long</small>
-                        </div>
+                            <div class="form-group">
+                                <label for="rcvsRegistrationNumber">RCVS registration number <span style="color: red;">*</span></label>
+                                <input type="text" id="rcvsRegistrationNumber" name="rcvsRegistrationNumber" required autocomplete="off" placeholder="e.g. 1234567">
+                                <small class="form-help">As shown on the <a href="https://findavet.rcvs.org.uk/home/" target="_blank" rel="noopener noreferrer">RCVS Register</a></small>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="confirmPassword">Confirm Password <span style="color: red;">*</span></label>
-                            <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required autocomplete="new-password">
-                        </div>
+                            <div class="form-group">
+                                <label for="email">Work Email Address <span style="color: red;">*</span></label>
+                                <input type="email" id="email" name="email" placeholder="you@example.com" required autocomplete="email">
+                                <small class="form-help">Use your professional work email address</small>
+                            </div>
 
-                        <div class="form-group">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
-                                I agree to the <a href="policies.html" target="_blank">terms and conditions</a>
-                            </label>
-                        </div>
+                            <div class="form-group">
+                                <label for="emailConfirm">Confirm email <span style="color: red;">*</span></label>
+                                <input type="email" id="emailConfirm" name="emailConfirm" placeholder="Re-enter your email" required autocomplete="email">
+                            </div>
 
-                        <div class="form-group">
-                            <button type="submit" class="btn btn-primary btn-full">Create Account</button>
+                            <div class="form-group">
+                                <label for="phone">Phone Number <span style="color: red;">*</span></label>
+                                <input type="tel" id="phone" name="phone" placeholder="01234 567890" required autocomplete="tel">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="addressLine1">Practice / workplace address line 1 <span style="color: red;">*</span></label>
+                                <input type="text" id="addressLine1" name="addressLine1" placeholder="Street address" required autocomplete="address-line1">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="addressLine2">Address Line 2</label>
+                                <input type="text" id="addressLine2" name="addressLine2" placeholder="Building, suite, etc. (optional)" autocomplete="address-line2">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="city">City/Town <span style="color: red;">*</span></label>
+                                    <input type="text" id="city" name="city" placeholder="City" required autocomplete="address-level2">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="postcode">Postcode <span style="color: red;">*</span></label>
+                                    <input type="text" id="postcode" name="postcode" placeholder="Postcode" required autocomplete="postal-code">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="county">County</label>
+                                <input type="text" id="county" name="county" placeholder="County (optional)" autocomplete="address-level1">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="password">Password <span style="color: red;">*</span></label>
+                                <input type="password" id="password" name="password" placeholder="Minimum 6 characters" required autocomplete="new-password">
+                                <small class="form-help">Must be at least 6 characters long</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirmPassword">Confirm Password <span style="color: red;">*</span></label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" placeholder="Re-enter your password" required autocomplete="new-password">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="agreeTermsPro" name="agreeTermsPro" required>
+                                    I agree to the <a href="policies.html" target="_blank">terms and conditions</a>
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary btn-full">Create team member account</button>
+                            </div>
+                        </form>
+
+                        <div class="info-box" style="margin-top: 2rem;">
+                            <h3>Team member access</h3>
+                            <ul>
+                                <li>✓ Profile photo required at sign-up</li>
+                                <li>✓ Clinical resources and discharge forms</li>
+                                <li>✓ Profile: services you offer, and personal availability</li>
+                                <li>✓ Booking requests inbox (submissions from practices)</li>
+                            </ul>
                         </div>
-                    </form>
+                    </div>
+
+                    <!-- Practice -->
+                    <div id="practiceSignup" class="signup-path-panel" style="display: none;" hidden>
+                        <p class="signup-back">
+                            <button type="button" class="btn-link-back" id="backFromPractice">← Change account type</button>
+                        </p>
+                        <h1>Practice sign up</h1>
+                        <p class="auth-subtitle">Register your veterinary practice to book our services and access member pricing.</p>
+
+                        <form id="signupFormPractice" class="auth-form">
+                            <div class="form-group">
+                                <label for="practiceBusinessName">Practice name <span style="color: red;">*</span></label>
+                                <input type="text" id="practiceBusinessName" name="practiceBusinessName" placeholder="Your veterinary practice" required autocomplete="organization">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="practiceEmail">Practice email <span style="color: red;">*</span></label>
+                                <input type="email" id="practiceEmail" name="practiceEmail" placeholder="practice@example.com" required autocomplete="email">
+                                <small class="form-help">Main contact email for the practice</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="practiceEmailConfirm">Confirm email <span style="color: red;">*</span></label>
+                                <input type="email" id="practiceEmailConfirm" name="practiceEmailConfirm" placeholder="Re-enter practice email" required autocomplete="email">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="practicePhone">Practice phone <span style="color: red;">*</span></label>
+                                <input type="tel" id="practicePhone" name="practicePhone" placeholder="01234 567890" required autocomplete="tel">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="practiceAddressLine1">Practice address line 1 <span style="color: red;">*</span></label>
+                                <input type="text" id="practiceAddressLine1" name="practiceAddressLine1" placeholder="Street address" required autocomplete="address-line1">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="practiceAddressLine2">Address line 2</label>
+                                <input type="text" id="practiceAddressLine2" name="practiceAddressLine2" placeholder="Building, suite, etc. (optional)" autocomplete="address-line2">
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="practiceCity">City/Town <span style="color: red;">*</span></label>
+                                    <input type="text" id="practiceCity" name="practiceCity" placeholder="City" required autocomplete="address-level2">
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="practicePostcode">Postcode <span style="color: red;">*</span></label>
+                                    <input type="text" id="practicePostcode" name="practicePostcode" placeholder="Postcode" required autocomplete="postal-code">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="practiceCounty">County</label>
+                                <input type="text" id="practiceCounty" name="practiceCounty" placeholder="County (optional)" autocomplete="address-level1">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="practiceRcvsRegistrationNumber">RCVS registration number <span style="color: red;">*</span></label>
+                                <input type="text" id="practiceRcvsRegistrationNumber" name="practiceRcvsRegistrationNumber" required autocomplete="off" placeholder="Practice / lead vet RCVS number">
+                                <small class="form-help">RCVS registration for your practice or principal veterinary surgeon, as applicable</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="practicePassword">Password <span style="color: red;">*</span></label>
+                                <input type="password" id="practicePassword" name="practicePassword" placeholder="Minimum 6 characters" required autocomplete="new-password">
+                                <small class="form-help">Must be at least 6 characters long</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="practiceConfirmPassword">Confirm password <span style="color: red;">*</span></label>
+                                <input type="password" id="practiceConfirmPassword" name="practiceConfirmPassword" placeholder="Re-enter your password" required autocomplete="new-password">
+                            </div>
+
+                            <div class="form-group">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="agreeTermsPractice" name="agreeTermsPractice" required>
+                                    I agree to the <a href="policies.html" target="_blank">terms and conditions</a>
+                                </label>
+                            </div>
+
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary btn-full">Create practice account</button>
+                            </div>
+                        </form>
+
+                        <div class="info-box" style="margin-top: 2rem;">
+                            <h3>Practice membership</h3>
+                            <ul>
+                                <li>✓ View member pricing (when logged in)</li>
+                                <li>✓ Book advice and surgical services</li>
+                                <li>✓ Free radiographic interpretation and case advice (member terms)</li>
+                            </ul>
+                        </div>
+                    </div>
 
                     <div class="auth-footer">
                         <p>Already have an account? <a href="login.html">Login here</a></p>
                         <p class="security-note">🔒 Your information is secure and encrypted</p>
-                    </div>
-
-                    <div class="info-box" style="margin-top: 2rem;">
-                        <h3>Member Benefits:</h3>
-                        <ul>
-                            <li>✓ Access to exclusive member pricing</li>
-                            <li>✓ Free radiographic interpretation</li>
-                            <li>✓ Priority booking for surgeries</li>
-                            <li>✓ 48-hour advice turnaround</li>
-                            <li>✓ Dedicated account manager</li>
-                        </ul>
                     </div>
                 </div>
             </section>
@@ -159,7 +305,7 @@
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul>
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="home.html">Home</a></li>
                     <li><a href="theteam.html">The Team</a></li>
                     <li><a href="pricing.html">Pricing</a></li>
                     <li><a href="policies.html">Policies</a></li>
@@ -179,12 +325,121 @@
     <script src="auth.js"></script>
     <script src="index.js"></script>
     <script>
-        // Handle signup form submission
-        document.getElementById('signupForm').addEventListener('submit', function(e) {
+        const signupChoice = document.getElementById('signupChoice');
+        const professionalSignup = document.getElementById('professionalSignup');
+        const practiceSignup = document.getElementById('practiceSignup');
+        const signupMessage = document.getElementById('signupMessage');
+
+        function showPanel(panel) {
+            signupChoice.style.display = 'none';
+            signupChoice.setAttribute('hidden', '');
+            professionalSignup.style.display = 'none';
+            professionalSignup.setAttribute('hidden', '');
+            practiceSignup.style.display = 'none';
+            practiceSignup.setAttribute('hidden', '');
+            signupMessage.style.display = 'none';
+
+            if (panel === 'choice') {
+                signupChoice.style.display = 'block';
+                signupChoice.removeAttribute('hidden');
+            } else if (panel === 'professional') {
+                professionalSignup.style.display = 'block';
+                professionalSignup.removeAttribute('hidden');
+            } else if (panel === 'practice') {
+                practiceSignup.style.display = 'block';
+                practiceSignup.removeAttribute('hidden');
+            }
+        }
+
+        document.getElementById('chooseProfessional').addEventListener('click', function () {
+            showPanel('professional');
+        });
+
+        document.getElementById('choosePractice').addEventListener('click', function () {
+            showPanel('practice');
+        });
+
+        document.getElementById('backFromProfessional').addEventListener('click', function () {
+            showPanel('choice');
+        });
+
+        document.getElementById('backFromPractice').addEventListener('click', function () {
+            showPanel('choice');
+        });
+
+        function compressSignupImageFile(file) {
+            return new Promise(function (resolve, reject) {
+                if (!file || !file.type || !file.type.startsWith('image/')) {
+                    reject(new Error('Please choose a JPEG, PNG, or WebP image.'));
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const img = new Image();
+                    img.onload = function () {
+                        const maxDim = 512;
+                        var w = img.width;
+                        var h = img.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        try {
+                            resolve(canvas.toDataURL('image/jpeg', 0.82));
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    img.onerror = function () {
+                        reject(new Error('Could not read image.'));
+                    };
+                    img.src = reader.result;
+                };
+                reader.onerror = function () {
+                    reject(new Error('Could not read file.'));
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        (function () {
+            var photoInput = document.getElementById('signupProfilePhoto');
+            var previewWrap = document.getElementById('signupProfilePhotoPreviewWrap');
+            var previewImg = document.getElementById('signupProfilePhotoPreview');
+            if (photoInput && previewWrap && previewImg) {
+                photoInput.addEventListener('change', function () {
+                    var f = photoInput.files && photoInput.files[0];
+                    if (!f) {
+                        previewWrap.style.display = 'none';
+                        return;
+                    }
+                    compressSignupImageFile(f).then(function (dataUrl) {
+                        previewImg.src = dataUrl;
+                        previewWrap.style.display = 'block';
+                    }).catch(function () {
+                        previewWrap.style.display = 'none';
+                    });
+                });
+            }
+        })();
+
+        document.getElementById('signupFormProfessional').addEventListener('submit', function (e) {
             e.preventDefault();
-            
+
             const practiceName = document.getElementById('practiceName').value;
-            const email = document.getElementById('email').value;
+            const professionalRole = document.getElementById('professionalRole').value;
+            const email = document.getElementById('email').value.trim();
+            const confirmEmail = document.getElementById('emailConfirm').value.trim();
             const phone = document.getElementById('phone').value;
             const addressLine1 = document.getElementById('addressLine1').value;
             const addressLine2 = document.getElementById('addressLine2').value;
@@ -193,26 +448,31 @@
             const county = document.getElementById('county').value;
             const password = document.getElementById('password').value;
             const confirmPassword = document.getElementById('confirmPassword').value;
-            const agreeTerms = document.getElementById('agreeTerms').checked;
-            const messageDiv = document.getElementById('signupMessage');
-            
-            // Validate passwords match
+            const agreeTerms = document.getElementById('agreeTermsPro').checked;
+            const photoFile = document.getElementById('signupProfilePhoto').files &&
+                document.getElementById('signupProfilePhoto').files[0];
+
             if (password !== confirmPassword) {
-                messageDiv.style.display = 'block';
-                messageDiv.className = 'message error-message';
-                messageDiv.textContent = 'Passwords do not match.';
+                signupMessage.style.display = 'block';
+                signupMessage.className = 'message error-message';
+                signupMessage.textContent = 'Passwords do not match.';
                 return;
             }
-            
-            // Validate terms agreement
+
             if (!agreeTerms) {
-                messageDiv.style.display = 'block';
-                messageDiv.className = 'message error-message';
-                messageDiv.textContent = 'You must agree to the terms and conditions.';
+                signupMessage.style.display = 'block';
+                signupMessage.className = 'message error-message';
+                signupMessage.textContent = 'You must agree to the terms and conditions.';
                 return;
             }
-            
-            // Create address object
+
+            if (!photoFile) {
+                signupMessage.style.display = 'block';
+                signupMessage.className = 'message error-message';
+                signupMessage.textContent = 'Please upload a profile photo.';
+                return;
+            }
+
             const address = {
                 line1: addressLine1,
                 line2: addressLine2,
@@ -220,30 +480,112 @@
                 postcode: postcode,
                 county: county
             };
-            
-            const result = auth.signup(practiceName, email, password, phone, address);
-            
-            messageDiv.style.display = 'block';
-            messageDiv.textContent = result.message;
-            
+
+            const rcvsRegistrationNumber = document.getElementById('rcvsRegistrationNumber').value;
+
+            compressSignupImageFile(photoFile).then(function (profilePhotoDataUrl) {
+                return auth.signup(practiceName, email, password, phone, address, {
+                    role: professionalRole,
+                    accountType: 'team_member',
+                    rcvsRegistrationNumber,
+                    confirmEmail,
+                    profilePhotoDataUrl
+                });
+            }).then(function (result) {
+                signupMessage.style.display = 'block';
+                signupMessage.textContent = result.message;
+
+                if (result.success) {
+                    signupMessage.className = 'message success-message';
+                    setTimeout(function () {
+                        auth.login(email, password).then(function () {
+                            window.location.href = 'home.html';
+                        });
+                    }, 1500);
+                } else {
+                    signupMessage.className = 'message error-message';
+                }
+            }).catch(function (err) {
+                signupMessage.style.display = 'block';
+                signupMessage.className = 'message error-message';
+                signupMessage.textContent = err.message || 'Could not process profile photo.';
+            });
+        });
+
+        document.getElementById('signupFormPractice').addEventListener('submit', async function (e) {
+            e.preventDefault();
+
+            const practiceName = document.getElementById('practiceBusinessName').value.trim();
+            const email = document.getElementById('practiceEmail').value.trim();
+            const confirmEmail = document.getElementById('practiceEmailConfirm').value.trim();
+            const phone = document.getElementById('practicePhone').value.trim();
+            const addressLine1 = document.getElementById('practiceAddressLine1').value.trim();
+            const addressLine2 = document.getElementById('practiceAddressLine2').value.trim();
+            const city = document.getElementById('practiceCity').value.trim();
+            const postcode = document.getElementById('practicePostcode').value.trim();
+            const county = document.getElementById('practiceCounty').value.trim();
+            const password = document.getElementById('practicePassword').value;
+            const confirmPassword = document.getElementById('practiceConfirmPassword').value;
+            const agreeTerms = document.getElementById('agreeTermsPractice').checked;
+
+            if (password !== confirmPassword) {
+                signupMessage.style.display = 'block';
+                signupMessage.className = 'message error-message';
+                signupMessage.textContent = 'Passwords do not match.';
+                return;
+            }
+
+            if (!agreeTerms) {
+                signupMessage.style.display = 'block';
+                signupMessage.className = 'message error-message';
+                signupMessage.textContent = 'You must agree to the terms and conditions.';
+                return;
+            }
+
+            const address = {
+                line1: addressLine1,
+                line2: addressLine2,
+                city: city,
+                postcode: postcode,
+                county: county
+            };
+
+            const rcvsRegistrationNumber = document.getElementById('practiceRcvsRegistrationNumber').value;
+
+            const result = await auth.signup(practiceName, email, password, phone, address, {
+                accountType: 'practice',
+                rcvsRegistrationNumber,
+                confirmEmail
+            });
+
+            signupMessage.style.display = 'block';
+            signupMessage.textContent = result.message;
+
             if (result.success) {
-                messageDiv.className = 'message success-message';
-                
-                // Auto-login and redirect after successful signup
-                setTimeout(() => {
-                    auth.login(email, password);
-                    window.location.href = 'pricing.html';
+                signupMessage.className = 'message success-message';
+                setTimeout(function () {
+                    auth.login(email, password).then(function () {
+                        window.location.href = 'pricing.html';
+                    });
                 }, 1500);
             } else {
-                messageDiv.className = 'message error-message';
+                signupMessage.className = 'message error-message';
             }
         });
 
-        // Redirect if already logged in
-        if (auth.isLoggedIn()) {
-            window.location.href = 'index.html';
+        auth.ready.then(function () {
+            if (auth.isLoggedIn()) {
+                window.location.href = 'home.html';
+            }
+        });
+
+        var params = new URLSearchParams(window.location.search);
+        var t = params.get('type');
+        if (t === 'professional' || t === 'team') {
+            showPanel('professional');
+        } else if (t === 'practice') {
+            showPanel('practice');
         }
     </script>
 </body>
 </html>
-

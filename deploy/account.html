@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>My Account - Northern Veterinary Service</title>
+    <meta name="description" content="Manage your practice profile and account settings">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ── Account page layout ─────────────────────────────── */
+        .account-page {
+            max-width: 860px;
+            margin: 2.5rem auto;
+            padding: 0 1.5rem 3rem;
+        }
+
+        .account-page h1 {
+            font-size: 2rem;
+            margin-bottom: 0.35rem;
+            color: var(--primary-color, #1a3a5c);
+        }
+
+        .account-subtitle {
+            color: #666;
+            margin-bottom: 2rem;
+            font-size: 0.95rem;
+        }
+
+        /* ── Tabs ─────────────────────────────────────────────── */
+        .account-tabs {
+            display: flex;
+            gap: 0;
+            border-bottom: 2px solid #e0e0e0;
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #666;
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            margin-bottom: -2px;
+            transition: color 0.2s, border-color 0.2s;
+        }
+
+        .tab-btn:hover { color: var(--primary-color, #1a3a5c); }
+
+        .tab-btn.active {
+            color: var(--primary-color, #1a3a5c);
+            border-bottom-color: var(--primary-color, #1a3a5c);
+        }
+
+        /* ── Tab panels ───────────────────────────────────────── */
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        /* ── Info cards ───────────────────────────────────────── */
+        .profile-card {
+            background: #fff;
+            border: 1px solid #e5e5e5;
+            border-radius: 8px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        }
+
+        .profile-card h2 {
+            font-size: 1.1rem;
+            color: var(--primary-color, #1a3a5c);
+            margin-bottom: 1.25rem;
+            padding-bottom: 0.6rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        /* Read-only display rows */
+        .info-row {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+
+        .info-row:last-child { border-bottom: none; }
+
+        .info-label {
+            flex: 0 0 160px;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #555;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+        }
+
+        .info-value {
+            flex: 1;
+            color: #222;
+            font-size: 0.97rem;
+        }
+
+        /* ── Edit form ────────────────────────────────────────── */
+        .edit-form .form-group { margin-bottom: 1.1rem; }
+
+        .edit-form label {
+            display: block;
+            font-weight: 600;
+            font-size: 0.88rem;
+            color: #444;
+            margin-bottom: 0.3rem;
+        }
+
+        .edit-form input {
+            width: 100%;
+            padding: 0.6rem 0.85rem;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            box-sizing: border-box;
+            transition: border-color 0.2s;
+        }
+
+        .edit-form input:focus {
+            outline: none;
+            border-color: var(--primary-color, #1a3a5c);
+            box-shadow: 0 0 0 3px rgba(26,58,92,0.1);
+        }
+
+        .form-row-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        @media (max-width: 520px) {
+            .form-row-2 { grid-template-columns: 1fr; }
+            .info-label { flex: 0 0 120px; }
+        }
+
+        /* ── Buttons ──────────────────────────────────────────── */
+        .btn-save {
+            background: var(--primary-color, #1a3a5c);
+            color: #fff;
+            border: none;
+            padding: 0.65rem 1.8rem;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-save:hover { background: #25527e; }
+
+        .btn-cancel {
+            background: none;
+            border: 1px solid #aaa;
+            color: #555;
+            padding: 0.65rem 1.4rem;
+            border-radius: 5px;
+            font-size: 0.95rem;
+            cursor: pointer;
+            margin-left: 0.75rem;
+            transition: border-color 0.2s, color 0.2s;
+        }
+
+        .btn-cancel:hover { border-color: #555; color: #222; }
+
+        .btn-edit-link {
+            background: none;
+            border: none;
+            color: var(--primary-color, #1a3a5c);
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: underline;
+            padding: 0;
+        }
+
+        .btn-edit-link:hover { color: #25527e; }
+
+        /* ── Status messages ──────────────────────────────────── */
+        .status-msg {
+            display: none;
+            padding: 0.7rem 1rem;
+            border-radius: 5px;
+            font-size: 0.93rem;
+            margin-bottom: 1rem;
+        }
+
+        .status-msg.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status-msg.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        /* ── Member badge ─────────────────────────────────────── */
+        .member-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #e8f4fd;
+            color: #1a5276;
+            border: 1px solid #aed6f1;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+
+        /* ── Security section ─────────────────────────────────── */
+        .section-divider {
+            height: 1px;
+            background: #eee;
+            margin: 1.5rem 0;
+        }
+
+        /* Team member: services checkboxes */
+        .services-offered-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
+            margin: 1rem 0 1.25rem;
+        }
+
+        .services-offered-list label {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.6rem;
+            font-weight: 500;
+            cursor: pointer;
+            line-height: 1.4;
+        }
+
+        .services-offered-list input {
+            margin-top: 0.2rem;
+            width: auto;
+        }
+
+        .services-offered-section {
+            font-size: 1.02rem;
+            font-weight: 700;
+            color: var(--primary-color, #1a3a5c);
+            margin: 1.35rem 0 0.5rem;
+            padding-bottom: 0.25rem;
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .services-offered-section:first-child {
+            margin-top: 0;
+        }
+
+        .member-badge.team-member-badge {
+            background: #eaf6ef;
+            color: #1e6b3a;
+            border-color: #a8d5ba;
+        }
+
+        .availability-card-actions {
+            margin-top: 1rem;
+        }
+
+        .availability-card-actions .btn-save {
+            text-decoration: none;
+            display: inline-block;
+        }
+
+        .account-photo-row {
+            margin-bottom: 1.5rem;
+        }
+
+        .account-avatar-large {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            overflow: hidden;
+            border: 3px solid #e0e0e0;
+            background: #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .account-avatar-large-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        .account-avatar-placeholder {
+            font-size: 0.85rem;
+            color: #888;
+            text-align: center;
+            padding: 0.5rem;
+        }
+
+        .account-photo-edit .account-photo-edit-row {
+            margin-bottom: 0.65rem;
+        }
+
+        .account-photo-edit input[type="file"] {
+            width: 100%;
+            max-width: 22rem;
+            font-size: 0.9rem;
+        }
+
+        .account-photo-edit #removeProfilePhotoBtn {
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <script src="site-gate.js"></script>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <h1 class="site-title">Northern Veterinary Service</h1>
+                <p class="tagline">Veterinary Peripatetic Services</p>
+            </div>
+
+            <nav class="navbar" role="navigation" aria-label="Main navigation">
+                <button class="mobile-menu-toggle" aria-label="Toggle navigation menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-list">
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="casestories.html">Case Stories</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                    <li><a href="booking.html">Advice &amp; Booking</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </nav>
+
+            <!-- Auth Section -->
+            <div class="auth-section">
+                <div class="auth-buttons" id="authButtons">
+                    <a href="login.html" class="btn-auth btn-login">Login</a>
+                    <a href="signup.html" class="btn-auth btn-signup">Sign Up</a>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-dropdown-btn" id="userDropdownBtn">
+                        <span class="user-icon">👤</span>
+                        <span class="user-name" id="userName"></span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="account.html" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="content-wrapper">
+            <div class="account-page">
+                <h1>My Account</h1>
+                <p class="account-subtitle" id="accountSubtitle">Manage your practice profile and account settings</p>
+
+                <div class="member-badge" id="accountMemberBadge">✅ Active Member Practice</div>
+
+                <!-- Tabs -->
+                <div class="account-tabs">
+                    <button type="button" class="tab-btn active" data-tab="profile" id="tabBtnProfile">Practice Profile</button>
+                    <button type="button" class="tab-btn" data-tab="security">Security</button>
+                </div>
+
+                <!-- ── PROFILE TAB ─────────────────────────────── -->
+                <div class="tab-panel active" id="tab-profile">
+
+                    <!-- Practice Details (view mode) -->
+                    <div class="profile-card" id="viewCard">
+                        <h2>
+                            Practice Details
+                            <button class="btn-edit-link" id="editBtn" style="float:right;margin-top:2px;">✏️ Edit</button>
+                        </h2>
+
+                        <div id="profileMsg" class="status-msg"></div>
+
+                        <div class="account-photo-row" id="viewPhotoRow">
+                            <span class="info-label" style="display:block;margin-bottom:0.5rem;">Profile photo</span>
+                            <div class="account-avatar-large" id="viewAvatarWrap">
+                                <img id="viewProfilePhoto" src="" alt="" class="account-avatar-large-img" width="120" height="120" style="display:none;">
+                                <span class="account-avatar-placeholder" id="viewAvatarPlaceholder">No photo uploaded</span>
+                            </div>
+                        </div>
+
+                        <div class="info-row">
+                            <span class="info-label" id="labelViewName">Practice Name</span>
+                            <span class="info-value" id="viewPracticeName">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Email</span>
+                            <span class="info-value" id="viewEmail">—</span>
+                        </div>
+                        <div class="info-row" id="viewRcvsRow" style="display: none;">
+                            <span class="info-label">RCVS registration</span>
+                            <span class="info-value" id="viewRcvs">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Phone</span>
+                            <span class="info-value" id="viewPhone">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Address</span>
+                            <span class="info-value" id="viewAddress">—</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">Member Since</span>
+                            <span class="info-value" id="viewCreatedAt">—</span>
+                        </div>
+                    </div>
+
+                    <!-- Practice Details (edit mode) - hidden by default -->
+                    <div class="profile-card" id="editCard" style="display:none;">
+                        <h2>Edit Practice Details</h2>
+
+                        <div id="editMsg" class="status-msg"></div>
+
+                        <form class="edit-form" id="editProfileForm" novalidate>
+                            <div class="form-group account-photo-edit">
+                                <label for="editProfilePhotoFile">Profile photo</label>
+                                <div class="account-photo-edit-row">
+                                    <div class="account-avatar-large" id="editAvatarWrap">
+                                        <img id="editProfilePhotoPreview" src="" alt="" class="account-avatar-large-img" width="120" height="120" style="display:none;">
+                                        <span class="account-avatar-placeholder" id="editAvatarPlaceholder">No photo yet</span>
+                                    </div>
+                                </div>
+                                <input type="file" id="editProfilePhotoFile" accept="image/jpeg,image/png,image/webp" autocomplete="off">
+                                <div>
+                                    <button type="button" class="btn-cancel" id="removeProfilePhotoBtn">Remove photo</button>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editPracticeName" id="labelEditName">Practice Name <span style="color:red">*</span></label>
+                                <input type="text" id="editPracticeName" placeholder="Your Veterinary Practice" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editEmail">Practice Email <span style="color:red">*</span></label>
+                                <input type="email" id="editEmail" placeholder="practice@example.com" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editEmailConfirm">Confirm email <span style="color:red">*</span></label>
+                                <input type="email" id="editEmailConfirm" placeholder="Re-enter email" required autocomplete="email">
+                            </div>
+
+                            <div class="form-group" id="editRcvsGroup" style="display: none;">
+                                <label for="editRcvs">RCVS registration number <span style="color:red">*</span></label>
+                                <input type="text" id="editRcvs" placeholder="As on the RCVS Register" autocomplete="off">
+                                <small style="color:#666;font-size:0.85rem;display:block;margin-top:0.35rem;">Required for member practices and clinical team accounts.</small>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editPhone">Practice Phone <span id="editPhoneRequiredStar" style="color:red;display:none">*</span></label>
+                                <input type="tel" id="editPhone" placeholder="01234 567890">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editAddressLine1">Address Line 1 <span style="color:red">*</span></label>
+                                <input type="text" id="editAddressLine1" placeholder="Street address" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editAddressLine2">Address Line 2</label>
+                                <input type="text" id="editAddressLine2" placeholder="Building, suite, etc. (optional)">
+                            </div>
+
+                            <div class="form-row-2">
+                                <div class="form-group">
+                                    <label for="editCity">City / Town <span style="color:red">*</span></label>
+                                    <input type="text" id="editCity" placeholder="City" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="editPostcode">Postcode <span style="color:red">*</span></label>
+                                    <input type="text" id="editPostcode" placeholder="Postcode" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="editCounty">County</label>
+                                <input type="text" id="editCounty" placeholder="County (optional)">
+                            </div>
+
+                            <div style="margin-top:1.4rem;">
+                                <button type="submit" class="btn-save">Save Changes</button>
+                                <button type="button" class="btn-cancel" id="cancelEditBtn">Cancel</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ── TEAM: SERVICES ─────────────────────────── -->
+                <div class="tab-panel" id="tab-services" data-team-only>
+                    <div class="profile-card">
+                        <h2>Services you can perform</h2>
+                        <p style="color:#555;font-size:0.93rem;margin-bottom:0.5rem;">
+                            Tick the procedures and services you can deliver. The list follows the <a href="pricing.html">member price list</a> (plus laparoscopic surgery and locum work).
+                        </p>
+                        <div id="servicesMsg" class="status-msg"></div>
+                        <form class="edit-form" id="servicesOfferedForm">
+                            <div class="services-offered-list" id="servicesCheckboxesMount" aria-label="Services offered"></div>
+                            <button type="submit" class="btn-save">Save services</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- ── TEAM: AVAILABILITY ──────────────────────── -->
+                <div class="tab-panel" id="tab-availability" data-team-only>
+                    <div class="profile-card">
+                        <h2>Your availability</h2>
+                        <p style="color:#555;font-size:0.93rem;line-height:1.5;">
+                            Manage your working availability day by day (available, limited, or unavailable). Overrides are stored in this browser for your account.
+                        </p>
+                        <p style="color:#666;font-size:0.88rem;margin-top:0.75rem;">
+                            The public booking calendar visitors see is still controlled from the site booking diary (master admin). Your planner is for your own schedule and internal planning.
+                        </p>
+                        <div class="availability-card-actions">
+                            <a href="staff-diary.html" class="btn-save">Open availability calendar</a>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ── SECURITY TAB ────────────────────────────── -->
+                <div class="tab-panel" id="tab-security">
+                    <div class="profile-card">
+                        <h2>Change Password</h2>
+
+                        <div id="pwMsg" class="status-msg"></div>
+
+                        <form class="edit-form" id="changePasswordForm" novalidate>
+                            <div class="form-group">
+                                <label for="currentPassword">Current Password <span style="color:red">*</span></label>
+                                <input type="password" id="currentPassword" placeholder="Enter current password" required autocomplete="current-password">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="newPassword">New Password <span style="color:red">*</span></label>
+                                <input type="password" id="newPassword" placeholder="Minimum 6 characters" required autocomplete="new-password">
+                            </div>
+
+                            <div class="form-group">
+                                <label for="confirmNewPassword">Confirm New Password <span style="color:red">*</span></label>
+                                <input type="password" id="confirmNewPassword" placeholder="Re-enter new password" required autocomplete="new-password">
+                            </div>
+
+                            <div style="margin-top:1.2rem;">
+                                <button type="submit" class="btn-save">Update Password</button>
+                            </div>
+                        </form>
+
+                        <div class="section-divider"></div>
+
+                        <h2 style="margin-bottom:0.75rem;">Account Actions</h2>
+                        <p style="color:#555;font-size:0.93rem;margin-bottom:1rem;">
+                            Need to leave? You can log out of your account here.
+                        </p>
+                        <button class="btn-save" id="logoutBtnAccount" style="background:#c0392b;">
+                            Log Out
+                        </button>
+                    </div>
+                </div>
+
+            </div><!-- /account-page -->
+        </div><!-- /content-wrapper -->
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Northern Veterinary Service</h3>
+                <p>Peripatetic veterinary surgery services across Northern England</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="booking.html">Book Appointment</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: <a href="mailto:info@northernveterinaryservice.co.uk">info@northernveterinaryservice.co.uk</a></p>
+                <p>WhatsApp: <a href="https://wa.me/447763836276">+44 7763 836276</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Verlexis Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="index.js"></script>
+    <script>
+    auth.ready.then(function () {
+        if (!auth.requireAuth('login.html')) return;
+
+        const isTeamMember = auth.isCurrentUserTeamMember();
+
+        if (!isTeamMember) {
+            document.querySelectorAll('[data-team-only]').forEach(el => el.remove());
+        } else {
+            document.body.classList.add('account-page--team');
+            const badge = document.getElementById('accountMemberBadge');
+            if (badge) {
+                badge.textContent = 'Team Member';
+                badge.classList.add('team-member-badge');
+            }
+            const sub = document.getElementById('accountSubtitle');
+            if (sub) {
+                sub.textContent = 'Manage your profile, the services you offer, and your availability.';
+            }
+            const vn = document.getElementById('labelViewName');
+            const en = document.getElementById('labelEditName');
+            if (vn) vn.textContent = 'Full name';
+            if (en) {
+                en.innerHTML = 'Full name <span style="color: red;">*</span>';
+            }
+            document.getElementById('tabBtnProfile').textContent = 'Profile';
+            const viewH2 = document.querySelector('#viewCard h2');
+            if (viewH2) {
+                const editLink = viewH2.querySelector('#editBtn');
+                viewH2.textContent = '';
+                viewH2.appendChild(document.createTextNode('Your details '));
+                if (editLink) viewH2.appendChild(editLink);
+            }
+            const editH2 = document.querySelector('#editCard h2');
+            if (editH2) editH2.textContent = 'Edit your details';
+
+            const tabsBar = document.querySelector('.account-tabs');
+            const secBtn = tabsBar && tabsBar.querySelector('[data-tab="security"]');
+            if (tabsBar && secBtn) {
+                [['services', 'Services I offer'], ['availability', 'Availability']].forEach(([tab, label]) => {
+                    const b = document.createElement('button');
+                    b.type = 'button';
+                    b.className = 'tab-btn';
+                    b.dataset.tab = tab;
+                    b.textContent = label;
+                    secBtn.insertAdjacentElement('beforebegin', b);
+                });
+            }
+
+            const mount = document.getElementById('servicesCheckboxesMount');
+            const catalog = auth.getOfferableServicesCatalog();
+            const profile = auth.getUserProfile();
+            const selected = new Set(Array.isArray(profile && profile.servicesOffered) ? profile.servicesOffered : []);
+            if (mount) {
+                catalog.forEach((sec) => {
+                    const h3 = document.createElement('h3');
+                    h3.className = 'services-offered-section';
+                    h3.textContent = sec.section;
+                    mount.appendChild(h3);
+                    sec.items.forEach(({ id, label }) => {
+                        const wrap = document.createElement('label');
+                        const inp = document.createElement('input');
+                        inp.type = 'checkbox';
+                        inp.name = 'service';
+                        inp.value = id;
+                        if (selected.has(id)) inp.checked = true;
+                        wrap.appendChild(inp);
+                        wrap.appendChild(document.createTextNode(label));
+                        mount.appendChild(wrap);
+                    });
+                });
+            }
+
+            document.getElementById('servicesOfferedForm').addEventListener('submit', async function (e) {
+                e.preventDefault();
+                const boxes = mount.querySelectorAll('input[name="service"]:checked');
+                const ids = Array.from(boxes).map(b => b.value);
+                const result = await auth.updateUser({ servicesOffered: ids });
+                const el = document.getElementById('servicesMsg');
+                if (el) {
+                    el.textContent = result.message;
+                    el.className = 'status-msg ' + (result.success ? 'success' : 'error');
+                    el.style.display = 'block';
+                    setTimeout(() => { el.style.display = 'none'; }, 5000);
+                }
+            });
+        }
+
+        // ── Tab switching ──────────────────────────────────────
+        function wireAccountTabs() {
+            document.querySelectorAll('.account-tabs .tab-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.dataset.tab;
+                    document.querySelectorAll('.account-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.account-page .tab-panel').forEach(p => p.classList.remove('active'));
+                    btn.classList.add('active');
+                    const panel = document.getElementById('tab-' + tab);
+                    if (panel) panel.classList.add('active');
+                });
+            });
+        }
+        wireAccountTabs();
+
+        function activateAccountTabFromHash() {
+            const h = (location.hash || '').replace(/^#/, '').toLowerCase();
+            let tab = null;
+            if (!h || h === 'profile') tab = 'profile';
+            else if (h === 'services') tab = 'services';
+            else if (h === 'security') tab = 'security';
+            else if (h === 'availability') tab = 'availability';
+            if (!tab) return;
+            const btn = document.querySelector('.account-tabs .tab-btn[data-tab="' + tab + '"]');
+            if (btn) btn.click();
+        }
+        activateAccountTabFromHash();
+        window.addEventListener('hashchange', activateAccountTabFromHash);
+
+        // ── Helpers ────────────────────────────────────────────
+        function showMsg(id, text, type) {
+            const el = document.getElementById(id);
+            el.textContent = text;
+            el.className = 'status-msg ' + type;
+            el.style.display = 'block';
+            setTimeout(() => { el.style.display = 'none'; }, 5000);
+        }
+
+        function formatAddress(addr) {
+            if (!addr) return '—';
+            const parts = [addr.line1, addr.line2, addr.city, addr.county, addr.postcode].filter(Boolean);
+            return parts.length ? parts.join(', ') : '—';
+        }
+
+        function formatDate(iso) {
+            if (!iso) return '—';
+            return new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
+        }
+
+        let accountPendingPhotoDataUrl = null;
+        let accountRemovePhoto = false;
+
+        function syncViewAvatar(profile) {
+            const img = document.getElementById('viewProfilePhoto');
+            const ph = document.getElementById('viewAvatarPlaceholder');
+            if (!img || !ph) return;
+            const pic = profile && (profile.profilePhotoUrl || profile.profilePhotoDataUrl);
+            if (pic) {
+                img.src = pic;
+                img.style.display = 'block';
+                ph.style.display = 'none';
+            } else {
+                img.removeAttribute('src');
+                img.style.display = 'none';
+                ph.style.display = 'block';
+            }
+        }
+
+        function syncEditAvatar(profile) {
+            const img = document.getElementById('editProfilePhotoPreview');
+            const ph = document.getElementById('editAvatarPlaceholder');
+            if (!img || !ph) return;
+            const url = accountPendingPhotoDataUrl || (profile && (profile.profilePhotoUrl || profile.profilePhotoDataUrl));
+            if (url && !accountRemovePhoto) {
+                img.src = url;
+                img.style.display = 'block';
+                ph.style.display = 'none';
+            } else {
+                img.removeAttribute('src');
+                img.style.display = 'none';
+                ph.style.display = 'block';
+            }
+        }
+
+        function resetPhotoDraftState() {
+            accountPendingPhotoDataUrl = null;
+            accountRemovePhoto = false;
+            const f = document.getElementById('editProfilePhotoFile');
+            if (f) f.value = '';
+        }
+
+        function compressImageFile(file) {
+            return new Promise(function (resolve, reject) {
+                if (!file || !file.type || !file.type.startsWith('image/')) {
+                    reject(new Error('Please choose a JPEG, PNG, or WebP image.'));
+                    return;
+                }
+                const reader = new FileReader();
+                reader.onload = function () {
+                    const img = new Image();
+                    img.onload = function () {
+                        const maxDim = 512;
+                        let w = img.width;
+                        let h = img.height;
+                        if (w > maxDim || h > maxDim) {
+                            if (w > h) {
+                                h = Math.round((h * maxDim) / w);
+                                w = maxDim;
+                            } else {
+                                w = Math.round((w * maxDim) / h);
+                                h = maxDim;
+                            }
+                        }
+                        const canvas = document.createElement('canvas');
+                        canvas.width = w;
+                        canvas.height = h;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, w, h);
+                        try {
+                            resolve(canvas.toDataURL('image/jpeg', 0.82));
+                        } catch (err) {
+                            reject(err);
+                        }
+                    };
+                    img.onerror = function () {
+                        reject(new Error('Could not read image.'));
+                    };
+                    img.src = reader.result;
+                };
+                reader.onerror = function () {
+                    reject(new Error('Could not read file.'));
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showMemberRcvsFields(show) {
+            const vr = document.getElementById('viewRcvsRow');
+            const eg = document.getElementById('editRcvsGroup');
+            const er = document.getElementById('editRcvs');
+            if (vr) vr.style.display = show ? '' : 'none';
+            if (eg) eg.style.display = show ? '' : 'none';
+            if (er) er.required = !!show;
+        }
+
+        // ── Populate view mode ─────────────────────────────────
+        function populateView() {
+            const profile = auth.getUserProfile();
+            if (!profile) return;
+
+            const showRcvs =
+                !profile.isAdmin &&
+                (profile.accountType === 'practice' || profile.accountType === 'team_member');
+            showMemberRcvsFields(!!showRcvs);
+            if (showRcvs) {
+                const el = document.getElementById('viewRcvs');
+                if (el) el.textContent = profile.rcvsRegistrationNumber || '—';
+            }
+
+            document.getElementById('viewPracticeName').textContent = profile.practiceName || '—';
+            document.getElementById('viewEmail').textContent        = profile.email || '—';
+            document.getElementById('viewPhone').textContent        = profile.phone || 'Not provided';
+            document.getElementById('viewAddress').textContent      = formatAddress(profile.address);
+            document.getElementById('viewCreatedAt').textContent    = formatDate(profile.createdAt);
+            syncViewAvatar(profile);
+        }
+
+        // ── Populate edit form ─────────────────────────────────
+        function populateEditForm() {
+            const profile = auth.getUserProfile();
+            if (!profile) return;
+            const addr = profile.address || {};
+
+            resetPhotoDraftState();
+
+            const showRcvs =
+                !profile.isAdmin &&
+                (profile.accountType === 'practice' || profile.accountType === 'team_member');
+            showMemberRcvsFields(!!showRcvs);
+            const editRcvs = document.getElementById('editRcvs');
+            if (editRcvs) editRcvs.value = profile.rcvsRegistrationNumber || '';
+
+            document.getElementById('editPracticeName').value  = profile.practiceName || '';
+            document.getElementById('editEmail').value         = profile.email || '';
+            document.getElementById('editEmailConfirm').value  = profile.email || '';
+            const needsPhone =
+                !profile.isAdmin &&
+                (profile.accountType === 'practice' || profile.accountType === 'team_member');
+            const ep = document.getElementById('editPhone');
+            if (ep) ep.required = !!needsPhone;
+            const star = document.getElementById('editPhoneRequiredStar');
+            if (star) star.style.display = needsPhone ? 'inline' : 'none';
+            document.getElementById('editPhone').value         = profile.phone || '';
+            document.getElementById('editAddressLine1').value  = addr.line1 || '';
+            document.getElementById('editAddressLine2').value  = addr.line2 || '';
+            document.getElementById('editCity').value          = addr.city || '';
+            document.getElementById('editPostcode').value      = addr.postcode || '';
+            document.getElementById('editCounty').value        = addr.county || '';
+            syncEditAvatar(profile);
+        }
+
+        // ── Edit / Cancel toggles ──────────────────────────────
+        document.getElementById('editBtn').addEventListener('click', () => {
+            populateEditForm();
+            document.getElementById('viewCard').style.display = 'none';
+            document.getElementById('editCard').style.display = 'block';
+        });
+
+        document.getElementById('cancelEditBtn').addEventListener('click', () => {
+            resetPhotoDraftState();
+            document.getElementById('editCard').style.display = 'none';
+            document.getElementById('viewCard').style.display = 'block';
+        });
+
+        document.getElementById('editProfilePhotoFile').addEventListener('change', function (ev) {
+            const file = ev.target.files && ev.target.files[0];
+            if (!file) return;
+            compressImageFile(file)
+                .then(function (dataUrl) {
+                    accountPendingPhotoDataUrl = dataUrl;
+                    accountRemovePhoto = false;
+                    syncEditAvatar(auth.getUserProfile());
+                })
+                .catch(function (err) {
+                    showMsg('editMsg', err.message || 'Could not process image.', 'error');
+                    ev.target.value = '';
+                });
+        });
+
+        document.getElementById('removeProfilePhotoBtn').addEventListener('click', function () {
+            accountPendingPhotoDataUrl = null;
+            accountRemovePhoto = true;
+            const f = document.getElementById('editProfilePhotoFile');
+            if (f) f.value = '';
+            syncEditAvatar(auth.getUserProfile());
+        });
+
+        // ── Save profile ───────────────────────────────────────
+        document.getElementById('editProfileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const updatedFields = {
+                practiceName: document.getElementById('editPracticeName').value.trim(),
+                email:        document.getElementById('editEmail').value.trim(),
+                confirmEmail: document.getElementById('editEmailConfirm').value.trim(),
+                phone:        document.getElementById('editPhone').value.trim(),
+                address: {
+                    line1:    document.getElementById('editAddressLine1').value.trim(),
+                    line2:    document.getElementById('editAddressLine2').value.trim(),
+                    city:     document.getElementById('editCity').value.trim(),
+                    postcode: document.getElementById('editPostcode').value.trim(),
+                    county:   document.getElementById('editCounty').value.trim()
+                }
+            };
+
+            if (accountRemovePhoto) {
+                updatedFields.profilePhotoDataUrl = null;
+            } else if (accountPendingPhotoDataUrl) {
+                updatedFields.profilePhotoDataUrl = accountPendingPhotoDataUrl;
+            }
+
+            const prof = auth.getUserProfile();
+            const needsRcvs =
+                prof &&
+                !prof.isAdmin &&
+                (prof.accountType === 'practice' || prof.accountType === 'team_member');
+            if (needsRcvs) {
+                updatedFields.rcvsRegistrationNumber = document.getElementById('editRcvs').value.trim();
+            }
+
+            if (!updatedFields.practiceName) {
+                showMsg('editMsg', 'Practice name is required.', 'error'); return;
+            }
+            if (!updatedFields.email) {
+                showMsg('editMsg', 'Email address is required.', 'error'); return;
+            }
+            if (!updatedFields.confirmEmail) {
+                showMsg('editMsg', 'Please confirm your email address.', 'error'); return;
+            }
+            if (updatedFields.email.toLowerCase() !== updatedFields.confirmEmail.toLowerCase()) {
+                showMsg('editMsg', 'Email addresses do not match.', 'error'); return;
+            }
+            if (!updatedFields.address.line1 || !updatedFields.address.city || !updatedFields.address.postcode) {
+                showMsg('editMsg', 'Address line 1, city, and postcode are required.', 'error'); return;
+            }
+
+            if (needsRcvs) {
+                const rc = auth.validateRcvsRegistrationNumber(updatedFields.rcvsRegistrationNumber);
+                if (!rc.ok) {
+                    showMsg('editMsg', rc.message, 'error');
+                    return;
+                }
+            }
+
+            auth.updateUser(updatedFields).then(function (result) {
+                showMsg('editMsg', result.message, result.success ? 'success' : 'error');
+
+                if (result.success) {
+                    resetPhotoDraftState();
+                    setTimeout(() => {
+                        document.getElementById('editCard').style.display = 'none';
+                        document.getElementById('viewCard').style.display = 'block';
+                        populateView();
+                    }, 1200);
+                }
+            });
+        });
+
+        // ── Change password ────────────────────────────────────
+        document.getElementById('changePasswordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const current  = document.getElementById('currentPassword').value;
+            const newPw    = document.getElementById('newPassword').value;
+            const confirm  = document.getElementById('confirmNewPassword').value;
+
+            if (newPw !== confirm) {
+                showMsg('pwMsg', 'New passwords do not match.', 'error'); return;
+            }
+
+            const result = await auth.updatePassword(current, newPw);
+            showMsg('pwMsg', result.message, result.success ? 'success' : 'error');
+
+            if (result.success) {
+                document.getElementById('changePasswordForm').reset();
+            }
+        });
+
+        // ── Logout from account page ───────────────────────────
+        document.getElementById('logoutBtnAccount').addEventListener('click', () => {
+            auth.logout();
+        });
+
+        // ── Initial render ─────────────────────────────────────
+        populateView();
+    });
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Post-Op Discharge Form - Northern Veterinary Service</title>
+    <meta name="description" content="Interactive post-operative discharge form for veterinary professionals.">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="favicon.ico">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <script src="site-gate.js"></script>
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo-section">
+                <h1 class="site-title">Northern Veterinary Service</h1>
+                <p class="tagline">Veterinary Peripatetic Services</p>
+            </div>
+            <nav class="navbar" role="navigation" aria-label="Main navigation">
+                <button class="mobile-menu-toggle" aria-label="Toggle navigation menu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <ul class="nav-list">
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="casestories.html">Case Stories</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                    <li><a href="booking.html">Advice & Booking</a></li>
+                    <li><a href="resources.html" class="active" aria-current="page">Resources</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </nav>
+            <div class="auth-section">
+                <div class="auth-buttons" id="authButtons">
+                    <a href="login.html" class="btn-auth btn-login">Login</a>
+                    <a href="signup.html" class="btn-auth btn-signup">Sign Up</a>
+                </div>
+                <div class="user-menu" id="userMenu" style="display: none;">
+                    <button class="user-dropdown-btn" id="userDropdownBtn">
+                        <span class="user-icon">👤</span>
+                        <span class="user-name" id="userName"></span>
+                        <span class="dropdown-arrow">▼</span>
+                    </button>
+                    <div class="dropdown-menu" id="dropdownMenu">
+                        <a href="account.html" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="clinical-form-page">
+        <section class="content-section">
+            <h2>Post-Operative Discharge Form</h2>
+            <p>Web version of your Word discharge template. Complete fields and print or save as PDF.</p>
+            <div class="clinical-form-actions">
+                <a href="resources.html" class="btn btn-secondary">Back to Resources</a>
+                <button type="button" class="btn btn-primary" id="printFormBtn">Print / Save PDF</button>
+            </div>
+        </section>
+
+        <section class="clinical-doc">
+            <div class="clinical-header-line">
+                <div class="clinical-header-cell">
+                    <label for="patientName">Patient name</label>
+                    <input id="patientName" type="text" placeholder="Patient name" autocomplete="off">
+                </div>
+                <div class="clinical-header-cell">
+                    <label for="patientWeight">Weight</label>
+                    <input id="patientWeight" type="text" placeholder="kg" autocomplete="off">
+                </div>
+                <div class="clinical-header-cell">
+                    <label for="surgeonName">Veterinary surgeon</label>
+                    <input id="surgeonName" type="text" placeholder="Surgeon name" autocomplete="off">
+                </div>
+            </div>
+
+            <h3 class="clinical-section-title">Medications</h3>
+            <table class="clinical-med-table">
+                <thead>
+                    <tr>
+                        <th>Medication</th>
+                        <th>Dose</th>
+                        <th>When to Start</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><input id="medArthrocamName" type="text" value="NSAID Loxicom 1.5mg/ml"></td>
+                        <td><textarea id="medArthrocamDose">Give a 16 kg dose every 24 hours for 6 weeks.</textarea></td>
+                        <td><input type="text" value="Tomorrow at 7pm"></td>
+                    </tr>
+                    <tr>
+                        <td><input type="text" value="Pardale 400mg"></td>
+                        <td><textarea id="medPardaleDose">Give 3/4 tablets every 12 hours for 4 weeks.</textarea></td>
+                        <td><input type="text" value="Tomorrow at 7pm"></td>
+                    </tr>
+                    <tr>
+                        <td><input id="medAntibioticName" type="text" value="Cladaxxa 500mg"></td>
+                        <td><textarea id="medAntibioticDose">Give 1/4 tablets every 12 hours for 5 days.</textarea></td>
+                        <td><input type="text" value="Tomorrow at 7pm"></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <div class="clinical-grid">
+                <div>
+                    <h3 class="clinical-section-title">Surgical Report</h3>
+                    <div class="clinical-text-block">
+                        <textarea rows="8" data-template>[Patient] had surgery today following identification of a cranial cruciate ligament rupture.</textarea>
+                        <textarea rows="5" data-template>Joint inspection revealed a torn cranial cruciate ligament. A [PlateSize] was placed using a TPLO saw and screws, postoperative TPA was 5-6 degrees.</textarea>
+                        <textarea rows="4">Post operative x-rays show good implant positioning.</textarea>
+                        <textarea rows="4" data-template>We hope [Patient] has a stress free and uneventful recovery but if you are concerned at all please do not hesitate to contact us.</textarea>
+                    </div>
+
+                    <h3 class="clinical-section-title">Discharge Instructions</h3>
+                    <div class="clinical-list">
+                        <textarea>1. Give medications as described above.</textarea>
+                        <textarea data-template>2. [Patient] must wear the buster collar for 2 weeks following the procedure.</textarea>
+                        <textarea data-template>3. Please keep [Patient] on strict cage or room rest in the house for 6-8 weeks.</textarea>
+                        <textarea data-template>4. [Patient] is not allowed to go upstairs or jump onto/off furniture during this period.</textarea>
+                        <textarea data-template>5. If [Patient] will allow, apply a cool compress to the inside of the leg twice daily for 3 days.</textarea>
+                    </div>
+                </div>
+
+                <div>
+                    <h3 class="clinical-section-title">Exercise Regime</h3>
+                    <table class="clinical-followup-table">
+                        <thead>
+                            <tr>
+                                <th>Time from surgery</th>
+                                <th>Plan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" value="First two weeks"></td>
+                                <td><textarea>Lead walks to the toilet and back (house and garden only ideally).</textarea></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" value="2-4 weeks"></td>
+                                <td><textarea>5 minute lead walks twice-three times daily.</textarea></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" value="4-6 weeks"></td>
+                                <td><textarea>10 minute lead walks twice-three times daily.</textarea></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" value="6-8 weeks"></td>
+                                <td><textarea>Increase to 20 mins adding 5 mins each week.</textarea></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" value="8-10 weeks +"></td>
+                                <td><textarea>Gradual introduction of off-lead exercise once concerns are resolved.</textarea></td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <h3 class="clinical-section-title">Follow Up Appointments</h3>
+                    <table class="clinical-followup-table">
+                        <thead>
+                            <tr>
+                                <th>Follow up appointments</th>
+                                <th>Notes</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" value="3 days"></td>
+                                <td><textarea data-template>Please book [Patient] a post op check appointment with a nurse.</textarea></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" value="10 days"></td>
+                                <td><textarea data-template>Please book [Patient] in for a post op check appointment with a nurse.</textarea></td>
+                            </tr>
+                            <tr>
+                                <td><input type="text" value="6-8 weeks"></td>
+                                <td><textarea data-template>Please book in for a check with [Surgeon]. [Patient] will need to be starved overnight and the morning of the appointment in case X-rays are required.</textarea></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <p class="clinical-note">Tip: replace bracket placeholders like [Patient] and [Surgeon] before printing.</p>
+        </section>
+    </main>
+
+    <footer class="site-footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Northern Veterinary Service</h3>
+                <p>Veterinary peripatetic services across Northern England</p>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="home.html">Home</a></li>
+                    <li><a href="theteam.html">The Team</a></li>
+                    <li><a href="pricing.html">Pricing</a></li>
+                    <li><a href="policies.html">Policies</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p>Email: <a href="mailto:info@northernveterinaryservice.co.uk">info@northernveterinaryservice.co.uk</a></p>
+                <p>WhatsApp: <a href="https://wa.me/447763836276">+44 7763 836276</a></p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 Verlexis Ltd. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="auth.js"></script>
+    <script src="index.js"></script>
+    <script>
+    auth.ready.then(function () {
+        if (!auth.requireProfessionalAccess('home.html')) return;
+        document.getElementById('printFormBtn').addEventListener('click', function () {
+            window.print();
+        });
+
+        const patientField = document.getElementById('patientName');
+        const weightField = document.getElementById('patientWeight');
+        const surgeonField = document.getElementById('surgeonName');
+
+        const arthrocamDoseField = document.getElementById('medArthrocamDose');
+        const pardaleDoseField = document.getElementById('medPardaleDose');
+        const antibioticNameField = document.getElementById('medAntibioticName');
+        const antibioticDoseField = document.getElementById('medAntibioticDose');
+
+        const templateFields = Array.from(document.querySelectorAll('textarea[data-template]')).map((field) => {
+            return { field, template: field.value };
+        });
+
+        let currentPlateSize = '3.5 Small TPLO plate';
+
+        function replaceTemplateTokens() {
+            const patientName = patientField.value.trim();
+            const surgeonName = surgeonField.value.trim();
+
+            templateFields.forEach(({ field, template }) => {
+                let nextValue = template;
+                nextValue = nextValue.replace(/\[Patient\]/g, patientName || '[Patient]');
+                nextValue = nextValue.replace(/\[Surgeon\]/g, surgeonName || '[Surgeon]');
+                nextValue = nextValue.replace(/\[PlateSize\]/g, currentPlateSize || '[PlateSize]');
+                field.value = nextValue;
+            });
+        }
+
+        function parseWeightKg(rawText) {
+            let txt = (rawText || '').trim().toLowerCase();
+            if (!txt) return null;
+            txt = txt.replace(/kg/g, '').trim();
+            const wt = Number(txt);
+            if (Number.isNaN(wt)) return NaN;
+            return wt;
+        }
+
+        function formatWeightForText(wt) {
+            if (Math.abs(wt - Math.round(wt)) < 0.0001) {
+                return String(Math.round(wt));
+            }
+            return wt.toFixed(2).replace(/\.?0+$/, '');
+        }
+
+        function formatTabletCount(tabletCount) {
+            const wholePart = Math.floor(tabletCount);
+            const fracPart = tabletCount - wholePart;
+            let fracText = '';
+            let numberText = '';
+
+            if (Math.abs(fracPart) < 0.01) {
+                numberText = String(wholePart);
+            } else if (Math.abs(fracPart - 0.25) < 0.01) {
+                fracText = '1/4';
+            } else if (Math.abs(fracPart - 0.5) < 0.01) {
+                fracText = '1/2';
+            } else if (Math.abs(fracPart - 0.75) < 0.01) {
+                fracText = '3/4';
+            } else {
+                numberText = tabletCount.toFixed(2).replace(/\.?0+$/, '');
+            }
+
+            if (!numberText) {
+                numberText = wholePart === 0 ? fracText : String(wholePart) + fracText;
+            }
+
+            if (Math.abs(tabletCount - 1) < 0.01) {
+                return numberText + ' tablet';
+            }
+            return numberText + ' tablets';
+        }
+
+        function getPardaleDose(wt) {
+            const minMg = wt * 10;
+            const maxMg = wt * 25;
+            const targetMg = wt * 20;
+            let bestMg = 0;
+            let bestDiff = Number.MAX_VALUE;
+            let foundDose = false;
+
+            for (let i = 0.25; i <= 20; i += 0.25) {
+                const candidateMg = i * 400;
+                if (candidateMg >= minMg && candidateMg <= maxMg) {
+                    const diff = Math.abs(candidateMg - targetMg);
+                    if (diff < bestDiff) {
+                        bestDiff = diff;
+                        bestMg = candidateMg;
+                        foundDose = true;
+                    }
+                }
+            }
+
+            if (foundDose) {
+                const tablets = bestMg / 400;
+                return 'Give ' + formatTabletCount(tablets) + ' every 12 hours for 4 weeks';
+            }
+            return 'No suitable dose found within 10-25 mg/kg';
+        }
+
+        function getPlateSize(wt) {
+            if (wt < 4) return '1.5 TPLO plate';
+            if (wt < 7) return '2.0 TPLO plate';
+            if (wt < 11) return '2.4 TPLO plate';
+            if (wt < 13) return '2.7 TPLO plate';
+            if (wt < 16) return '2.7 Broad TPLO plate';
+            if (wt < 23) return '3.5 Small TPLO plate';
+            if (wt < 36) return '3.5 TPLO plate';
+            if (wt < 45) return '3.5 Broad TPLO plate';
+            if (wt < 82) return '3.5 Jumbo TPLO plate';
+            return '4.0 / 5.0 Jumbo+ TPLO plate';
+        }
+
+        function getCladaxxaDose(wt) {
+            const strengths = [500, 250, 50];
+            const minMg = wt * 15;
+            const maxMg = wt * 20;
+            const targetMg = wt * 20;
+
+            for (const strength of strengths) {
+                let bestTabs = 0;
+                let bestDiff = Number.MAX_VALUE;
+                let foundDose = false;
+
+                for (let tabCount = 0.25; tabCount <= 20; tabCount += 0.25) {
+                    const candidateMg = strength * tabCount;
+                    if (candidateMg >= minMg && candidateMg <= maxMg) {
+                        const diff = Math.abs(candidateMg - targetMg);
+                        if (diff < bestDiff) {
+                            bestDiff = diff;
+                            bestTabs = tabCount;
+                            foundDose = true;
+                        }
+                    }
+                }
+
+                if (foundDose) {
+                    return {
+                        drugName: 'Cladaxxa ' + String(strength) + 'mg',
+                        doseText: 'Give ' + formatTabletCount(bestTabs) + ' every 12 hours for 5 days'
+                    };
+                }
+            }
+
+            return {
+                drugName: 'Cladaxxa',
+                doseText: 'No suitable dose found within 15-20 mg/kg every 12 hours'
+            };
+        }
+
+        function updateVetFields(showAlertForBadInput) {
+            const wt = parseWeightKg(weightField.value);
+            if (wt === null) return;
+            if (Number.isNaN(wt)) {
+                if (showAlertForBadInput) {
+                    window.alert('Please enter the weight as a number only (e.g. 20 or 20kg)');
+                }
+                return;
+            }
+
+            const arthrocamDose = 'Give a ' + formatWeightForText(wt) + ' kg dose every 24 hours for 6 weeks. Stop if vomiting/diarrhoea or not eating.';
+            const pardaleDose = getPardaleDose(wt);
+            const plateType = getPlateSize(wt);
+            const cladaxxa = getCladaxxaDose(wt);
+
+            arthrocamDoseField.value = arthrocamDose;
+            pardaleDoseField.value = pardaleDose;
+            antibioticNameField.value = cladaxxa.drugName;
+            antibioticDoseField.value = cladaxxa.doseText;
+            currentPlateSize = plateType;
+            replaceTemplateTokens();
+        }
+
+        function updatePatientNameFields() {
+            replaceTemplateTokens();
+        }
+
+        patientField.addEventListener('blur', updatePatientNameFields);
+        patientField.addEventListener('input', updatePatientNameFields);
+        surgeonField.addEventListener('blur', replaceTemplateTokens);
+        surgeonField.addEventListener('input', replaceTemplateTokens);
+
+        weightField.addEventListener('blur', function () {
+            updateVetFields(true);
+        });
+        weightField.addEventListener('input', function () {
+            updateVetFields(false);
+        });
+
+        replaceTemplateTokens();
+    });
+    </script>
+</body>
+</html>

@@ -11,6 +11,7 @@
 </head>
 
 <body>
+    <script src="site-gate.js"></script>
     <header class="site-header">
         <div class="header-container">
             <div class="logo-section">
@@ -25,7 +26,7 @@
                     <span></span>
                 </button>
                 <ul class="nav-list">
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="home.html">Home</a></li>
                     <li><a href="theteam.html">The Team</a></li>
                     <li><a href="casestories.html" class="active" aria-current="page">Case Stories</a></li>
                     <li><a href="pricing.html">Pricing</a></li>
@@ -47,7 +48,7 @@
                         <span class="dropdown-arrow">▼</span>
                     </button>
                     <div class="dropdown-menu" id="dropdownMenu">
-                        <a href="#" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="account.html" class="dropdown-item" id="accountLink">My Account</a>
                         <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
                     </div>
                 </div>
@@ -59,16 +60,23 @@
         <h1 style="text-align: center; margin-top: 2rem; color: var(--primary-color);">Case Stories</h1>
 
         <div class="gallery-intro">
-            <p>Here are some of the cases our NVS team has successfully assisted with. These examples demonstrate our expertise across a range of orthopaedic and soft tissue procedures.</p>
+            <p>Here are some of the cases our team has successfully assisted with. These examples demonstrate our expertise across a range of orthopaedic and soft tissue procedures.</p>
             <p><strong>Please Note:</strong> Some images may contain intra-operative photos, X-rays, and CT scans that show surgical procedures.</p>
         </div>
 
         <div class="gallery-container">
+            <div class="gallery-item" data-case="winne">
+                <div class="caseimage">
+                    <img src="images/Winnie/Winnie1.jpeg" alt="Winnie TPLO case study">
+                </div>
+                <div class="text">Winnie - TPLO</div>
+            </div>
+
             <div class="gallery-item" data-case="norman">
                 <div class="caseimage">
                     <img src="images/Norman/norman.jpeg" alt="Successful TPLO surgery case">
                 </div>
-                <div class="text">TPLO Surgery - Norman</div> 
+                <div class="text">Lateral Condylar Fracture - Norman</div> 
             </div>
 
             <div class="gallery-item" data-case="ruby">
@@ -82,7 +90,7 @@
                 <div class="caseimage">
                     <img src="images/Kuba/kubaop1.jpg" alt="Fracture repair case">
                 </div>
-                <div class="text">Fracture Repair - Kuba</div> 
+                <div class="text">Medial Patella Luxation - Kuba</div> 
             </div>
             
             <div class="gallery-item" data-case="mct">
@@ -96,7 +104,28 @@
                 <div class="caseimage">
                     <img src="images/SkewerDog/skewerdog.jpeg" alt="Foreign body removal case">
                 </div>
-                <div class="text">Foreign Body Removal</div> 
+                <div class="text">Kebab Skewer - </div> 
+            </div>
+
+            <div class="gallery-item" data-case="melanoma">
+                <div class="caseimage">
+                    <img src="images/Melanoma/melanoma1.jpeg" alt="Caudal Maxillectomy case">
+                </div>
+                <div class="text">Melanoma/Caudal Maxillectomy</div> 
+            </div>
+
+            <div class="gallery-item" data-case="perinealhernia">
+                <div class="caseimage">
+                    <img src="images/Perinealhernia/Perinealhernia1.jpeg" alt="Perineal hernia repair case">
+                </div>
+                <div class="text">Perineal Hernia</div>
+            </div>
+
+            <div class="gallery-item" data-case="lacey">
+                <div class="caseimage">
+                    <img src="images/Lacey/Lacey1.png" alt="Inguinal hernia case — Lacey">
+                </div>
+                <div class="text">Inguinal Hernia</div>
             </div>
         </div>
 
@@ -134,7 +163,7 @@
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul>
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="home.html">Home</a></li>
                     <li><a href="theteam.html">The Team</a></li>
                     <li><a href="pricing.html">Pricing</a></li>
                     <li><a href="policies.html">Policies</a></li>

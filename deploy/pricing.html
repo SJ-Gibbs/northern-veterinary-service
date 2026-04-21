@@ -11,6 +11,7 @@
 </head>
 
 <body>
+    <script src="site-gate.js"></script>
     <header class="site-header">
         <div class="header-container">
             <div class="logo-section">
@@ -25,7 +26,7 @@
                     <span></span>
                 </button>
                 <ul class="nav-list">
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="home.html">Home</a></li>
                     <li><a href="theteam.html">The Team</a></li>
                     <li><a href="casestories.html">Case Stories</a></li>
                     <li><a href="pricing.html" class="active" aria-current="page">Pricing</a></li>
@@ -47,7 +48,7 @@
                         <span class="dropdown-arrow">▼</span>
                     </button>
                     <div class="dropdown-menu" id="dropdownMenu">
-                        <a href="#" class="dropdown-item" id="accountLink">My Account</a>
+                        <a href="account.html" class="dropdown-item" id="accountLink">My Account</a>
                         <a href="#" class="dropdown-item" id="logoutBtn">Logout</a>
                     </div>
                 </div>
@@ -78,7 +79,7 @@
                         </ul>
                     </div>
                     <div class="cta-buttons">
-                        <a href="signup.html" class="btn btn-primary btn-large">Sign Up for Free</a>
+                        <a href="signup.html?type=practice" class="btn btn-primary btn-large">Sign Up for Free</a>
                         <a href="login.html" class="btn btn-secondary btn-large">Login to Your Account</a>
                     </div>
                     <p class="contact-note">For pricing inquiries, contact us at <a href="mailto:info@northernveterinaryservice.co.uk">info@northernveterinaryservice.co.uk</a></p>
@@ -103,11 +104,11 @@
                                 </tr>
                                 <tr> 
                                     <td>Fracture Repair (Complex)</td>
-                                    <td>£1,000</td>
+                                    <td>£1,200–£1,400</td>
                                 </tr>
                                 <tr>
                                     <td>Tibial Plateau Levelling Osteotomy (TPLO)</td>
-                                    <td>£1,200</td>
+                                    <td>£900</td>
                                 </tr>
                                 <tr>
                                     <td>Femoral Head and Neck Excision (FHO)</td>
@@ -115,7 +116,7 @@
                                 </tr>
                                 <tr>
                                     <td>Medial Patella Luxation Repair</td>
-                                    <td>£800</td>
+                                    <td>£750</td>
                                 </tr>
                                 <tr>
                                     <td>Carpal Arthrodesis</td>
@@ -128,10 +129,6 @@
                                 <tr>
                                     <td>Humeral Intracondylar Fissure (HIF) Repair</td>
                                     <td>£800</td>
-                                </tr>
-                                <tr>
-                                    <td>Triple Pelvic Osteotomy (TPO)</td>
-                                    <td>£950</td>
                                 </tr>
                                 <tr>
                                     <td>Angular Limb Deformity Correction</td>
@@ -173,7 +170,7 @@
                                 </tr>
                                 <tr>
                                     <td>Perineal Hernia Repair</td>
-                                    <td>£800</td>
+                                    <td>£600</td>
                                 </tr>
                                 <tr>
                                     <td>Nephrectomy</td>
@@ -182,10 +179,6 @@
                                 <tr>
                                     <td>Liver Lobectomy</td>
                                     <td>£900</td>
-                                </tr>
-                                <tr>
-                                    <td>Portosystemic Shunt Ligation</td>
-                                    <td>£800</td>
                                 </tr>
                                 
                             </tbody>
@@ -205,11 +198,11 @@
                         <tbody>
                             <tr> 
                                 <td>Ultrasonography (Abdominal)</td>
-                                <td>£250</td>
+                                <td>£400</td>
                             </tr>
                             <tr>
                                 <td>Echocardiography</td>
-                                <td>£300</td>
+                                <td>£400</td>
                             </tr>
                             <tr>
                                 <td>Endoscopy (Gastroscopy/Colonoscopy)</td>
@@ -276,7 +269,7 @@
 
                 <div style="text-align: center; margin-top: 2rem;">
                     <a href="booking.html" class="btn btn-primary" style="margin-right: 1rem;">Request a Quote</a>
-                    <a href="index.html" class="btn btn-secondary">Learn More About Our Services</a>
+                    <a href="home.html" class="btn btn-secondary">Learn More About Our Services</a>
                 </div>
             </section>
         </div>
@@ -291,7 +284,7 @@
             <div class="footer-section">
                 <h3>Quick Links</h3>
                 <ul>
-                    <li><a href="index.html">Home</a></li>
+                    <li><a href="home.html">Home</a></li>
                     <li><a href="theteam.html">The Team</a></li>
                     <li><a href="casestories.html">Case Stories</a></li>
                     <li><a href="policies.html">Policies</a></li>
@@ -315,16 +308,16 @@
         document.addEventListener('DOMContentLoaded', function() {
             const loginRequired = document.getElementById('loginRequired');
             const pricingContent = document.getElementById('pricingContent');
-            
-            if (auth.isLoggedIn()) {
-                // User is logged in - show pricing
-                loginRequired.style.display = 'none';
-                pricingContent.style.display = 'block';
-            } else {
-                // User is not logged in - show login prompt
-                loginRequired.style.display = 'block';
-                pricingContent.style.display = 'none';
+            function apply() {
+                if (auth.isLoggedIn()) {
+                    loginRequired.style.display = 'none';
+                    pricingContent.style.display = 'block';
+                } else {
+                    loginRequired.style.display = 'block';
+                    pricingContent.style.display = 'none';
+                }
             }
+            auth.ready.then(apply);
         });
     </script>
 </body>

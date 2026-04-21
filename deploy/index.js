@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // ===== Add Fade-in Animation to Sections =====
     initScrollAnimations();
+
 });
 
 /**
@@ -110,8 +111,21 @@ function initFormValidation() {
  * @returns {boolean} - True if valid, false otherwise
  */
 function validateField(field) {
-    const value = field.value.trim();
     const fieldType = field.type;
+
+    if (fieldType === 'radio') {
+        if (!field.hasAttribute('required')) {
+            return true;
+        }
+        const form = field.form;
+        const checked = form ? form.querySelector(`input[name="${field.name}"]:checked`) : null;
+        const isValid = !!checked;
+        const errorMessage = isValid ? '' : 'Please select an option';
+        showFieldError(field, isValid, errorMessage);
+        return isValid;
+    }
+
+    const value = field.value.trim();
     const isRequired = field.hasAttribute('required');
     
     let isValid = true;
@@ -191,12 +205,47 @@ function showFieldError(field, isValid, message) {
 function handleFormSubmission(form) {
     // Since there's no backend, show a success message
     const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
-    const originalText = submitBtn.value || submitBtn.textContent;
+    const originalText = (submitBtn.value != null && submitBtn.value !== '')
+        ? submitBtn.value
+        : submitBtn.textContent;
     
     submitBtn.disabled = true;
-    submitBtn.value = 'Submitting...';
-    
-    // Simulate submission
+    if (submitBtn.tagName === 'BUTTON') {
+        submitBtn.textContent = 'Submitting...';
+    } else {
+        submitBtn.value = 'Submitting...';
+    }
+
+    if (form.id === 'bookingform') {
+        const fd = new FormData(form);
+        (async function () {
+            try {
+                const res = await fetch('/api/bookings', { method: 'POST', body: fd, credentials: 'include' });
+                const j = await res.json().catch(() => ({}));
+                if (!res.ok || !j.success) {
+                    throw new Error(j.message || 'Could not submit request.');
+                }
+                try {
+                    window.dispatchEvent(new CustomEvent('northern-vet-booking-requests-changed'));
+                } catch (e) {
+                    /* ignore */
+                }
+            } catch (err) {
+                submitBtn.disabled = false;
+                if (submitBtn.tagName === 'BUTTON') {
+                    submitBtn.textContent = originalText;
+                } else {
+                    submitBtn.value = originalText;
+                }
+                alert(err.message || 'Submission failed. Please try again.');
+                return;
+            }
+            finishSuccess();
+        })();
+        return;
+    }
+
+    function finishSuccess() {
     setTimeout(() => {
         // Create success message
         const successDiv = document.createElement('div');
@@ -218,7 +267,11 @@ function handleFormSubmission(form) {
         form.insertBefore(successDiv, form.firstChild);
         form.reset();
         submitBtn.disabled = false;
-        submitBtn.value = originalText;
+        if (submitBtn.tagName === 'BUTTON') {
+            submitBtn.textContent = originalText;
+        } else {
+            submitBtn.value = originalText;
+        }
         
         // Scroll to success message
         successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -230,6 +283,7 @@ function handleFormSubmission(form) {
             setTimeout(() => successDiv.remove(), 500);
         }, 5000);
     }, 1000);
+    }
 }
 
 /**
@@ -257,7 +311,7 @@ function initSmoothScrolling() {
  * Highlight active page in navigation
  */
 function highlightActivePage() {
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const currentPage = window.location.pathname.split('/').pop() || 'home.html';
     const navLinks = document.querySelectorAll('.nav-list a');
     
     navLinks.forEach(link => {
@@ -265,7 +319,7 @@ function highlightActivePage() {
         const linkPage = link.getAttribute('href');
         
         if (linkPage === currentPage || 
-            (currentPage === '' && linkPage === 'index.html')) {
+            (currentPage === '' && linkPage === 'home.html')) {
             link.classList.add('active');
             link.setAttribute('aria-current', 'page');
         }
