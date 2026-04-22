@@ -572,11 +572,47 @@ class AuthSystem {
                 profilePhotoDataUrl: options.profilePhotoDataUrl
             }
         });
-        const j = await r.json().catch(() => ({}));
+        const raw = await r.text();
+        let j = {};
+        try {
+            j = raw ? JSON.parse(raw) : {};
+        } catch {
+            j = {};
+        }
         if (j.success) {
             return { success: true, message: j.message || 'Account created successfully!' };
         }
-        return { success: false, message: j.message || 'Registration failed.' };
+        if (j.message) {
+            return { success: false, message: j.message };
+        }
+        if (!r.ok) {
+            if (r.status === 413) {
+                return {
+                    success: false,
+                    message:
+                        'Registration data was too large (often the profile photo). Try a smaller image or lower-resolution photo.'
+                };
+            }
+            if (r.status === 403) {
+                return {
+                    success: false,
+                    message:
+                        'Self-registration is disabled on this server. Ask an administrator to create your account.'
+                };
+            }
+            if (r.status === 404) {
+                return {
+                    success: false,
+                    message:
+                        'Could not reach the registration API. Ensure the Node server is running and this site is opened from the same host as the API (not opened as files or from static-only hosting).'
+                };
+            }
+            return {
+                success: false,
+                message: `Registration failed (server returned ${r.status}). Check the browser Network tab or server logs.`
+            };
+        }
+        return { success: false, message: 'Registration failed.' };
     }
 
     async updateUser(updatedFields) {

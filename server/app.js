@@ -57,8 +57,10 @@ app.use(
     })
 );
 
-app.use(express.json({ limit: '2mb' }));
-app.use(express.urlencoded({ extended: true, limit: '2mb' }));
+// Team signup sends base64 profile photos; global limit must be >= register route (see server/routes/auth.js).
+const JSON_BODY_LIMIT = '6mb';
+app.use(express.json({ limit: JSON_BODY_LIMIT }));
+app.use(express.urlencoded({ extended: true, limit: JSON_BODY_LIMIT }));
 
 // Uploaded files (profile photos, booking attachments)
 app.use('/uploads', express.static(UPLOADS_DIR));
@@ -90,7 +92,17 @@ app.use((err, req, res, next) => {
     if (res.headersSent) {
         return next(err);
     }
-    res.status(500).json({ success: false, message: 'Server error' });
+    const status = Number(err.status || err.statusCode) || 500;
+    if (status === 413) {
+        return res.status(413).json({
+            success: false,
+            message: 'Request too large. Try a smaller profile photo or fewer fields.'
+        });
+    }
+    res.status(status >= 400 && status < 600 ? status : 500).json({
+        success: false,
+        message: status === 500 ? 'Server error' : err.message || 'Request failed.'
+    });
 });
 
 if (require.main === module) {
