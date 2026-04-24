@@ -202,52 +202,53 @@ function showFieldError(field, isValid, message) {
  * Handle form submission
  * @param {HTMLFormElement} form - The form element
  */
-function handleFormSubmission(form) {
-    // Since there's no backend, show a success message
+async function handleFormSubmission(form) {
     const submitBtn = form.querySelector('input[type="submit"], button[type="submit"]');
-    const originalText = (submitBtn.value != null && submitBtn.value !== '')
-        ? submitBtn.value
-        : submitBtn.textContent;
-    
+    const originalText = submitBtn.value || submitBtn.textContent;
+
     submitBtn.disabled = true;
-    if (submitBtn.tagName === 'BUTTON') {
-        submitBtn.textContent = 'Submitting...';
-    } else {
+    if (submitBtn.tagName === 'INPUT') {
         submitBtn.value = 'Submitting...';
+    } else {
+        submitBtn.textContent = 'Submitting...';
     }
 
-    if (form.id === 'bookingform') {
-        const fd = new FormData(form);
-        (async function () {
-            try {
-                const res = await fetch('/api/bookings', { method: 'POST', body: fd, credentials: 'include' });
-                const j = await res.json().catch(() => ({}));
-                if (!res.ok || !j.success) {
-                    throw new Error(j.message || 'Could not submit request.');
-                }
-                try {
-                    window.dispatchEvent(new CustomEvent('northern-vet-booking-requests-changed'));
-                } catch (e) {
-                    /* ignore */
-                }
-            } catch (err) {
-                submitBtn.disabled = false;
-                if (submitBtn.tagName === 'BUTTON') {
-                    submitBtn.textContent = originalText;
-                } else {
-                    submitBtn.value = originalText;
-                }
-                alert(err.message || 'Submission failed. Please try again.');
-                return;
+    try {
+        if (form.id === 'bookingform') {
+            const fd = new FormData(form);
+
+            const payload = {
+                practice_name: fd.get('practiceName') || '',
+                contact_name: fd.get('phone') || '',
+                email: fd.get('email') || '',
+                date: fd.get('preferredDate') || '',
+                time: '',
+                notes: [
+                    `Service required: ${fd.get('servicerequired') || ''}`,
+                    `Locum role: ${fd.get('locumRole') || ''}`,
+                    `Procedure name: ${fd.get('procedureNameIfKnown') || ''}`,
+                    `Preferred dates: ${fd.get('preferredDates') || ''}`,
+                    `Phone: ${fd.get('phone') || ''}`,
+                    '',
+                    fd.get('History') || ''
+                ].join('\n').trim()
+            };
+
+            const res = await fetch('/api/bookings', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+
+            const result = await res.json();
+
+            if (!res.ok || !result.success) {
+                throw new Error(result.error || 'Booking submission failed');
             }
-            finishSuccess();
-        })();
-        return;
-    }
+        }
 
-    function finishSuccess() {
-    setTimeout(() => {
-        // Create success message
         const successDiv = document.createElement('div');
         successDiv.className = 'success-message';
         successDiv.style.cssText = `
@@ -263,26 +264,34 @@ function handleFormSubmission(form) {
             <strong>Thank you for your request!</strong><br>
             We will contact you shortly to confirm your booking.
         `;
-        
+
         form.insertBefore(successDiv, form.firstChild);
         form.reset();
+
         submitBtn.disabled = false;
-        if (submitBtn.tagName === 'BUTTON') {
-            submitBtn.textContent = originalText;
-        } else {
+        if (submitBtn.tagName === 'INPUT') {
             submitBtn.value = originalText;
+        } else {
+            submitBtn.textContent = originalText;
         }
-        
-        // Scroll to success message
+
         successDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        
-        // Remove success message after 5 seconds
+
         setTimeout(() => {
             successDiv.style.opacity = '0';
             successDiv.style.transition = 'opacity 0.5s';
             setTimeout(() => successDiv.remove(), 500);
         }, 5000);
-    }, 1000);
+
+    } catch (err) {
+        console.error(err);
+        alert('There was a problem submitting the booking. Please try again.');
+        submitBtn.disabled = false;
+        if (submitBtn.tagName === 'INPUT') {
+            submitBtn.value = originalText;
+        } else {
+            submitBtn.textContent = originalText;
+        }
     }
 }
 

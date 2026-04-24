@@ -1,6 +1,6 @@
 'use strict';
 
-/** Hash date string (must match deploy/booking-diary.js getDemoAvailability). */
+/** Hash date string (must match public/booking-diary.js getDemoAvailability). */
 function hashDateStr(s) {
     let h = 0;
     for (let i = 0; i < s.length; i++) {
