@@ -91,9 +91,30 @@ router.post('/logout', (req, res) => {
         if (err) {
             return res.status(500).json({ success: false, message: 'Could not log out.' });
         }
-        res.clearCookie('connect.sid');
+        res.clearCookie('nvs.sid');
         return res.json({ success: true, message: 'Logged out.' });
     });
+});
+
+/**
+ * Site access gate — validates the shared site credentials stored in .env.
+ * No DB hit; purely env-var comparison.  The client stores a sessionStorage
+ * flag on success so subsequent page loads bypass this check.
+ */
+router.post('/site-gate', express.json(), (req, res) => {
+    const { username, password } = req.body || {};
+    const expectedUser = (process.env.SITE_GATE_USER || '').trim();
+    const expectedPass = (process.env.SITE_GATE_PASS || '').trim();
+
+    if (!expectedUser || !expectedPass) {
+        return res
+            .status(503)
+            .json({ success: false, message: 'Site gate is not configured on this server.' });
+    }
+    if (username === expectedUser && password === expectedPass) {
+        return res.json({ success: true });
+    }
+    return res.status(401).json({ success: false, message: 'Those details are not correct. Please try again.' });
 });
 
 router.get('/me', async (req, res) => {

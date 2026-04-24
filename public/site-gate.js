@@ -1,24 +1,48 @@
 /**
- * Site-wide access gate (sessionStorage). Public pages: landing, gate form, account login/signup.
- * Site access is checked on enter.html; successful gate sets northern_vet_site_access.
- * login.html / signup.html must stay public so the Login button can open the real login form.
+ * Site-wide access gate.
+ *
+ * Layer 1 – sessionStorage flag (set by enter.html gate or on real login).
+ * Layer 2 – if the flag is absent, silently check /api/auth/me.  A valid
+ *            server session (e.g. returning to a tab after a browser restart)
+ *            re-grants access without sending the user back to the gate.
+ *
+ * Public pages that are always reachable: index, enter, login, signup.
  */
 (function () {
     var KEY = 'northern_vet_site_access';
-    var path = (window.location.pathname.split('/').pop() || '').toLowerCase();
-    if (path === '') path = 'index.html';
+    var pageName = (window.location.pathname.split('/').pop() || '').toLowerCase();
+    if (pageName === '') pageName = 'index.html';
 
     var publicPages = ['index.html', 'enter.html', 'login.html', 'signup.html'];
-    var isPublic = publicPages.indexOf(path) !== -1;
+    var isPublic = publicPages.indexOf(pageName) !== -1;
 
+    // Already granted in this browser session — fast path.
     if (sessionStorage.getItem(KEY) === '1') {
-        if (path === 'index.html') {
+        if (pageName === 'index.html') {
             window.location.replace('home.html');
         }
         return;
     }
 
-    if (!isPublic) {
-        window.location.replace('index.html');
-    }
+    // Public pages never need the gate.
+    if (isPublic) return;
+
+    // No sessionStorage flag — hide the page while we verify the server session.
+    // This prevents a flash of content before the redirect fires.
+    document.documentElement.style.visibility = 'hidden';
+
+    fetch('/api/auth/me', { credentials: 'include' })
+        .then(function (r) { return r.ok ? r.json() : null; })
+        .then(function (j) {
+            if (j && j.user) {
+                // Valid server session → restore the flag and show the page.
+                sessionStorage.setItem(KEY, '1');
+                document.documentElement.style.visibility = '';
+            } else {
+                window.location.replace('index.html');
+            }
+        })
+        .catch(function () {
+            window.location.replace('index.html');
+        });
 })();

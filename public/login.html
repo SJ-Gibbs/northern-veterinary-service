@@ -133,11 +133,16 @@
             
             if (result.success) {
                 messageDiv.className = 'message success-message';
-                
-                // Always continue on the home page after login
                 setTimeout(function () {
-                    window.location.href = 'home.html';
-                }, 1000);
+                    var params = new URLSearchParams(window.location.search);
+                    var redirect = params.get('redirect');
+                    // Only honour same-origin relative paths to prevent open-redirect.
+                    if (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) {
+                        window.location.href = redirect;
+                    } else {
+                        window.location.href = 'home.html';
+                    }
+                }, 800);
             } else {
                 messageDiv.className = 'message error-message';
             }

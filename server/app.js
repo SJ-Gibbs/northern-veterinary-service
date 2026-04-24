@@ -5,7 +5,7 @@ const path = require('path');
 const express = require('express');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
-const { pool } = require('./db');
+const { pool, initDb } = require('./db');
 
 const authRoutes = require('./routes/auth');
 const accountRoutes = require('./routes/account');
@@ -106,9 +106,16 @@ app.use((err, req, res, next) => {
 });
 
 if (require.main === module) {
-    app.listen(PORT, () => {
-        console.log(`Northern Vets API + static on http://localhost:${PORT}`);
-    });
+    initDb()
+        .then(() => {
+            app.listen(PORT, () => {
+                console.log(`Northern Vets API + static on http://localhost:${PORT}`);
+            });
+        })
+        .catch(err => {
+            console.error('[db] Failed to apply schema — server not started:', err.message);
+            process.exit(1);
+        });
 }
 
 module.exports = { app, pool };

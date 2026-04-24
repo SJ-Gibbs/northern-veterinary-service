@@ -29,17 +29,32 @@
         </div>
     </main>
     <script>
-        document.getElementById('siteGateForm').addEventListener('submit', function (e) {
+        document.getElementById('siteGateForm').addEventListener('submit', async function (e) {
             e.preventDefault();
             var u = document.getElementById('gateUser').value.trim();
             var p = document.getElementById('gatePass').value;
             var msg = document.getElementById('gateMessage');
-            if (u === 'vet' && p === 'vet') {
-                sessionStorage.setItem('northern_vet_site_access', '1');
-                window.location.href = 'home.html';
-            } else {
-                msg.textContent = 'Those details are not correct. Please try again.';
+            var btn = this.querySelector('button[type="submit"]');
+            btn.disabled = true;
+            try {
+                var r = await fetch('/api/auth/site-gate', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username: u, password: p })
+                });
+                var j = await r.json().catch(function () { return {}; });
+                if (j.success) {
+                    sessionStorage.setItem('northern_vet_site_access', '1');
+                    window.location.href = 'home.html';
+                } else {
+                    msg.textContent = j.message || 'Those details are not correct. Please try again.';
+                    msg.style.display = 'block';
+                    btn.disabled = false;
+                }
+            } catch (err) {
+                msg.textContent = 'Could not reach the server. Please try again.';
                 msg.style.display = 'block';
+                btn.disabled = false;
             }
         });
     </script>
