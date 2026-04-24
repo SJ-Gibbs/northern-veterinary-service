@@ -1,7 +1,7 @@
 'use strict';
 
 /**
- * Service codes team members can offer (aligned with deploy pricing / booking form).
+ * Service codes team members can offer (aligned with public pricing / booking form).
  */
 const OFFERABLE_SERVICES_CATALOG = [
     {

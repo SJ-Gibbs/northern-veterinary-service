@@ -11,7 +11,7 @@ Northern Veterinary Service is a professional website for a peripatetic veterina
 - An admin dashboard for managing users and bookings
 - A site-wide access gate (username/password) for protecting the full site during development/private operation
 
-The project is structured as an **Express (Node.js) backend** serving a **static HTML/CSS/JS frontend** from the `deploy/` directory, with a **MySQL database** for persistent storage.
+The project is structured as an **Express (Node.js) backend** serving a **static HTML/CSS/JS frontend** from the `public/` directory, with a **MySQL database** for persistent storage.
 
 ---
 
@@ -26,8 +26,8 @@ Preferred communication style: Simple, everyday language.
 ### Frontend Architecture
 
 - **Pure static HTML/CSS/JS** — no frontend framework (React, Vue, etc.)
-- All pages live in `deploy/` and are served as static files by Express
-- Shared CSS in `deploy/style.css` plus `deploy/grid-gallery.css` for the gallery grid
+- All pages live in `public/` and are served as static files by Express
+- Shared CSS in `public/style.css` plus `public/grid-gallery.css` for the gallery grid
 - Per-feature JavaScript files:
   - `auth.js` — API-backed login/signup/session state, renders user dropdown
   - `index.js` — mobile menu, form validation, scroll animations
@@ -49,7 +49,7 @@ Preferred communication style: Simple, everyday language.
 
 - **Framework**: Express.js (`server/app.js`)
 - **Entry point**: `node server/app.js` (or `npm start`)
-- **Static files**: Express serves `deploy/` as the root and `uploads/` for user-uploaded files
+- **Static files**: Express serves `public/` as the root and `uploads/` for user-uploaded files
 - **Session storage**: MySQL-backed sessions (`express-mysql-session`)
 - **Password hashing**: `bcrypt` with 12 rounds
 - **File uploads**: `multer` for booking attachments and profile photos (stored in `uploads/`)
@@ -93,7 +93,7 @@ Preferred communication style: Simple, everyday language.
 
 ### Services Catalog
 
-A shared list of offerable veterinary service codes is defined in both `server/lib/services-catalog.js` (backend) and `deploy/auth.js` (frontend) to keep them in sync. Services include orthopaedic, soft tissue, minimally invasive, diagnostic, and locum categories.
+A shared list of offerable veterinary service codes is defined in both `server/lib/services-catalog.js` (backend) and `public/auth.js` (frontend) to keep them in sync. Services include orthopaedic, soft tissue, minimally invasive, diagnostic, and locum categories.
 
 ### Profile Photos
 

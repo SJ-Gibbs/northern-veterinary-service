@@ -1,5 +1,5 @@
 // Northern Veterinary Service — API-backed auth (Express session + MySQL)
-// Run the site via: node server/app.js (serves /api and static deploy/)
+// Run the site via: node server/app.js (serves /api and static public/)
 
 const OFFERABLE_SERVICES_CATALOG = [
     {

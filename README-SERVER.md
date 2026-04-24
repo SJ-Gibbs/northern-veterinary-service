@@ -1,6 +1,6 @@
 # Northern Veterinary Service — Node.js backend
 
-This app serves the static site in `deploy/` and JSON APIs under `/api` using **Express**, **MySQL**, and **bcrypt** + **cookie sessions** (stored in MySQL).
+This app serves the static site in `public/` and JSON APIs under `/api` using **Express**, **MySQL**, and **bcrypt** + **cookie sessions** (stored in MySQL).
 
 ## Quick start (local)
 
@@ -44,11 +44,11 @@ This app serves the static site in `deploy/` and JSON APIs under `/api` using **
 | POST | `/api/account/password` | Change password |
 | GET | `/api/admin/users` | Admin only |
 | ... | other `/api/admin/*` | See `server/routes/admin.js` |
-| POST | `/api/bookings` | `multipart/form-data` (same field names as `deploy/booking.html`) |
+| POST | `/api/bookings` | `multipart/form-data` (same field names as `public/booking.html`) |
 | GET | `/api/bookings/inbox` | Team + master |
 | GET | `/api/calendar/member-month` | `?year=2025&month=0` (month 0–11) |
 | ... | site/staff calendar | See `server/routes/calendar.js` |
 
 ## Front end
 
-The previous `localStorage` demo in `auth.js` has been replaced with `fetch` + session cookies. Running **only** the static `deploy/` folder on a file host without the Node app will not persist accounts; run both together (or a reverse proxy to Node).
+The previous `localStorage` demo in `auth.js` has been replaced with `fetch` + session cookies. Running **only** the static `public/` folder on a file host without the Node app will not persist accounts; run both together (or a reverse proxy to Node).

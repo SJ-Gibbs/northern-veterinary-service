@@ -3,7 +3,7 @@ const fs = require('fs');
 const path = require('path');
 
 const PORT = 5000;
-const ROOT = path.join(__dirname, 'deploy');
+const ROOT = path.join(__dirname, 'public');
 
 const mimeTypes = {
   '.html': 'text/html',

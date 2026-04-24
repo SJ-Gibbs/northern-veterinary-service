@@ -2,7 +2,7 @@
   "name": "northern-vet-service",
   "version": "1.0.0",
   "private": true,
-  "description": "Northern Veterinary Service — Express + MySQL API with static deploy/ front end",
+  "description": "Northern Veterinary Service — Express + MySQL API with static public/ front end",
   "main": "server/app.js",
   "scripts": {
     "start": "node server/app.js",

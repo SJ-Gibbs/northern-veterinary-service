@@ -14,7 +14,7 @@ const bookingsRoutes = require('./routes/bookings');
 const calendarRoutes = require('./routes/calendar');
 
 const PORT = Number(process.env.PORT) || 3000;
-const PUBLIC_DIR = path.join(__dirname, '..', 'deploy');
+const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const UPLOADS_DIR = path.join(__dirname, '..', 'uploads');
 
 const sessionStoreOptions = {
