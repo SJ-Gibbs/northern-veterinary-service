@@ -62,6 +62,7 @@
                     <h1>Member login</h1>
                     <p class="auth-subtitle">Sign in as a Northern Veterinary Service <strong>team member</strong> or as a <strong>member practice</strong>. Use the email and password for your account type.</p>
 
+                    <div id="verifiedBanner" class="message" style="display: none;"></div>
                     <div id="loginMessage" class="message" style="display: none;"></div>
 
                     <form id="loginForm" class="auth-form">
@@ -82,6 +83,13 @@
 
                     <div class="auth-footer">
                         <p>Don't have an account? <a href="signup.html">Sign up here</a></p>
+                        <p><a href="#" id="resendVerifyLink">Didn't receive a verification email?</a></p>
+                        <div id="resendSection" style="display:none;margin-top:10px">
+                            <input type="email" id="resendEmail" placeholder="Enter your email address"
+                                   style="width:100%;padding:8px;box-sizing:border-box;margin-bottom:8px">
+                            <button type="button" id="resendBtn" class="btn btn-primary btn-full">Resend verification email</button>
+                            <div id="resendMessage" class="message" style="display:none;margin-top:8px"></div>
+                        </div>
                         <p class="security-note">🔒 Your information is secure and encrypted</p>
                     </div>
                 </div>
@@ -153,6 +161,60 @@
                 window.location.href = 'home.html';
             }
         });
+
+        document.getElementById('resendVerifyLink').addEventListener('click', function (e) {
+            e.preventDefault();
+            var section = document.getElementById('resendSection');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        });
+
+        document.getElementById('resendBtn').addEventListener('click', async function () {
+            var email = document.getElementById('resendEmail').value.trim();
+            var msgDiv = document.getElementById('resendMessage');
+            if (!email) {
+                msgDiv.textContent = 'Please enter your email address.';
+                msgDiv.className = 'message error-message';
+                msgDiv.style.display = 'block';
+                return;
+            }
+            this.disabled = true;
+            try {
+                var res = await fetch('/api/auth/resend-verification', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email })
+                });
+                var data = await res.json();
+                msgDiv.textContent = data.message;
+                msgDiv.className = res.ok ? 'message success-message' : 'message error-message';
+                msgDiv.style.display = 'block';
+            } catch (err) {
+                msgDiv.textContent = 'Something went wrong. Please try again.';
+                msgDiv.className = 'message error-message';
+                msgDiv.style.display = 'block';
+            } finally {
+                this.disabled = false;
+            }
+        });
+
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var v = params.get('verified');
+            var banner = document.getElementById('verifiedBanner');
+            if (v === '1') {
+                banner.textContent = 'Your email address has been verified. You can now log in.';
+                banner.className = 'message success-message';
+                banner.style.display = 'block';
+            } else if (v === 'expired') {
+                banner.textContent = 'That verification link has expired. Please request a new one below.';
+                banner.className = 'message error-message';
+                banner.style.display = 'block';
+            } else if (v === 'invalid') {
+                banner.textContent = 'That verification link is invalid. Please request a new one below.';
+                banner.className = 'message error-message';
+                banner.style.display = 'block';
+            }
+        })();
     </script>
 </body>
 </html>

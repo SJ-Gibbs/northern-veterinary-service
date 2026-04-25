@@ -24,6 +24,9 @@ CREATE TABLE IF NOT EXISTS `users` (
   `profile_photo_path` varchar(512) DEFAULT NULL,
   `is_admin` tinyint(1) NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `email_verified` tinyint(1) NOT NULL DEFAULT 0,
+  `email_verify_token` varchar(128) DEFAULT NULL,
+  `email_verify_expires` datetime DEFAULT NULL,
   `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`),
@@ -105,3 +108,30 @@ CREATE TABLE IF NOT EXISTS `booking_attachments` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 SET FOREIGN_KEY_CHECKS = 1;
+
+-- Idempotent migrations for existing databases (safe to run repeatedly).
+-- MySQL does not support ADD COLUMN IF NOT EXISTS, so we use a prepared
+-- statement that checks INFORMATION_SCHEMA first.
+
+SET @db = DATABASE();
+
+SET @s = IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'users' AND COLUMN_NAME = 'email_verified') = 0,
+  'ALTER TABLE `users` ADD COLUMN `email_verified` tinyint(1) NOT NULL DEFAULT 0 AFTER `is_active`',
+  'SELECT 1'
+);
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
+
+SET @s = IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'users' AND COLUMN_NAME = 'email_verify_token') = 0,
+  'ALTER TABLE `users` ADD COLUMN `email_verify_token` varchar(128) DEFAULT NULL AFTER `email_verified`',
+  'SELECT 1'
+);
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
+
+SET @s = IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'users' AND COLUMN_NAME = 'email_verify_expires') = 0,
+  'ALTER TABLE `users` ADD COLUMN `email_verify_expires` datetime DEFAULT NULL AFTER `email_verify_token`',
+  'SELECT 1'
+);
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;

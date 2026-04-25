@@ -251,8 +251,8 @@ router.post('/users', requireAdmin, express.json(), async (req, res) => {
             await conn.beginTransaction();
             const [r] = await conn.query(
                 `INSERT INTO users
-                (email, password_hash, practice_name, account_type, role, phone, rcvs_registration_number, is_admin, is_active)
-                VALUES (?, ?, ?, ?, ?, ?, ?, 0, 1)`,
+                (email, password_hash, practice_name, account_type, role, phone, rcvs_registration_number, is_admin, is_active, email_verified)
+                VALUES (?, ?, ?, ?, ?, ?, ?, 0, 1, 1)`,
                 [email, hash, practiceName, accountType, role, ph.value, rc.value]
             );
             newId = r.insertId;

@@ -7,6 +7,7 @@ const path = require('path');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const { pool } = require('../db');
+const { sendVerificationEmail } = require('../lib/mailer');
 const { getProfileById, setUserServices } = require('../lib/profile');
 const { masterEmail } = require('../lib/user-mapper');
 const {
@@ -87,6 +88,13 @@ router.post('/login', loginRateLimiter, express.json(), async (req, res) => {
             return res.status(403).json({
                 success: false,
                 message: 'This account has been deactivated. Please contact support.'
+            });
+        }
+        if (!user.is_admin && !user.email_verified) {
+            return res.status(403).json({
+                success: false,
+                code: 'EMAIL_NOT_VERIFIED',
+                message: 'Please verify your email address before logging in. Check your inbox for the verification link.'
             });
         }
         setSessionForUser(req, user);
@@ -278,10 +286,96 @@ router.post('/register', express.json({ limit: '4mb' }), async (req, res) => {
             }
         }
 
-        return res.json({ success: true, message: 'Account created successfully.' });
+        const verifyToken = crypto.randomBytes(32).toString('hex');
+        const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        await pool.query(
+            'UPDATE users SET email_verify_token = ?, email_verify_expires = ? WHERE id = ?',
+            [verifyToken, verifyExpires, newId]
+        );
+
+        // Fire-and-forget — registration still succeeds if email delivery fails.
+        sendVerificationEmail(email, verifyToken).catch(err =>
+            console.error('[mailer] Failed to send verification email:', err.message)
+        );
+
+        return res.json({
+            success: true,
+            message: 'Account created successfully. Please check your email to verify your address before logging in.'
+        });
     } catch (e) {
         console.error(e);
         return res.status(500).json({ success: false, message: 'Server error during registration.' });
+    }
+});
+
+router.get('/verify-email', async (req, res) => {
+    const token = (req.query.token || '').trim();
+    if (!token) {
+        return res.redirect('/login.html?verified=invalid');
+    }
+    try {
+        const [rows] = await pool.query(
+            'SELECT id, email_verify_expires FROM users WHERE email_verify_token = ? LIMIT 1',
+            [token]
+        );
+        if (!rows.length) {
+            return res.redirect('/login.html?verified=invalid');
+        }
+        const user = rows[0];
+        if (!user.email_verify_expires || new Date() > new Date(user.email_verify_expires)) {
+            return res.redirect('/login.html?verified=expired');
+        }
+        await pool.query(
+            'UPDATE users SET email_verified = 1, email_verify_token = NULL, email_verify_expires = NULL WHERE id = ?',
+            [user.id]
+        );
+        return res.redirect('/login.html?verified=1');
+    } catch (e) {
+        console.error(e);
+        return res.redirect('/login.html?verified=invalid');
+    }
+});
+
+// Rate-limit resend requests to prevent abuse: 3 per hour per IP.
+const resendRateLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 3,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many resend requests. Please wait before trying again.' }
+});
+
+router.post('/resend-verification', resendRateLimiter, express.json(), async (req, res) => {
+    // Always respond the same way regardless of whether the email exists,
+    // to avoid leaking which addresses are registered.
+    const genericOk = { success: true, message: 'If that address is registered and unverified, a new link has been sent.' };
+
+    const email = (req.body.email || '').trim().toLowerCase();
+    if (!email) {
+        return res.status(400).json({ success: false, message: 'Email address required.' });
+    }
+    try {
+        const [rows] = await pool.query(
+            'SELECT id, email, email_verified FROM users WHERE LOWER(email) = ? LIMIT 1',
+            [email]
+        );
+        if (!rows.length || rows[0].email_verified) {
+            return res.json(genericOk);
+        }
+        const user = rows[0];
+        const verifyToken = crypto.randomBytes(32).toString('hex');
+        const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+        await pool.query(
+            'UPDATE users SET email_verify_token = ?, email_verify_expires = ? WHERE id = ?',
+            [verifyToken, verifyExpires, user.id]
+        );
+        sendVerificationEmail(user.email, verifyToken).catch(err =>
+            console.error('[mailer] Failed to resend verification email:', err.message)
+        );
+        return res.json(genericOk);
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({ success: false, message: 'Server error.' });
     }
 });
 
