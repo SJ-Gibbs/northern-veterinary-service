@@ -5,6 +5,7 @@ const bcrypt = require('bcrypt');
 const fs = require('fs');
 const path = require('path');
 const crypto = require('crypto');
+const rateLimit = require('express-rate-limit');
 const { pool } = require('../db');
 const { getProfileById, setUserServices } = require('../lib/profile');
 const { masterEmail } = require('../lib/user-mapper');
@@ -18,6 +19,17 @@ const { OFFERABLE_SERVICE_IDS } = require('../lib/services-catalog');
 
 const router = express.Router();
 const BCRYPT_ROUNDS = 12;
+
+// 5 failed login attempts per IP per 24 hours.
+// Successful logins (2xx) are not counted so legitimate users are not penalised.
+const loginRateLimiter = rateLimit({
+    windowMs: 24 * 60 * 60 * 1000,
+    max: 5,
+    skipSuccessfulRequests: true,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many failed login attempts. Please try again in 24 hours.' }
+});
 const UPLOAD_ROOT = path.join(__dirname, '..', '..', 'uploads');
 
 function allowPublicSignup() {
@@ -52,7 +64,7 @@ function setSessionForUser(req, userRow) {
     req.session.userEmail = userRow.email;
 }
 
-router.post('/login', express.json(), async (req, res) => {
+router.post('/login', loginRateLimiter, express.json(), async (req, res) => {
     try {
         const email = (req.body.email || '').trim();
         const password = req.body.password || '';
