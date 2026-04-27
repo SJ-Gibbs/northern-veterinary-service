@@ -135,3 +135,17 @@ SET @s = IF(
   'SELECT 1'
 );
 PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
+
+SET @s = IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'users' AND COLUMN_NAME = 'password_reset_token') = 0,
+  'ALTER TABLE `users` ADD COLUMN `password_reset_token` varchar(128) DEFAULT NULL AFTER `email_verify_expires`',
+  'SELECT 1'
+);
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;
+
+SET @s = IF(
+  (SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA = @db AND TABLE_NAME = 'users' AND COLUMN_NAME = 'password_reset_expires') = 0,
+  'ALTER TABLE `users` ADD COLUMN `password_reset_expires` datetime DEFAULT NULL AFTER `password_reset_token`',
+  'SELECT 1'
+);
+PREPARE _stmt FROM @s; EXECUTE _stmt; DEALLOCATE PREPARE _stmt;

@@ -7,7 +7,7 @@ const path = require('path');
 const crypto = require('crypto');
 const rateLimit = require('express-rate-limit');
 const { pool } = require('../db');
-const { sendVerificationEmail } = require('../lib/mailer');
+const { sendVerificationEmail, sendPasswordResetEmail } = require('../lib/mailer');
 const { getProfileById, setUserServices } = require('../lib/profile');
 const { masterEmail } = require('../lib/user-mapper');
 const {
@@ -333,6 +333,85 @@ router.get('/verify-email', async (req, res) => {
     } catch (e) {
         console.error(e);
         return res.redirect('/login.html?verified=invalid');
+    }
+});
+
+// Rate-limit password reset requests: 3 per hour per IP.
+const forgotPasswordRateLimiter = rateLimit({
+    windowMs: 60 * 60 * 1000,
+    max: 3,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { success: false, message: 'Too many password reset requests. Please wait before trying again.' }
+});
+
+router.post('/forgot-password', forgotPasswordRateLimiter, express.json(), async (req, res) => {
+    // Always return the same response to avoid leaking registered addresses.
+    const genericOk = {
+        success: true,
+        message: 'If that email address is registered, a password reset link has been sent.'
+    };
+
+    const email = (req.body.email || '').trim().toLowerCase();
+    if (!email) {
+        return res.status(400).json({ success: false, message: 'Email address required.' });
+    }
+    try {
+        const [rows] = await pool.query(
+            'SELECT id, email FROM users WHERE LOWER(email) = ? LIMIT 1',
+            [email]
+        );
+        if (!rows.length) {
+            return res.json(genericOk);
+        }
+        const user = rows[0];
+        const resetToken = crypto.randomBytes(32).toString('hex');
+        const resetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+        await pool.query(
+            'UPDATE users SET password_reset_token = ?, password_reset_expires = ? WHERE id = ?',
+            [resetToken, resetExpires, user.id]
+        );
+        sendPasswordResetEmail(user.email, resetToken).catch(err =>
+            console.error('[mailer] Failed to send password reset email:', err.message)
+        );
+        return res.json(genericOk);
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({ success: false, message: 'Server error.' });
+    }
+});
+
+router.post('/reset-password', express.json(), async (req, res) => {
+    const token = (req.body.token || '').trim();
+    const newPassword = req.body.newPassword || '';
+
+    if (!token) {
+        return res.status(400).json({ success: false, message: 'Reset token is required.' });
+    }
+    if (newPassword.length < 6) {
+        return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
+    }
+    try {
+        const [rows] = await pool.query(
+            'SELECT id, password_reset_expires FROM users WHERE password_reset_token = ? LIMIT 1',
+            [token]
+        );
+        if (!rows.length) {
+            return res.status(400).json({ success: false, message: 'This reset link is invalid or has already been used.' });
+        }
+        const user = rows[0];
+        if (!user.password_reset_expires || new Date() > new Date(user.password_reset_expires)) {
+            return res.status(400).json({ success: false, message: 'This reset link has expired. Please request a new one.' });
+        }
+        const password_hash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+        await pool.query(
+            'UPDATE users SET password_hash = ?, password_reset_token = NULL, password_reset_expires = NULL WHERE id = ?',
+            [password_hash, user.id]
+        );
+        return res.json({ success: true, message: 'Your password has been reset. You can now log in.' });
+    } catch (e) {
+        console.error(e);
+        return res.status(500).json({ success: false, message: 'Server error.' });
     }
 });
 

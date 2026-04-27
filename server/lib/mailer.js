@@ -83,4 +83,56 @@ async function sendVerificationEmail(toEmail, token) {
     });
 }
 
-module.exports = { sendVerificationEmail };
+/**
+ * Send a password reset email.
+ * @param {string} toEmail  Recipient address.
+ * @param {string} token    The raw hex reset token.
+ */
+async function sendPasswordResetEmail(toEmail, token) {
+    if (!transport) {
+        console.warn(`[mailer] Skipping password reset email to ${toEmail} — SMTP not configured.`);
+        return;
+    }
+
+    const resetUrl = `${appUrl()}/reset-password.html?token=${token}`;
+
+    await transport.sendMail({
+        from: fromAddress(),
+        to: toEmail,
+        subject: 'Reset your Northern Veterinary Service password',
+        text: [
+            'We received a request to reset the password for your Northern Veterinary Service account.',
+            '',
+            'Click the link below to choose a new password:',
+            resetUrl,
+            '',
+            'This link expires in 1 hour.',
+            '',
+            'If you did not request a password reset you can safely ignore this email.',
+        ].join('\n'),
+        html: `
+<!DOCTYPE html>
+<html lang="en">
+<head><meta charset="UTF-8"></head>
+<body style="font-family:Arial,sans-serif;color:#333;max-width:560px;margin:0 auto;padding:24px">
+  <h2 style="color:#2c5f2e">Northern Veterinary Service</h2>
+  <p>We received a request to reset the password for your account.</p>
+  <p style="margin:28px 0">
+    <a href="${resetUrl}"
+       style="background:#2c5f2e;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;font-weight:bold">
+      Reset my password
+    </a>
+  </p>
+  <p style="font-size:13px;color:#666">
+    Or copy and paste this link into your browser:<br>
+    <a href="${resetUrl}" style="color:#2c5f2e">${resetUrl}</a>
+  </p>
+  <p style="font-size:13px;color:#666">This link expires in <strong>1 hour</strong>.</p>
+  <hr style="border:none;border-top:1px solid #eee;margin:24px 0">
+  <p style="font-size:12px;color:#999">If you did not request a password reset you can safely ignore this email.</p>
+</body>
+</html>`
+    });
+}
+
+module.exports = { sendVerificationEmail, sendPasswordResetEmail };
