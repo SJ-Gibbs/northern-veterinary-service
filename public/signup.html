@@ -322,6 +322,18 @@
         </div>
     </footer>
 
+    <!-- Signup success modal -->
+    <div id="signupSuccessModal" role="dialog" aria-modal="true" aria-labelledby="signupSuccessTitle" style="display:none;position:fixed;z-index:3000;inset:0;background:rgba(0,0,0,0.55);display:none;align-items:center;justify-content:center;padding:1rem;">
+        <div style="background:#fff;border-radius:8px;max-width:480px;width:100%;padding:2.5rem 2rem;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.18);position:relative;">
+            <div style="font-size:3rem;margin-bottom:0.75rem;">✅</div>
+            <h2 id="signupSuccessTitle" style="color:#2c5f2e;margin:0 0 0.75rem;">Account created!</h2>
+            <p style="margin:0 0 0.5rem;color:#333;font-size:1rem;">A verification email has been sent to:</p>
+            <p id="signupSuccessEmail" style="font-weight:700;color:#2c5f2e;font-size:1.05rem;margin:0 0 1.25rem;word-break:break-all;"></p>
+            <p style="color:#555;font-size:0.9rem;margin:0 0 1.75rem;">Please check your inbox and click the link to verify your email address before logging in. Check your spam folder if it doesn't arrive within a few minutes.</p>
+            <a href="login.html" class="btn btn-primary btn-full" style="display:block;text-decoration:none;">Go to login</a>
+        </div>
+    </div>
+
     <script src="auth.js"></script>
     <script src="index.js"></script>
     <script>
@@ -492,18 +504,15 @@
                     profilePhotoDataUrl
                 });
             }).then(function (result) {
-                signupMessage.style.display = 'block';
-                signupMessage.textContent = result.message;
-
                 if (result.success) {
-                    signupMessage.className = 'message success-message';
-                    setTimeout(function () {
-                        auth.login(email, password).then(function () {
-                            window.location.href = 'home.html';
-                        });
-                    }, 1500);
+                    document.getElementById('signupSuccessEmail').textContent = email;
+                    var modal = document.getElementById('signupSuccessModal');
+                    modal.style.display = 'flex';
+                    modal.focus();
                 } else {
+                    signupMessage.style.display = 'block';
                     signupMessage.className = 'message error-message';
+                    signupMessage.textContent = result.message;
                 }
             }).catch(function (err) {
                 signupMessage.style.display = 'block';
@@ -558,24 +567,33 @@
                 confirmEmail
             });
 
-            signupMessage.style.display = 'block';
-            signupMessage.textContent = result.message;
-
             if (result.success) {
-                signupMessage.className = 'message success-message';
-                setTimeout(function () {
-                    auth.login(email, password).then(function () {
-                        window.location.href = 'pricing.html';
-                    });
-                }, 1500);
+                document.getElementById('signupSuccessEmail').textContent = email;
+                var modal = document.getElementById('signupSuccessModal');
+                modal.style.display = 'flex';
+                modal.focus();
             } else {
+                signupMessage.style.display = 'block';
                 signupMessage.className = 'message error-message';
+                signupMessage.textContent = result.message;
             }
         });
 
         auth.ready.then(function () {
             if (auth.isLoggedIn()) {
                 window.location.href = 'home.html';
+            }
+        });
+
+        document.getElementById('signupSuccessModal').addEventListener('click', function (e) {
+            if (e.target === this) {
+                window.location.href = 'login.html';
+            }
+        });
+
+        document.addEventListener('keydown', function (e) {
+            if (e.key === 'Escape' && document.getElementById('signupSuccessModal').style.display === 'flex') {
+                window.location.href = 'login.html';
             }
         });
 
