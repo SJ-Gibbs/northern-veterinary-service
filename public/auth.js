@@ -193,7 +193,12 @@ class AuthSystem {
     }
 
     async login(email, password) {
-        const r = await apiFetch('/api/auth/login', { method: 'POST', body: { email, password } });
+        const r = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ email, password })
+        });
         const j = await r.json().catch(() => ({}));
         if (j.success && j.user) {
             this._applyUser(j.user);
