@@ -1,4 +1,4 @@
--- Northern Veterinary Service — MySQL schema for Node backend
+-- Northern Veterinary Service — MySQL schema for Spring Boot backend
 -- Charset: utf8mb4
 
 SET NAMES utf8mb4;
